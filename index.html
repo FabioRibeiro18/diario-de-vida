@@ -3007,6 +3007,7 @@ function calcSleep() {
   else if(h < 7) tag.innerHTML = '<span class="tag tag-amber">abaixo do ideal</span>';
   else if(h <= 9) tag.innerHTML = '<span class="tag tag-green">sono ideal ✓</span>';
   else           tag.innerHTML = '<span class="tag tag-sky">muito sono</span>';
+  updateOverview();
 }
 
 function calcBMI() {
@@ -3616,6 +3617,7 @@ function calcWorkHours() {
   if(ssEl && seEl) { ssEl.value=s; seEl.value=e; calcScreenTime(); }
 
   updateSidebarCals();
+  updateOverview();
 }
 
 function calcScreenTime() {
@@ -3780,11 +3782,61 @@ async function getWeightAdvice() {
 // ═══════════════════════════════════════════════════════════════════
 
 function updateOverview() {
-  const bed=document.getElementById('bedtime').value, wake=document.getElementById('waketime').value;
-  if(bed&&wake){let[bh,bm]=bed.split(':').map(Number),[wh,wm]=wake.split(':').map(Number);let bM=bh*60+bm,wM=wh*60+wm;if(wM<bM)wM+=24*60;document.getElementById('ov-sleep').textContent=((wM-bM)/60).toFixed(1)+'h';}
-  const w=document.getElementById('weight').value; document.getElementById('ov-weight').textContent=w?w+'kg':'—';
-  const totalSecs=hobbies.reduce((s,h)=>s+h.seconds+(h.tracking?Math.floor((Date.now()-h.start)/1000):0),0);
-  document.getElementById('ov-hobby').textContent=totalSecs>60?formatSecs(totalSecs):'—';
+  // ── SONO ──
+  const bed = document.getElementById('bedtime').value;
+  const wake = document.getElementById('waketime').value;
+  if (bed && wake) {
+    const [bh,bm] = bed.split(':').map(Number);
+    const [wh,wm] = wake.split(':').map(Number);
+    let bM = bh*60+bm, wM = wh*60+wm;
+    if (wM < bM) wM += 24*60;
+    document.getElementById('ov-sleep').textContent = ((wM-bM)/60).toFixed(1) + 'h';
+  } else {
+    document.getElementById('ov-sleep').textContent = '—';
+  }
+
+  // ── PESO ──
+  const w = document.getElementById('weight').value;
+  document.getElementById('ov-weight').textContent = w ? w + 'kg' : '—';
+
+  // ── CALORIAS ──
+  let calIn = 0;
+  try {
+    const mealObj = (meals && typeof meals === 'object' && !Array.isArray(meals))
+      ? meals : {x: Array.isArray(meals) ? meals : []};
+    Object.values(mealObj).forEach(slot => {
+      (slot||[]).forEach(m => { calIn += (parseInt(m.cal)||0); });
+    });
+  } catch(e) {}
+  document.getElementById('ov-cal').textContent = calIn > 0 ? calIn + ' kcal' : '—';
+
+  // ── ÁGUA ──
+  document.getElementById('ov-water').textContent = waterCount > 0 ? waterCount + ' copos' : '—';
+
+  // ── EXERCÍCIOS ──
+  const exDone = QUICK_EXERCISES.filter(e => habitsDone[e.id]).length + (exercises||[]).length;
+  document.getElementById('ov-ex').textContent = exDone > 0 ? exDone : '—';
+
+  // ── WC ──
+  const wcTotal = (counters.urinar||0) + (counters.defecar||0);
+  document.getElementById('ov-wc').textContent = wcTotal > 0 ? wcTotal : '—';
+
+  // ── TRABALHO ──
+  const ws = document.getElementById('workStart').value;
+  const we = document.getElementById('workEnd').value;
+  if (ws && we) {
+    const [sh,sm] = ws.split(':').map(Number);
+    const [eh,em] = we.split(':').map(Number);
+    const workH = (((eh*60+em)-(sh*60+sm)-60)/60).toFixed(1);
+    document.getElementById('ov-work').textContent = workH > 0 ? workH + 'h' : '—';
+  } else {
+    document.getElementById('ov-work').textContent = '—';
+  }
+
+  // ── HOBBYS ──
+  const totalSecs = (hobbies||[]).reduce((s,h) => s + h.seconds + (h.tracking ? Math.floor((Date.now()-h.start)/1000) : 0), 0);
+  document.getElementById('ov-hobby').textContent = totalSecs > 60 ? formatSecs(totalSecs) : '—';
+
   renderOverviewHabits();
 }
 
