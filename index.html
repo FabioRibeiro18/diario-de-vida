@@ -1483,25 +1483,14 @@ canvas { display:block; width:100% !important; max-width:100%; }
   line-height: 1.8;
 }
 
-/* ── FORCE 24H TIME INPUTS ── */
-input[type="time"] {
-  -webkit-appearance: none;
-  appearance: none;
+/* ── TIME INPUTS (24H TEXT FORMAT) ── */
+#bedtime, #waketime, #weightTime, #workStart, #workEnd,
+#lunchStart, #lunchEnd, #screenStart, #screenEnd {
   font-family: 'JetBrains Mono', monospace;
   font-size: 14px;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
 }
-/* Show 24h hint label under time inputs */
-.time-field-wrap { position: relative; }
-.time-field-wrap::after {
-  content: '24h';
-  position: absolute;
-  right: 8px; bottom: -16px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
-  color: var(--faint);
-  pointer-events: none;
-}
+
 
 /* ── SCROLLBAR ── */
 ::-webkit-scrollbar { width: 6px; }
@@ -1785,8 +1774,8 @@ input[type="time"] {
   <div class="card">
     <div class="card-title">horários</div>
     <div class="grid-2" style="margin-bottom:16px;">
-      <div class="field"><label>Hora de deitar</label><input type="time" id="bedtime" placeholder="00:00" onchange="calcSleep()"></div>
-      <div class="field"><label>Hora de levantar</label><input type="time" id="waketime" placeholder="00:00" onchange="calcSleep()"></div>
+      <div class="field"><label>Hora de deitar</label><input type="text" id="bedtime" placeholder="HH:MM" maxlength="5" oninput="fmtTime(this)" onchange="calcSleep()"></div>
+      <div class="field"><label>Hora de levantar</label><input type="text" id="waketime" placeholder="HH:MM" maxlength="5" oninput="fmtTime(this)" onchange="calcSleep()"></div>
     </div>
     <div class="sleep-visual">
       <div style="display:flex;align-items:baseline;gap:6px;margin-bottom:10px;">
@@ -1834,7 +1823,7 @@ input[type="time"] {
     <div class="card-title">medições</div>
     <div class="grid-3">
       <div class="field"><label>Peso (kg)</label><input type="number" id="weight" step="0.1" placeholder="ex: 72.5" onchange="calcBMI()"></div>
-      <div class="field"><label>Hora do registo</label><input type="time" id="weightTime" placeholder="00:00"></div>
+      <div class="field"><label>Hora do registo</label><input type="text" id="weightTime" placeholder="HH:MM" maxlength="5" oninput="fmtTime(this)"></div>
       <div class="field"><label>Altura (cm)</label><input type="number" id="height" placeholder="ex: 175" onchange="calcBMI()"></div>
     </div>
     <div style="margin-top:14px;font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);" id="bmiDisplay"></div>
@@ -2089,7 +2078,7 @@ input[type="time"] {
       <!-- Entrada -->
       <div style="flex:1;min-width:130px;background:var(--surface);border:2px solid var(--border);border-radius:12px;padding:14px 16px;transition:border-color 0.2s;" id="workStartCard">
         <div style="font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px;">🟢 Entrada</div>
-        <input type="time" id="workStart" placeholder="00:00" onchange="calcWorkHours();markWorkEntry()"
+        <input type="text" id="workStart" placeholder="HH:MM" maxlength="5" oninput="fmtTime(this)" onchange="calcWorkHours();markWorkEntry()"
           style="width:100%;background:none;border:none;outline:none;font-family:'Source Serif 4',serif;font-size:28px;font-weight:300;color:var(--moss-d);cursor:pointer;">
         <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:6px;" id="workStartLabel">— não registado —</div>
         <button onclick="stampWorkEntry()" style="margin-top:8px;width:100%;padding:6px;background:rgba(90,110,74,0.1);border:1px solid rgba(90,110,74,0.3);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--moss);cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='rgba(90,110,74,0.2)'" onmouseout="this.style.background='rgba(90,110,74,0.1)'">
@@ -2100,7 +2089,7 @@ input[type="time"] {
       <!-- Saída -->
       <div style="flex:1;min-width:130px;background:var(--surface);border:2px solid var(--border);border-radius:12px;padding:14px 16px;transition:border-color 0.2s;" id="workEndCard">
         <div style="font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px;">🔴 Saída</div>
-        <input type="time" id="workEnd" placeholder="00:00" onchange="calcWorkHours();markWorkExit()"
+        <input type="text" id="workEnd" placeholder="HH:MM" maxlength="5" oninput="fmtTime(this)" onchange="calcWorkHours();markWorkExit()"
           style="width:100%;background:none;border:none;outline:none;font-family:'Source Serif 4',serif;font-size:28px;font-weight:300;color:var(--rose,#c06060);cursor:pointer;">
         <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:6px;" id="workEndLabel">— não registado —</div>
         <button onclick="stampWorkExit()" style="margin-top:8px;width:100%;padding:6px;background:rgba(180,80,80,0.08);border:1px solid rgba(180,80,80,0.25);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#b05555;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='rgba(180,80,80,0.15)'" onmouseout="this.style.background='rgba(180,80,80,0.08)'">
@@ -2114,13 +2103,13 @@ input[type="time"] {
         <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
           <div>
             <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--faint);margin-bottom:2px;">INÍCIO</div>
-            <input type="time" id="lunchStart" placeholder="00:00" onchange="calcWorkHours()"
+            <input type="text" id="lunchStart" placeholder="HH:MM" maxlength="5" oninput="fmtTime(this)" onchange="calcWorkHours()"
               style="background:none;border:none;outline:none;font-family:'Source Serif 4',serif;font-size:18px;font-weight:300;color:var(--amber);width:80px;cursor:pointer;">
           </div>
           <span style="color:var(--faint);font-size:16px;margin-top:8px;">→</span>
           <div>
             <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--faint);margin-bottom:2px;">FIM</div>
-            <input type="time" id="lunchEnd" placeholder="00:00" onchange="calcWorkHours()"
+            <input type="text" id="lunchEnd" placeholder="HH:MM" maxlength="5" oninput="fmtTime(this)" onchange="calcWorkHours()"
               style="background:none;border:none;outline:none;font-family:'Source Serif 4',serif;font-size:18px;font-weight:300;color:var(--amber);width:80px;cursor:pointer;">
           </div>
         </div>
@@ -2179,8 +2168,8 @@ input[type="time"] {
   <div class="card">
     <div class="card-title">tempo ao computador</div>
     <div class="grid-2">
-      <div class="field"><label>Início</label><input type="time" id="screenStart" placeholder="00:00" onchange="calcScreenTime()"></div>
-      <div class="field"><label>Fim</label><input type="time" id="screenEnd" placeholder="00:00" onchange="calcScreenTime()"></div>
+      <div class="field"><label>Início</label><input type="text" id="screenStart" placeholder="HH:MM" maxlength="5" oninput="fmtTime(this)" onchange="calcScreenTime()"></div>
+      <div class="field"><label>Fim</label><input type="text" id="screenEnd" placeholder="HH:MM" maxlength="5" oninput="fmtTime(this)" onchange="calcScreenTime()"></div>
     </div>
     <div style="margin-top:16px;display:flex;align-items:baseline;gap:8px;">
       <span style="font-family:'Source Serif 4',serif;font-size:42px;font-weight:300;color:var(--moss-d);" id="screenTotal">0:00</span>
@@ -2596,6 +2585,22 @@ input[type="time"] {
 // ═══════════════════════════════════════════════════════════════════
 
 const TODAY = new Date().toISOString().split('T')[0];
+
+// ── FORMAT TIME INPUTS (HH:MM, 24h) ──
+function fmtTime(el) {
+  let v = el.value.replace(/\D/g, '');
+  if (v.length > 4) v = v.slice(0, 4);
+  if (v.length >= 3) v = v.slice(0, 2) + ':' + v.slice(2);
+  el.value = v;
+  // Trigger onchange manually after formatting
+  if (v.length === 5) {
+    const ev = new Event('change');
+    el.dispatchEvent(ev);
+  }
+}
+
+// Also fix getNowTime to return HH:MM compatible with text inputs
+
 const DB_KEY = 'dvLifeDiary_v3';
 
 let DB = {};
