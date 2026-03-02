@@ -5135,7 +5135,8 @@ function showApp() {
   document.getElementById('authOverlay').style.display = 'none';
   document.getElementById('appContent').style.display = 'block';
   restoreFields();
-renderDailyFlow();
+  renderDailyFlow();
+  setTimeout(force24hInputs, 200);
 }
 
 function logout() {
@@ -5203,12 +5204,7 @@ function force24hInputs() {
   });
 }
 
-// Run after app shows
-const _origShowApp = showApp;
-function showApp() {
-  _origShowApp();
-  setTimeout(force24hInputs, 200);
-}
+initAuth();
 
 </script>
 </div><!-- end appContent -->
