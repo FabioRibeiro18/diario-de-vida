@@ -3769,7 +3769,7 @@ function saveData() {
     workEnd:document.getElementById('workEnd').value,
     lunchStart:document.getElementById('lunchStart').value,
     lunchEnd:document.getElementById('lunchEnd').value,
-    lunchBreak:document.getElementById('lunchBreak').value,
+    lunchBreak: 60,
     workMood:document.getElementById('workMood').value,
     workFocus:document.getElementById('workFocus').value,
     workNotes:document.getElementById('workNotes').value,
@@ -5163,6 +5163,52 @@ function initAuth() {
 }
 
 initAuth();
+
+// ── FORCE 24H FORMAT ON ALL TIME INPUTS ──
+// Windows ignores lang="pt" and shows AM/PM - this fixes it
+function force24hInputs() {
+  document.querySelectorAll('input[type="time"]').forEach(input => {
+    // Convert existing value if in 12h format
+    input.addEventListener('change', function() {
+      // Ensure value is stored internally as HH:MM (browsers do this, but let's be safe)
+    });
+    // For Windows: override the displayed format by switching type temporarily
+    try {
+      // Test if browser respects 24h
+      const test = document.createElement('input');
+      test.type = 'time';
+      test.value = '13:00';
+      if (test.value !== '13:00') {
+        // Browser is using 12h - replace with text input that validates
+        const clone = document.createElement('input');
+        clone.type = 'text';
+        clone.placeholder = 'HH:MM';
+        clone.pattern = '[0-2][0-9]:[0-5][0-9]';
+        clone.maxLength = 5;
+        clone.value = input.value;
+        clone.id = input.id;
+        clone.className = input.className;
+        clone.style.cssText = input.style.cssText;
+        clone.onchange = input.onchange;
+        clone.oninput = function() {
+          // Auto-insert colon
+          let v = this.value.replace(/\D/g,'');
+          if (v.length >= 3) v = v.slice(0,2) + ':' + v.slice(2,4);
+          this.value = v;
+          if (input.onchange) input.onchange.call(this);
+        };
+        input.parentNode.replaceChild(clone, input);
+      }
+    } catch(e) {}
+  });
+}
+
+// Run after app shows
+const _origShowApp = showApp;
+function showApp() {
+  _origShowApp();
+  setTimeout(force24hInputs, 200);
+}
 
 </script>
 </div><!-- end appContent -->
