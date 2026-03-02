@@ -11,36 +11,37 @@
 <style>
 /* ── DESIGN SYSTEM: Verde Musgo & Bege Natural ── */
 :root {
-  --bg:        #f5f0e8;
-  --bg2:       #ede8dc;
-  --surface:   #faf7f2;
-  --card:      #ffffff;
-  --border:    #d8d0c0;
-  --border2:   #c8bfad;
+  /* ── NOVO TEMA: Noite Profunda + Teal + Dourado ── */
+  --bg:        #0f1117;
+  --bg2:       #161922;
+  --surface:   #1c2030;
+  --card:      #1e2436;
+  --border:    #2a3050;
+  --border2:   #3a4268;
 
-  --moss:      #5a6e4a;      /* verde musgo principal */
-  --moss-l:    #7a8f68;      /* musgo claro */
-  --moss-d:    #3d4e32;      /* musgo escuro */
-  --sage:      #a0b090;      /* sage suave */
-  --sage-l:    #c8d4be;      /* sage muito claro */
+  --moss:      #2dd4bf;      /* teal vibrante */
+  --moss-l:    #5eead4;      /* teal claro */
+  --moss-d:    #0f9588;      /* teal escuro */
+  --sage:      #94a3b8;      /* slate médio */
+  --sage-l:    #cbd5e1;      /* slate claro */
 
-  --sand:      #c4a882;      /* areia/terracota */
-  --sand-l:    #ddc9ae;      /* areia clara */
-  --clay:      #a07050;      /* argila */
+  --sand:      #f59e0b;      /* âmbar/dourado */
+  --sand-l:    #fcd34d;      /* dourado claro */
+  --clay:      #e07b39;      /* laranja queimado */
 
-  --sky:       #7898a8;      /* azul desvanecido */
-  --rose:      #c08890;      /* rosa seco */
-  --amber:     #b89050;      /* âmbar/mostarda */
+  --sky:       #60a5fa;      /* azul elétrico */
+  --rose:      #f472b6;      /* rosa néon */
+  --amber:     #f59e0b;      /* dourado */
 
-  --text:      #2c2820;      /* texto principal */
-  --text2:     #5a5248;      /* texto secundário */
-  --muted:     #8a8278;      /* texto suave */
-  --faint:     #b8b0a4;      /* muito suave */
+  --text:      #f1f5f9;      /* quase branco */
+  --text2:     #cbd5e1;      /* cinza claro */
+  --muted:     #64748b;      /* slate muted */
+  --faint:     #334155;      /* muito suave */
 
-  --radius:    12px;
-  --radius-s:  8px;
-  --shadow:    0 2px 12px rgba(44,40,32,0.08);
-  --shadow-m:  0 4px 24px rgba(44,40,32,0.12);
+  --radius:    14px;
+  --radius-s:  10px;
+  --shadow:    0 4px 24px rgba(0,0,0,0.4);
+  --shadow-m:  0 8px 40px rgba(0,0,0,0.5);
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -55,12 +56,25 @@ body {
   overflow-x: hidden;
 }
 
-/* subtle paper texture */
+/* dark gradient background with subtle grid */
 body::before {
   content: '';
   position: fixed; inset: 0;
   background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+    linear-gradient(rgba(45,212,191,0.03) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(45,212,191,0.03) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* glow accent top-left */
+body::after {
+  content: '';
+  position: fixed;
+  top: -200px; left: -200px;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(45,212,191,0.06) 0%, transparent 70%);
   pointer-events: none;
   z-index: 0;
 }
@@ -73,9 +87,9 @@ body::before {
   position: fixed;
   top: 0; left: 220px; right: 0;
   height: 48px;
-  background: rgba(245,242,235,0.92);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
+  background: rgba(15,17,23,0.85);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-bottom: 1px solid var(--border);
   z-index: 40;
   display: flex;
@@ -87,7 +101,7 @@ body::before {
   font-family: 'Source Serif 4', serif;
   font-size: 12px;
   font-style: italic;
-  color: var(--text2);
+  color: var(--sage);
   flex: 1;
   white-space: nowrap;
   overflow: hidden;
@@ -106,7 +120,8 @@ body::before {
 .sidebar {
   width: 220px;
   min-height: 100vh;
-  background: var(--moss-d);
+  background: #0a0d13;
+  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   position: fixed;
@@ -117,7 +132,7 @@ body::before {
 
 .sidebar-logo {
   padding: 28px 20px 24px;
-  border-bottom: 1px solid rgba(255,255,255,0.08);
+  border-bottom: 1px solid var(--border);
 }
 
 .logo-name {
@@ -252,32 +267,32 @@ body::before {
   padding: 10px 20px;
   cursor: pointer;
   transition: all 0.2s;
-  border-left: 3px solid transparent;
-  color: var(--sage);
+  border-left: 2px solid transparent;
+  color: var(--muted);
   font-family: 'Lora', serif;
   font-size: 13px;
   letter-spacing: 0.2px;
 }
 
-.nav-item:hover { background: rgba(255,255,255,0.06); color: rgba(255,255,255,0.85); }
+.nav-item:hover { background: rgba(45,212,191,0.05); color: var(--text2); }
 
 .nav-item.active {
-  background: rgba(255,255,255,0.08);
-  border-left-color: var(--sage-l);
-  color: rgba(255,255,255,0.95);
+  background: rgba(45,212,191,0.08);
+  border-left-color: var(--moss);
+  color: var(--moss-l);
 }
 
 .nav-icon { font-size: 16px; width: 20px; text-align: center; }
 
 .sidebar-bottom {
   padding: 16px 20px;
-  border-top: 1px solid rgba(255,255,255,0.08);
+  border-top: 1px solid var(--border);
 }
 
 .btn-save-main {
   width: 100%;
   padding: 10px;
-  background: var(--moss-l);
+  background: linear-gradient(135deg, var(--moss-d), var(--moss));
   color: white;
   border: none;
   border-radius: var(--radius-s);
@@ -345,6 +360,11 @@ body::before {
   padding: 22px 24px;
   margin-bottom: 16px;
   box-shadow: var(--shadow);
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.card:hover {
+  border-color: rgba(45,212,191,0.2);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.4), 0 0 0 1px rgba(45,212,191,0.05);
 }
 
 .card-title {
@@ -352,7 +372,7 @@ body::before {
   font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 1.8px;
-  color: var(--muted);
+  color: var(--moss-l);
   margin-bottom: 16px;
   display: flex;
   align-items: center;
@@ -395,8 +415,8 @@ body::before {
 .field input:focus,
 .field select:focus,
 .field textarea:focus {
-  border-color: var(--moss-l);
-  box-shadow: 0 0 0 3px rgba(90,110,74,0.1);
+  border-color: var(--moss);
+  box-shadow: 0 0 0 3px rgba(45,212,191,0.12);
 }
 
 .field select option { background: var(--card); }
@@ -418,8 +438,8 @@ body::before {
 
 .btn:active { transform: scale(0.97); }
 
-.btn-primary { background: var(--moss); color: white; }
-.btn-primary:hover { background: var(--moss-d); }
+.btn-primary { background: linear-gradient(135deg, var(--moss-d), var(--moss)); color: #0a0d13; font-weight: 600; }
+.btn-primary:hover { background: linear-gradient(135deg, var(--moss), var(--moss-l)); box-shadow: 0 0 20px rgba(45,212,191,0.3); }
 .btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
 
 .btn-secondary {
@@ -717,6 +737,13 @@ body::before {
   position: relative;
   overflow: hidden;
   box-shadow: var(--shadow);
+  transition: all 0.25s;
+}
+
+.stat-tile:hover {
+  border-color: rgba(45,212,191,0.3);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(45,212,191,0.1);
 }
 
 .stat-tile::before {
@@ -724,12 +751,12 @@ body::before {
   position: absolute;
   top: 0; left: 0; right: 0;
   height: 2px;
-  background: var(--moss-l);
-  opacity: 0.4;
+  background: linear-gradient(90deg, var(--moss-d), var(--moss), transparent);
+  opacity: 0.8;
 }
 
 .stat-tile-icon { font-size: 20px; margin-bottom: 8px; }
-.stat-tile-val { font-family: 'Source Serif 4', serif; font-size: 22px; font-weight: 300; color: var(--moss-d); }
+.stat-tile-val { font-family: 'Source Serif 4', serif; font-size: 22px; font-weight: 300; color: var(--moss-l); }
 .stat-tile-name { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 3px; }
 
 /* ── JOURNAL / MOOD ── */
@@ -1517,18 +1544,22 @@ canvas { display:block; width:100% !important; max-width:100%; }
   z-index:99999;
   display:flex;align-items:center;justify-content:center;
 ">
+  <!-- background glow -->
+  <div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:600px;height:600px;background:radial-gradient(circle,rgba(45,212,191,0.06) 0%,transparent 70%);pointer-events:none;"></div>
+
   <div style="
     background:var(--card);
-    border:1px solid var(--border);
-    border-radius:20px;
+    border:1px solid rgba(45,212,191,0.2);
+    border-radius:24px;
     padding:48px 52px;
     max-width:380px;width:90%;
     text-align:center;
-    box-shadow:0 8px 40px rgba(44,40,32,0.12);
+    box-shadow:0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(45,212,191,0.05);
+    position:relative;
   ">
-    <div style="font-size:36px;margin-bottom:16px;">🌿</div>
-    <div style="font-family:'Source Serif 4',serif;font-size:26px;font-weight:300;color:var(--moss-d);margin-bottom:4px;">Diário de Vida</div>
-    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);letter-spacing:2px;text-transform:uppercase;margin-bottom:32px;">acesso privado</div>
+    <div style="font-size:40px;margin-bottom:16px;">🌿</div>
+    <div style="font-family:'Source Serif 4',serif;font-size:26px;font-weight:300;color:var(--text);margin-bottom:4px;">Diário de Vida</div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--moss);letter-spacing:2px;text-transform:uppercase;margin-bottom:32px;">acesso privado</div>
 
     <div style="position:relative;margin-bottom:12px;">
       <input
@@ -1549,10 +1580,10 @@ canvas { display:block; width:100% !important; max-width:100%; }
           text-align:center;
           letter-spacing:4px;
           box-sizing:border-box;
-          transition:border-color 0.2s;
+          transition:border-color 0.2s, box-shadow 0.2s;
         "
-        onfocus="this.style.borderColor='var(--moss-l)'"
-        onblur="this.style.borderColor='var(--border)'"
+        onfocus="this.style.borderColor='var(--moss)';this.style.boxShadow='0 0 0 3px rgba(45,212,191,0.15)'"
+        onblur="this.style.borderColor='var(--border)';this.style.boxShadow='none'"
       >
       <button onclick="togglePwdVisibility()" style="
         position:absolute;right:14px;top:50%;transform:translateY(-50%);
@@ -1563,16 +1594,17 @@ canvas { display:block; width:100% !important; max-width:100%; }
     <button onclick="checkPassword()" style="
       width:100%;
       padding:14px;
-      background:var(--moss);
-      color:white;
+      background:linear-gradient(135deg, var(--moss-d), var(--moss));
+      color:#0a0d13;
       border:none;
       border-radius:12px;
       font-family:'Lora',serif;
       font-size:15px;
+      font-weight:600;
       cursor:pointer;
-      transition:background 0.2s;
+      transition:all 0.2s;
       letter-spacing:0.3px;
-    " onmouseover="this.style.background='var(--moss-d)'" onmouseout="this.style.background='var(--moss)'">
+    " onmouseover="this.style.boxShadow='0 0 24px rgba(45,212,191,0.4)'" onmouseout="this.style.boxShadow='none'">
       Entrar
     </button>
 
@@ -1583,8 +1615,6 @@ canvas { display:block; width:100% !important; max-width:100%; }
       min-height:16px;
       transition:opacity 0.3s;
     "></div>
-
-    
 
     <p style="margin-top:20px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--faint);line-height:1.6;">
       os teus dados são privados · apenas tu tens acesso
@@ -2711,30 +2741,30 @@ const HABITS = [
 
 const QUICK_EXERCISES = [
   // AQUECIMENTO
-  {id:'e1',icon:'🚶',name:'Marcha no lugar',qty:'3 minutos contínuos',desc:'Levanta os joelhos alternadamente, braços a balançar. Aquece o corpo sem impacto. Faz antes de qualquer exercício.',cat:'aquecimento',dur:'3 min',nivel:'fácil',kcal:12},
-  {id:'e2',icon:'🤸',name:'Rotação dos ombros e pescoço',qty:'10 rotações cada',desc:'Roda os ombros para a frente e para trás. Depois inclina a cabeça devagar para cada lado. Alivia tensão acumulada.',cat:'aquecimento',dur:'2 min',nivel:'fácil',kcal:8},
+  {id:'e1',icon:'🚶',name:'Marcha no lugar',qty:'3 minutos contínuos',desc:'Levanta os joelhos alternadamente, braços a balançar. Aquece o corpo sem impacto. Faz antes de qualquer exercício.',cat:'aquecimento',dur:'3 min',nivel:'fácil',kcal:12,video:'https://www.youtube.com/results?search_query=marcha+no+lugar+aquecimento'},
+  {id:'e2',icon:'🤸',name:'Rotação dos ombros e pescoço',qty:'10 rotações cada',desc:'Roda os ombros para a frente e para trás. Depois inclina a cabeça devagar para cada lado. Alivia tensão acumulada.',cat:'aquecimento',dur:'2 min',nivel:'fácil',kcal:8,video:'https://www.youtube.com/results?search_query=rotacao+ombros+pescoco+alongamento'},
 
   // FORÇA — em casa, sem equipamento
-  {id:'e3',icon:'🪑',name:'Agachamento com cadeira',qty:'3 séries de 8 a 10 repetições',desc:'Em frente a uma cadeira resistente. Pés à largura dos ombros. Desce devagar como se fosses sentar, toca levemente e levanta. A cadeira dá segurança. Descansa 30 seg entre séries.',cat:'forca',dur:'7 min',nivel:'fácil',kcal:42},
-  {id:'e4',icon:'🖐️',name:'Flexões na parede',qty:'3 séries de 8 repetições',desc:'Coloca as mãos na parede à altura do peito. Afasta os pés um passo. Dobra os cotovelos até o nariz quase tocar a parede. Mais fácil e seguro que flexão no chão.',cat:'forca',dur:'6 min',nivel:'fácil',kcal:36},
-  {id:'e5',icon:'🦶',name:'Elevação de calcanhares',qty:'3 séries de 12 repetições',desc:'Em pé junto à parede para equilíbrio. Levanta os calcanhares devagar, segura 2 segundos no topo, desce lentamente. Fortalece as pernas e melhora a circulação.',cat:'forca',dur:'5 min',nivel:'fácil',kcal:30},
-  {id:'e6',icon:'🧎',name:'Prancha de joelhos',qty:'3 séries de 20 segundos',desc:'Com os joelhos no chão, mãos alinhadas com os ombros. Corpo reto dos joelhos à cabeça. Não deixas a barriga cair. Fortalece o core sem pressão na lombar.',cat:'forca',dur:'5 min',nivel:'fácil',kcal:30},
-  {id:'e7',icon:'💪',name:'Flexões de joelhos',qty:'2 séries de 6 a 8 repetições',desc:'Joelhos no chão, mãos largas. Desce o peito até quase tocar o chão. Versão adaptada da flexão tradicional. Excelente para começar a ganhar força nos braços.',cat:'forca',dur:'5 min',nivel:'fácil',kcal:30},
+  {id:'e3',icon:'🪑',name:'Agachamento com cadeira',qty:'3 séries de 8 a 10 repetições',desc:'Em frente a uma cadeira resistente. Pés à largura dos ombros. Desce devagar como se fosses sentar, toca levemente e levanta. A cadeira dá segurança. Descansa 30 seg entre séries.',cat:'forca',dur:'7 min',nivel:'fácil',kcal:42,video:'https://www.youtube.com/results?search_query=agachamento+com+cadeira+iniciante'},
+  {id:'e4',icon:'🖐️',name:'Flexões na parede',qty:'3 séries de 8 repetições',desc:'Coloca as mãos na parede à altura do peito. Afasta os pés um passo. Dobra os cotovelos até o nariz quase tocar a parede. Mais fácil e seguro que flexão no chão.',cat:'forca',dur:'6 min',nivel:'fácil',kcal:36,video:'https://www.youtube.com/results?search_query=flexoes+na+parede+iniciante'},
+  {id:'e5',icon:'🦶',name:'Elevação de calcanhares',qty:'3 séries de 12 repetições',desc:'Em pé junto à parede para equilíbrio. Levanta os calcanhares devagar, segura 2 segundos no topo, desce lentamente. Fortalece as pernas e melhora a circulação.',cat:'forca',dur:'5 min',nivel:'fácil',kcal:30,video:'https://www.youtube.com/results?search_query=elevacao+calcanhares+exercicio'},
+  {id:'e6',icon:'🧎',name:'Prancha de joelhos',qty:'3 séries de 20 segundos',desc:'Com os joelhos no chão, mãos alinhadas com os ombros. Corpo reto dos joelhos à cabeça. Não deixas a barriga cair. Fortalece o core sem pressão na lombar.',cat:'forca',dur:'5 min',nivel:'fácil',kcal:30,video:'https://www.youtube.com/results?search_query=prancha+joelhos+core+iniciante'},
+  {id:'e7',icon:'💪',name:'Flexões de joelhos',qty:'2 séries de 6 a 8 repetições',desc:'Joelhos no chão, mãos largas. Desce o peito até quase tocar o chão. Versão adaptada da flexão tradicional. Excelente para começar a ganhar força nos braços.',cat:'forca',dur:'5 min',nivel:'fácil',kcal:30,video:'https://www.youtube.com/results?search_query=flexoes+joelhos+no+chao+iniciante'},
 
   // CARDIO — baixo impacto, ideal para perda de peso
-  {id:'e8',icon:'💃',name:'Passo lateral (side step)',qty:'4 séries de 20 passos',desc:'Da um passo para a direita, junta o pé esquerdo. Depois o contrário. Ritmo suave mas constante. Cardio de baixo impacto, bom para os joelhos e para queimar calorias.',cat:'cardio',dur:'5 min',nivel:'fácil',kcal:40},
-  {id:'e9',icon:'🙌',name:'Jumping Jacks adaptados',qty:'3 séries de 10 repetições',desc:'Versão sem salto: um pé de cada vez para fora, depois junta. Braços sobem ao mesmo tempo. Ativa a circulação e acelera o metabolismo sem impacto nas articulações.',cat:'cardio',dur:'4 min',nivel:'fácil',kcal:32},
-  {id:'e10',icon:'🚴',name:'Bicicleta deitado',qty:'3 séries de 15 repetições',desc:'Deitado de costas, pernas no ar. Pedala como uma bicicleta alternando os joelhos. Trabalha o abdómen e as pernas sem stress nas costas.',cat:'cardio',dur:'5 min',nivel:'fácil',kcal:40},
+  {id:'e8',icon:'💃',name:'Passo lateral (side step)',qty:'4 séries de 20 passos',desc:'Da um passo para a direita, junta o pé esquerdo. Depois o contrário. Ritmo suave mas constante. Cardio de baixo impacto, bom para os joelhos e para queimar calorias.',cat:'cardio',dur:'5 min',nivel:'fácil',kcal:40,video:'https://www.youtube.com/results?search_query=passo+lateral+cardio+baixo+impacto'},
+  {id:'e9',icon:'🙌',name:'Jumping Jacks adaptados',qty:'3 séries de 10 repetições',desc:'Versão sem salto: um pé de cada vez para fora, depois junta. Braços sobem ao mesmo tempo. Ativa a circulação e acelera o metabolismo sem impacto nas articulações.',cat:'cardio',dur:'4 min',nivel:'fácil',kcal:32,video:'https://www.youtube.com/results?search_query=jumping+jacks+sem+salto+baixo+impacto'},
+  {id:'e10',icon:'🚴',name:'Bicicleta deitado',qty:'3 séries de 15 repetições',desc:'Deitado de costas, pernas no ar. Pedala como uma bicicleta alternando os joelhos. Trabalha o abdómen e as pernas sem stress nas costas.',cat:'cardio',dur:'5 min',nivel:'fácil',kcal:40,video:'https://www.youtube.com/results?search_query=bicicleta+deitado+abdominal+iniciante'},
 
   // ALONGAMENTO — essencial para recuperação
-  {id:'e11',icon:'🧘',name:'Alongamento gato-vaca',qty:'8 repetições lentas',desc:'De joelhos com apoio das mãos. Arqueia as costas para cima (gato) depois para baixo (vaca). Alinha a coluna e alivia dores lombares — muito comum em excesso de peso.',cat:'alongamento',dur:'3 min',nivel:'fácil',kcal:9},
-  {id:'e12',icon:'🦵',name:'Alongamento dos quadríceps',qty:'30 seg cada perna · 2 vezes',desc:'Em pé junto à parede. Dobra um joelho e segura o pé atrás com a mão. Mantém o equilíbrio com a outra mão na parede. Essencial após agachamentos.',cat:'alongamento',dur:'3 min',nivel:'fácil',kcal:9},
-  {id:'e13',icon:'🤾',name:'Rotação dos tornozelos',qty:'15 círculos cada pé',desc:'Sentado numa cadeira. Levanta um pé e faz círculos lentos. Ativa a circulação nas pernas e reduz o inchaço que pode acompanhar excesso de peso.',cat:'alongamento',dur:'2 min',nivel:'fácil',kcal:6},
+  {id:'e11',icon:'🧘',name:'Alongamento gato-vaca',qty:'8 repetições lentas',desc:'De joelhos com apoio das mãos. Arqueia as costas para cima (gato) depois para baixo (vaca). Alinha a coluna e alivia dores lombares — muito comum em excesso de peso.',cat:'alongamento',dur:'3 min',nivel:'fácil',kcal:9,video:'https://www.youtube.com/results?search_query=alongamento+gato+vaca+coluna'},
+  {id:'e12',icon:'🦵',name:'Alongamento dos quadríceps',qty:'30 seg cada perna · 2 vezes',desc:'Em pé junto à parede. Dobra um joelho e segura o pé atrás com a mão. Mantém o equilíbrio com a outra mão na parede. Essencial após agachamentos.',cat:'alongamento',dur:'3 min',nivel:'fácil',kcal:9,video:'https://www.youtube.com/results?search_query=alongamento+quadriceps+em+pe'},
+  {id:'e13',icon:'🤾',name:'Rotação dos tornozelos',qty:'15 círculos cada pé',desc:'Sentado numa cadeira. Levanta um pé e faz círculos lentos. Ativa a circulação nas pernas e reduz o inchaço que pode acompanhar excesso de peso.',cat:'alongamento',dur:'2 min',nivel:'fácil',kcal:6,video:'https://www.youtube.com/results?search_query=rotacao+tornozelos+circulacao'},
 
   // MOVIMENTO DIÁRIO
-  {id:'e14',icon:'🚶',name:'Caminhada de 10 minutos',qty:'1 ou 2 vezes ao dia',desc:'Mesmo a um ritmo lento. Sai de casa, anda pelo bairro. 10 min de caminhada 2x/dia = 1 hora por semana de exercício sem esforço concentrado.',cat:'movimento',dur:'10 min',nivel:'fácil',kcal:50},
-  {id:'e15',icon:'⏰',name:'Levantar a cada hora',qty:'1-2 minutos de pé',desc:'Programa um alarme no telemóvel. Levanta, vai à casa de banho, bebe água, estica as pernas. Quem está sentado 8h/dia tem maior risco mesmo que faça exercício.',cat:'movimento',dur:'2 min',nivel:'fácil',kcal:10},
-  {id:'e16',icon:'🧹',name:'Tarefas domésticas ativas',qty:'20 a 30 minutos',desc:'Aspirar, varrer, lavar — tudo conta como atividade física. Uma pessoa de 100kg queima cerca de 200-250 kcal em 30 min de tarefas domésticas.',cat:'movimento',dur:'20 min',nivel:'fácil',kcal:100},
+  {id:'e14',icon:'🚶',name:'Caminhada de 10 minutos',qty:'1 ou 2 vezes ao dia',desc:'Mesmo a um ritmo lento. Sai de casa, anda pelo bairro. 10 min de caminhada 2x/dia = 1 hora por semana de exercício sem esforço concentrado.',cat:'movimento',dur:'10 min',nivel:'fácil',kcal:50,video:'https://www.youtube.com/results?search_query=caminhada+rapida+perda+peso'},
+  {id:'e15',icon:'⏰',name:'Levantar a cada hora',qty:'1-2 minutos de pé',desc:'Programa um alarme no telemóvel. Levanta, vai à casa de banho, bebe água, estica as pernas. Quem está sentado 8h/dia tem maior risco mesmo que faça exercício.',cat:'movimento',dur:'2 min',nivel:'fácil',kcal:10,video:'https://www.youtube.com/results?search_query=exercicios+para+fazer+no+escritorio'},
+  {id:'e16',icon:'🧹',name:'Tarefas domésticas ativas',qty:'20 a 30 minutos',desc:'Aspirar, varrer, lavar — tudo conta como atividade física. Uma pessoa de 100kg queima cerca de 200-250 kcal em 30 min de tarefas domésticas.',cat:'movimento',dur:'20 min',nivel:'fácil',kcal:100,video:'https://www.youtube.com/results?search_query=calorias+tarefas+domesticas+exercicio'},
 ];
 
 // Daily routines — rotate by day of week, 5-10 min, beginner
@@ -2816,10 +2846,10 @@ function renderExerciseCards() {
   const exKcalEl = document.getElementById('exKcalBurned');
   if (exKcalEl) exKcalEl.textContent = exKcalTotal + ' kcal queimadas hoje';
   document.getElementById('quickExercises').innerHTML = filtered.map(e => `
-    <div class="ex-card ${habitsDone[e.id] ? 'ex-done' : ''}" onclick="toggleHabit('${e.id}')" id="excard-${e.id}">
-      <div class="ex-checkbox">${habitsDone[e.id] ? '✓' : ''}</div>
-      <div class="ex-card-icon">${e.icon}</div>
-      <div class="ex-card-body">
+    <div class="ex-card ${habitsDone[e.id] ? 'ex-done' : ''}" id="excard-${e.id}">
+      <div class="ex-checkbox" onclick="toggleHabit('${e.id}')">${habitsDone[e.id] ? '✓' : ''}</div>
+      <div class="ex-card-icon" onclick="toggleHabit('${e.id}')">${e.icon}</div>
+      <div class="ex-card-body" onclick="toggleHabit('${e.id}')">
         <div class="ex-card-name">${e.name}</div>
         <div class="ex-card-qty">${e.qty}</div>
         <div class="ex-card-desc">${e.desc}</div>
@@ -2829,6 +2859,7 @@ function renderExerciseCards() {
           <span class="tag tag-green">✓ fácil</span>
         </div>
       </div>
+      ${e.video ? `<a href="${e.video}" target="_blank" onclick="event.stopPropagation()" title="Ver vídeo no YouTube" style="flex-shrink:0;display:flex;align-items:center;justify-content:center;width:36px;height:36px;border-radius:50%;background:rgba(255,0,0,0.12);border:1px solid rgba(255,0,0,0.25);color:#ff4444;font-size:16px;text-decoration:none;transition:all 0.2s;margin-top:4px;" onmouseover="this.style.background='rgba(255,0,0,0.25)'" onmouseout="this.style.background='rgba(255,0,0,0.12)'">▶</a>` : ''}
     </div>
   `).join('');
 
@@ -2870,6 +2901,11 @@ function toggleHabit(id) {
   const doneCount = QUICK_EXERCISES.filter(e => habitsDone[e.id]).length;
   const countEl = document.getElementById('exDoneCount');
   if(countEl) countEl.textContent = doneCount;
+  // ── atualizar calorias queimadas ──
+  const exKcalTotal = QUICK_EXERCISES.filter(e => habitsDone[e.id]).reduce((s,e) => s+(e.kcal||0), 0);
+  const exKcalEl = document.getElementById('exKcalBurned');
+  if(exKcalEl) exKcalEl.textContent = exKcalTotal + ' kcal queimadas hoje';
+  updateSidebarCals();
   renderOverviewHabits();
 }
 
