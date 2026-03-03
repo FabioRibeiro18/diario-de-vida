@@ -5,8 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Diário de Vida">
-<meta name="theme-color" content="#f5f0e8">
+<meta name="theme-color" content="#0f1117">
 <title>Diário de Vida</title>
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Diário">
+<link rel="apple-touch-icon" href="icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Source+Serif+4:ital,wght@0,300;0,400;1,300&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
 <style>
 /* ── DESIGN SYSTEM: Verde Musgo & Bege Natural ── */
@@ -1725,6 +1730,9 @@ canvas { display:block; width:100% !important; max-width:100%; }
     <button onclick="openGroqModal()" id="groqConfigBtn" style="margin-top:4px;width:100%;padding:7px;background:transparent;border:1px solid rgba(45,212,191,0.2);border-radius:6px;color:var(--moss-l);font-family:'JetBrains Mono',monospace;font-size:10px;cursor:pointer;letter-spacing:0.5px;transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(45,212,191,0.5)'" onmouseout="this.style.borderColor='rgba(45,212,191,0.2)'">
       ⚙️ Configurar IA
     </button>
+    <button onclick="openRemindersModal()" style="margin-top:4px;width:100%;padding:7px;background:transparent;border:1px solid rgba(245,158,11,0.2);border-radius:6px;color:var(--amber);font-family:'JetBrains Mono',monospace;font-size:10px;cursor:pointer;letter-spacing:0.5px;transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(245,158,11,0.5)'" onmouseout="this.style.borderColor='rgba(245,158,11,0.2)'">
+      🔔 Lembretes
+    </button>
   </div>
 </aside>
 
@@ -2531,9 +2539,66 @@ canvas { display:block; width:100% !important; max-width:100%; }
     </div>
   </div>
 
+  <!-- TENDÊNCIAS -->
+  <div class="card">
+    <div class="card-title">📈 tendências — esta semana vs semana anterior</div>
+    <div id="trendsPanel" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:8px;"></div>
+  </div>
+
+  <!-- RESUMO SEMANAL IA -->
+  <div class="card">
+    <div class="card-title">🤖 resumo semanal com ia</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">Gerado automaticamente às segundas-feiras. Podes forçar agora.</p>
+    <button class="btn btn-primary" id="weeklySummaryBtn" onclick="generateWeeklySummary(true)" style="width:100%;margin-bottom:12px;">✨ Gerar resumo desta semana</button>
+    <div id="weeklySummaryResponse" style="display:none;font-size:13px;color:var(--text2);line-height:1.7;padding:14px;background:var(--surface);border-radius:10px;border:1px solid var(--border);"></div>
+  </div>
+
+  <!-- CONQUISTAS -->
+  <div class="card">
+    <div class="card-title">🏆 conquistas</div>
+    <div id="achievementsPanel" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:8px;"></div>
+  </div>
+
 </div>
 
 </main>
+</div>
+
+<!-- Lembretes Modal -->
+<div class="sync-modal-overlay" id="remindersModal">
+  <div class="sync-modal">
+    <h2>🔔 Lembretes diários</h2>
+    <div class="sync-modal-sub">notificações para não te esqueceres</div>
+    <div style="margin:16px 0;display:flex;align-items:center;gap:10px;">
+      <input type="checkbox" id="remEnabled" style="width:18px;height:18px;accent-color:var(--moss);">
+      <label for="remEnabled" style="font-size:13px;color:var(--text);">Ativar lembretes</label>
+    </div>
+    <div class="sync-step">
+      <div class="sync-step-num">🌅</div>
+      <div style="flex:1;">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:6px;">Lembrete da manhã</div>
+        <input type="text" id="remManha" placeholder="08:00" maxlength="5" oninput="fmtTime(this)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;outline:none;">
+      </div>
+    </div>
+    <div class="sync-step">
+      <div class="sync-step-num">🍽️</div>
+      <div style="flex:1;">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:6px;">Lembrete do almoço</div>
+        <input type="text" id="remAlmoco" placeholder="13:00" maxlength="5" oninput="fmtTime(this)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;outline:none;">
+      </div>
+    </div>
+    <div class="sync-step">
+      <div class="sync-step-num">🌙</div>
+      <div style="flex:1;">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:6px;">Lembrete da noite</div>
+        <input type="text" id="remNoite" placeholder="22:00" maxlength="5" oninput="fmtTime(this)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;outline:none;">
+      </div>
+    </div>
+    <div style="margin-top:16px;display:flex;justify-content:space-between;gap:8px;">
+      <button class="btn btn-secondary" onclick="closeRemindersModal()" style="font-size:12px;">Fechar</button>
+      <button class="btn btn-primary" onclick="saveReminders()">💾 Guardar lembretes</button>
+    </div>
+  </div>
 </div>
 
 <!-- Google Sheets Sync Modal -->
@@ -3873,6 +3938,61 @@ function updateOverview() {
   renderOverviewHabits();
 }
 
+// ── Versão que lê diretamente do snap guardado (usada pelo botão Guardar) ──
+function updateOverviewFromSnap(s) {
+  // SONO
+  if (s.bedtime && s.waketime) {
+    const [bh,bm] = s.bedtime.split(':').map(Number);
+    const [wh,wm] = s.waketime.split(':').map(Number);
+    let bM = bh*60+bm, wM = wh*60+wm;
+    if (wM < bM) wM += 24*60;
+    document.getElementById('ov-sleep').textContent = ((wM-bM)/60).toFixed(1) + 'h';
+  } else {
+    document.getElementById('ov-sleep').textContent = '—';
+  }
+
+  // PESO
+  document.getElementById('ov-weight').textContent = s.weight ? s.weight + 'kg' : '—';
+
+  // CALORIAS
+  let calIn = 0;
+  try {
+    const mealObj = (s.meals && typeof s.meals === 'object' && !Array.isArray(s.meals))
+      ? s.meals : {x: Array.isArray(s.meals) ? s.meals : []};
+    Object.values(mealObj).forEach(slot => {
+      (slot||[]).forEach(m => { calIn += (parseInt(m.cal)||0); });
+    });
+  } catch(e) {}
+  document.getElementById('ov-cal').textContent = calIn > 0 ? calIn + ' kcal' : '—';
+
+  // ÁGUA
+  document.getElementById('ov-water').textContent = (s.waterCount||0) > 0 ? s.waterCount + ' copos' : '—';
+
+  // EXERCÍCIOS
+  const exDone = QUICK_EXERCISES.filter(e => s.habitsDone && s.habitsDone[e.id]).length + (s.exercises||[]).length;
+  document.getElementById('ov-ex').textContent = exDone > 0 ? exDone : '—';
+
+  // WC
+  const wcTotal = ((s.counters&&s.counters.urinar)||0) + ((s.counters&&s.counters.defecar)||0);
+  document.getElementById('ov-wc').textContent = wcTotal > 0 ? wcTotal : '—';
+
+  // TRABALHO
+  if (s.workStart && s.workEnd) {
+    const [sh,sm] = s.workStart.split(':').map(Number);
+    const [eh,em] = s.workEnd.split(':').map(Number);
+    const workH = (((eh*60+em)-(sh*60+sm)-60)/60).toFixed(1);
+    document.getElementById('ov-work').textContent = workH > 0 ? workH + 'h' : '—';
+  } else {
+    document.getElementById('ov-work').textContent = '—';
+  }
+
+  // HOBBYS
+  const totalSecs = (hobbies||[]).reduce((s2,h) => s2 + h.seconds + (h.tracking ? Math.floor((Date.now()-h.start)/1000) : 0), 0);
+  document.getElementById('ov-hobby').textContent = totalSecs > 60 ? formatSecs(totalSecs) : '—';
+
+  renderOverviewHabits();
+}
+
 // ═══════════════════════════════════════════════════════════════════
 // SAVE
 // ═══════════════════════════════════════════════════════════════════
@@ -3933,8 +4053,8 @@ function saveData() {
   const bar = document.getElementById('savedBar');
   bar.classList.add('show');
   setTimeout(() => bar.classList.remove('show'), 2500);
-  // Atualizar resumo
-  updateOverview();
+  // Atualizar resumo a partir do snap guardado (funciona mesmo noutras secções)
+  updateOverviewFromSnap(snap);
   updateSidebarCals();
   // Sync to Sheets if configured
   if(typeof sheetsUrl !== 'undefined' && sheetsUrl) setTimeout(syncAllData, 600);
@@ -5446,6 +5566,265 @@ function force24hInputs() {
 }
 
 initAuth();
+
+
+// ═══════════════════════════════════════════════════════════════════
+// 1. PWA — Service Worker + Notificações
+// ═══════════════════════════════════════════════════════════════════
+let swRegistration = null;
+
+async function initPWA() {
+  if (!('serviceWorker' in navigator)) return;
+  try {
+    swRegistration = await navigator.serviceWorker.register('/diario-de-vida/sw.js');
+  } catch(e) { console.log('SW falhou:', e); }
+}
+
+async function requestNotifications() {
+  if (!('Notification' in window)) return false;
+  if (Notification.permission === 'granted') return true;
+  return (await Notification.requestPermission()) === 'granted';
+}
+
+async function sendNotification(title, body) {
+  if (Notification.permission !== 'granted') return;
+  if (swRegistration && swRegistration.active) {
+    swRegistration.active.postMessage({ type: 'SHOW_NOTIFICATION', title, body });
+  } else {
+    new Notification(title, { body });
+  }
+}
+
+function scheduleReminders() {
+  const prefs = JSON.parse(localStorage.getItem('dvReminders') || '{}');
+  if (!prefs.enabled) return;
+  const now = new Date();
+  const check = (hourStr, title, body) => {
+    if (!hourStr) return;
+    const [h, m] = hourStr.split(':').map(Number);
+    const target = new Date(); target.setHours(h, m, 0, 0);
+    const diff = target - now;
+    if (diff > 0 && diff < 60000) sendNotification(title, body);
+  };
+  check(prefs.manha, 'Bom dia!', 'Nao te esquecas de registar o sono e o peso.');
+  check(prefs.almoco, 'Hora de almoco!', 'Regista o que comeste.');
+  check(prefs.noite, 'Boa noite!', 'Completa o teu diario de hoje.');
+}
+setInterval(scheduleReminders, 60000);
+
+// ═══════════════════════════════════════════════════════════════════
+// 2. TENDÊNCIAS
+// ═══════════════════════════════════════════════════════════════════
+function getSleepH(day) {
+  if (!day || !day.bedtime || !day.waketime) return 0;
+  const [bh,bm] = day.bedtime.split(':').map(Number);
+  const [wh,wm] = day.waketime.split(':').map(Number);
+  let bM=bh*60+bm, wM=wh*60+wm;
+  if (wM<bM) wM+=24*60;
+  return (wM-bM)/60;
+}
+
+function calcWeekAvg(metric, weeksAgo) {
+  const vals = [];
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(); d.setDate(d.getDate() - (weeksAgo*7) - i);
+    const day = DB[d.toISOString().split('T')[0]];
+    if (!day) continue;
+    let val = null;
+    if (metric === 'sleep') val = getSleepH(day) || null;
+    else if (metric === 'weight') val = day.weight ? +day.weight : null;
+    else if (metric === 'water') val = day.waterCount || null;
+    else if (metric === 'habits') val = day.habitsDone ? Object.values(day.habitsDone).filter(Boolean).length || null : null;
+    if (val !== null) vals.push(val);
+  }
+  return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
+}
+
+function renderTrends() {
+  const el = document.getElementById('trendsPanel');
+  if (!el) return;
+  const metrics = [
+    {key:'sleep', label:'Sono', unit:'h', icon:'🌙', invertGood:false},
+    {key:'weight', label:'Peso', unit:'kg', icon:'⚖️', invertGood:true},
+    {key:'water', label:'Água', unit:'copos', icon:'💧', invertGood:false},
+    {key:'habits', label:'Hábitos', unit:'', icon:'🌱', invertGood:false},
+  ];
+  el.innerHTML = metrics.map(m => {
+    const curr = calcWeekAvg(m.key, 0);
+    const prev = calcWeekAvg(m.key, 1);
+    const pct = (curr !== null && prev !== null && prev !== 0) ? ((curr-prev)/Math.abs(prev)*100) : null;
+    const val = curr !== null ? curr.toFixed(1) : '—';
+    let arrow = '';
+    if (pct !== null) {
+      const good = m.invertGood ? pct < 0 : pct > 0;
+      arrow = `<span style="color:${good?'var(--moss-l)':'#f87171'};font-size:11px;">${pct>0?'↑':'↓'} ${Math.abs(pct).toFixed(0)}%</span>`;
+    }
+    return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;">
+      <span style="font-size:22px;">${m.icon}</span>
+      <div style="flex:1;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">${m.label}</div>
+        <div style="font-size:18px;color:var(--text);">${val}${curr!==null?'<span style="font-size:11px;color:var(--muted);"> '+m.unit+'</span>':''}</div>
+      </div>
+      <div style="text-align:right;">${arrow}<div style="font-size:9px;color:var(--faint);font-family:'JetBrains Mono',monospace;">vs sem. ant.</div></div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 3. CONQUISTAS
+// ═══════════════════════════════════════════════════════════════════
+const ACHIEVEMENTS = [
+  {id:'first_save',    icon:'🌱', title:'Primeiro registo',  desc:'Guardaste o teu primeiro dia',               check:()=>Object.keys(DB).length>=1},
+  {id:'week_streak',   icon:'🔥', title:'7 dias seguidos',   desc:'Registaste 7 dias consecutivos',             check:()=>checkStreak(7)},
+  {id:'month_streak',  icon:'💎', title:'30 dias seguidos',  desc:'Registaste 30 dias consecutivos',            check:()=>checkStreak(30)},
+  {id:'water_week',    icon:'💧', title:'Hidratado',         desc:'8+ copos de água durante 7 dias',            check:()=>countDaysWhere(d=>d.waterCount>=8,7)>=7},
+  {id:'sleep_week',    icon:'🌙', title:'Dorminhoco',        desc:'7+ horas de sono durante 5 dias',            check:()=>countDaysWhere(d=>getSleepH(d)>=7,7)>=5},
+  {id:'exercise_10',   icon:'💪', title:'Em movimento',      desc:'Exercício em 10 dias',                       check:()=>countDaysWhere(d=>d.habitsDone&&Object.values(d.habitsDone).some(Boolean),30)>=10},
+  {id:'weight_loss_1', icon:'⚖️', title:'Primeiro kg',      desc:'Perdeste 1kg desde o início',                check:()=>checkWeightLoss(1)},
+  {id:'weight_loss_5', icon:'🏆', title:'5kg perdidos',      desc:'Perdeste 5kg desde o início',                check:()=>checkWeightLoss(5)},
+  {id:'diary_10',      icon:'📝', title:'Escritor',          desc:'Escreveste no diário 10 vezes',              check:()=>countDaysWhere(d=>d.journalEntry&&d.journalEntry.length>20,90)>=10},
+  {id:'perfect_day',   icon:'⭐', title:'Dia perfeito',      desc:'Sono, água, exercício e diário num dia',     check:()=>countDaysWhere(d=>getSleepH(d)>=7&&(d.waterCount||0)>=8&&d.journalEntry&&Object.values(d.habitsDone||{}).some(Boolean),30)>=1},
+];
+
+function checkStreak(days) {
+  let streak = 0;
+  for (let i = 0; i <= days+5; i++) {
+    const d = new Date(); d.setDate(d.getDate()-i);
+    if (DB[d.toISOString().split('T')[0]]?.savedAt) streak++; else break;
+  }
+  return streak >= days;
+}
+
+function countDaysWhere(fn, lastN) {
+  let count = 0;
+  for (let i = 0; i < lastN; i++) {
+    const d = new Date(); d.setDate(d.getDate()-i);
+    const day = DB[d.toISOString().split('T')[0]];
+    if (day && fn(day)) count++;
+  }
+  return count;
+}
+
+function checkWeightLoss(kg) {
+  const days = Object.keys(DB).sort();
+  if (days.length < 2) return false;
+  const first = +DB[days[0]].weight;
+  const last = +DB[days[days.length-1]].weight;
+  return first && last && (first-last) >= kg;
+}
+
+function showAchievementToast(a) {
+  const t = document.createElement('div');
+  t.style.cssText = 'position:fixed;bottom:80px;right:20px;background:var(--card);border:1px solid var(--moss);border-radius:14px;padding:14px 18px;z-index:9999;box-shadow:0 8px 32px rgba(0,0,0,0.5);display:flex;align-items:center;gap:12px;';
+  t.innerHTML = `<span style="font-size:28px;">${a.icon}</span><div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--moss-l);letter-spacing:1px;">CONQUISTA</div><div style="font-size:14px;color:var(--text);">${a.title}</div></div>`;
+  document.body.appendChild(t);
+  setTimeout(()=>t.remove(), 4000);
+}
+
+function checkAchievements() {
+  const unlocked = JSON.parse(localStorage.getItem('dvAchievements')||'[]');
+  const newUnlocks = [];
+  ACHIEVEMENTS.forEach(a => { if (!unlocked.includes(a.id) && a.check()) { unlocked.push(a.id); newUnlocks.push(a); } });
+  if (newUnlocks.length) {
+    localStorage.setItem('dvAchievements', JSON.stringify(unlocked));
+    newUnlocks.forEach(a => showAchievementToast(a));
+  }
+  renderAchievements();
+}
+
+function renderAchievements() {
+  const el = document.getElementById('achievementsPanel');
+  if (!el) return;
+  const unlocked = JSON.parse(localStorage.getItem('dvAchievements')||'[]');
+  el.innerHTML = ACHIEVEMENTS.map(a => {
+    const done = unlocked.includes(a.id);
+    return `<div style="background:${done?'var(--surface)':'transparent'};border:1px solid ${done?'rgba(45,212,191,0.3)':'var(--border)'};border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px;opacity:${done?1:0.4};">
+      <span style="font-size:26px;filter:${done?'none':'grayscale(1)'};">${a.icon}</span>
+      <div><div style="font-size:13px;color:${done?'var(--text)':'var(--muted)'};">${a.title}</div>
+      <div style="font-size:11px;color:var(--muted);">${a.desc}</div>
+      ${done?'<div style="font-size:9px;color:var(--moss-l);font-family:\'JetBrains Mono\',monospace;margin-top:3px;">✓ desbloqueada</div>':''}</div>
+    </div>`;
+  }).join('');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 4. RESUMO SEMANAL COM IA
+// ═══════════════════════════════════════════════════════════════════
+async function generateWeeklySummary(force) {
+  const lastKey = 'dvLastWeeklySummary';
+  const now = new Date();
+  if (!force) {
+    const last = localStorage.getItem(lastKey);
+    if (now.getDay() !== 1) return;
+    if (last && new Date(last).toDateString() === now.toDateString()) return;
+  }
+  const el = document.getElementById('weeklySummaryResponse');
+  const btn = document.getElementById('weeklySummaryBtn');
+  if (!el) return;
+  el.style.display='block';
+  el.innerHTML='<span style="color:var(--muted);font-style:italic;">A gerar resumo semanal...</span>';
+  if (btn) btn.disabled=true;
+
+  const stats=[];
+  for (let i=1;i<=7;i++) {
+    const d=new Date(); d.setDate(d.getDate()-i);
+    const key=d.toISOString().split('T')[0];
+    const day=DB[key]; if(!day) continue;
+    let cal=0;
+    if(day.meals){const mv=typeof day.meals==='object'&&!Array.isArray(day.meals)?Object.values(day.meals).flat():day.meals;cal=mv.reduce((s,m)=>s+(parseInt(m.cal)||0),0);}
+    const ex=QUICK_EXERCISES.filter(e=>day.habitsDone&&day.habitsDone[e.id]).length;
+    stats.push(`${key}: sono=${getSleepH(day).toFixed(1)}h, peso=${day.weight||'?'}kg, agua=${day.waterCount||0} copos, cal=${cal}kcal, exercicios=${ex}, humor=${day.selectedMood||'?'}, energia=${day.energyLevel||'?'}/10`);
+  }
+  if (!stats.length) { el.innerHTML='<span style="color:var(--muted);">Sem dados suficientes.</span>'; if(btn) btn.disabled=false; return; }
+
+  try {
+    const txt = await callGroq(
+      'Dados da semana:\n'+stats.join('\n')+'\n\nFaz um resumo motivador com pontos positivos, areas a melhorar e 3 sugestoes concretas para a proxima semana. Max 250 palavras.',
+      'Coach de saude holistica em Portugal. Tom caloroso e direto.'
+    );
+    el.innerHTML = txt.replace(/\n/g,'<br>');
+    localStorage.setItem(lastKey, now.toISOString());
+  } catch(err) {
+    el.innerHTML='<span style="color:var(--rose);">Erro ao gerar resumo. Verifica a chave Groq.</span>';
+  }
+  if (btn) btn.disabled=false;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// 5. LEMBRETES — Modal de configuração
+// ═══════════════════════════════════════════════════════════════════
+function openRemindersModal() {
+  const modal = document.getElementById('remindersModal');
+  if (!modal) return;
+  const prefs = JSON.parse(localStorage.getItem('dvReminders')||'{}');
+  document.getElementById('remManha').value = prefs.manha||'08:00';
+  document.getElementById('remAlmoco').value = prefs.almoco||'13:00';
+  document.getElementById('remNoite').value = prefs.noite||'22:00';
+  document.getElementById('remEnabled').checked = prefs.enabled!==false;
+  modal.classList.add('open');
+}
+
+function closeRemindersModal() {
+  document.getElementById('remindersModal')?.classList.remove('open');
+}
+
+async function saveReminders() {
+  const granted = await requestNotifications();
+  if (!granted) { alert('Precisas de permitir notificações primeiro.'); return; }
+  const prefs = {
+    enabled: document.getElementById('remEnabled').checked,
+    manha: document.getElementById('remManha').value,
+    almoco: document.getElementById('remAlmoco').value,
+    noite: document.getElementById('remNoite').value,
+  };
+  localStorage.setItem('dvReminders', JSON.stringify(prefs));
+  closeRemindersModal();
+  sendNotification('🔔 Lembretes ativados!', 'Vais receber lembretes diários.');
+}
+
+// Inicializar
+initPWA();
+setTimeout(() => { checkAchievements(); renderTrends(); generateWeeklySummary(false); }, 2000);
 
 </script>
 </div><!-- end appContent -->
