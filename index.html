@@ -1722,6 +1722,9 @@ canvas { display:block; width:100% !important; max-width:100%; }
     <button onclick="syncToSheets()" style="margin-top:4px;width:100%;padding:7px;background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:var(--sage);font-family:'JetBrains Mono',monospace;font-size:10px;cursor:pointer;letter-spacing:0.5px;">
       &#9729; Sincronizar com Sheets
     </button>
+    <button onclick="openGroqModal()" id="groqConfigBtn" style="margin-top:4px;width:100%;padding:7px;background:transparent;border:1px solid rgba(45,212,191,0.2);border-radius:6px;color:var(--moss-l);font-family:'JetBrains Mono',monospace;font-size:10px;cursor:pointer;letter-spacing:0.5px;transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(45,212,191,0.5)'" onmouseout="this.style.borderColor='rgba(45,212,191,0.2)'">
+      ⚙️ Configurar IA
+    </button>
   </div>
 </aside>
 
@@ -2596,6 +2599,46 @@ canvas { display:block; width:100% !important; max-width:100%; }
   </div>
 </div>
 
+
+<!-- Groq Key Modal -->
+<div class="sync-modal-overlay" id="groqModal" style="display:none;">
+  <div class="sync-modal">
+    <h2>🤖 Configurar IA (Groq)</h2>
+    <div class="sync-modal-sub">chave guardada apenas no teu browser · nunca enviada para nenhum servidor</div>
+
+    <div class="sync-step">
+      <div class="sync-step-num">1</div>
+      <div class="sync-step-text">
+        Vai a <strong><a href="https://console.groq.com/keys" target="_blank" style="color:var(--moss-l);">console.groq.com/keys</a></strong>
+        e cria uma conta gratuita (ou faz login).
+      </div>
+    </div>
+    <div class="sync-step">
+      <div class="sync-step-num">2</div>
+      <div class="sync-step-text">
+        Clica em <strong>Create API Key</strong>, dá-lhe um nome (ex: "diario") e copia a chave.
+      </div>
+    </div>
+    <div class="sync-step">
+      <div class="sync-step-num">3</div>
+      <div class="sync-step-text">
+        Cola aqui em baixo. A chave fica guardada <strong>só no teu browser</strong> — nunca aparece no código do GitHub.
+      </div>
+    </div>
+
+    <div class="sync-url-field">
+      <input type="password" id="groqKeyInput" placeholder="gsk_..." style="letter-spacing:1px;">
+      <button class="btn btn-primary" onclick="saveGroqKey()">Guardar</button>
+    </div>
+    <div id="groqKeyStatus" style="margin-top:10px;font-size:12px;color:var(--moss-l);"></div>
+
+    <div style="margin-top:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+      <button class="btn btn-secondary" onclick="closeGroqModal()" style="font-size:12px;">Fechar</button>
+      <button onclick="clearGroqKey()" style="background:none;border:none;font-size:11px;color:var(--muted);cursor:pointer;font-family:'JetBrains Mono',monospace;">🗑 Remover chave</button>
+    </div>
+  </div>
+</div>
+
 <!-- Water Toast Alert -->
 <div class="water-toast" id="waterToast">
   <div class="water-toast-icon">💧</div>
@@ -3182,13 +3225,21 @@ function calcWCTip() {
 // ═══════════════════════════════════════════════════════════════════
 
 // IA via Groq — gratuito, rápido, funciona de qualquer computador
-// Para configurar: groq.com → Create API Key → cola aqui
-const GROQ_KEY = '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'; // <- Cola aqui a tua chave Groq (groq.com/keys)
+// Chave Groq guardada localmente no browser (nunca no GitHub)
 const GROQ_MODEL = 'llama-3.1-8b-instant';
+function getGroqKey() {
+  return localStorage.getItem('dvGroqKey') || '';
+}
+function setGroqKey(k) {
+  localStorage.setItem('dvGroqKey', k.trim());
+}
+// Compatibilidade com código existente
+Object.defineProperty(window, 'GROQ_KEY', { get: getGroqKey });
 
 async function callGemini(systemPrompt, userPrompt, maxTokens) {
+  const GROQ_KEY = getGroqKey();
   if (!GROQ_KEY) {
-    throw new Error('IA não configurada. Vai a groq.com, cria uma chave gratuita e cola no código.');
+    throw new Error('Chave Groq não configurada. Clica no ícone ⚙️ para adicionar a tua chave.');
   }
 
   const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -3900,6 +3951,9 @@ function saveData() {
   const bar = document.getElementById('savedBar');
   bar.classList.add('show');
   setTimeout(() => bar.classList.remove('show'), 2500);
+  // Atualizar resumo
+  updateOverview();
+  updateSidebarCals();
   // Sync to Sheets if configured
   if(typeof sheetsUrl !== 'undefined' && sheetsUrl) setTimeout(syncAllData, 600);
 }
@@ -5167,6 +5221,56 @@ else { updateSyncStatus('Clica para ligar', 'off'); }
 
 // Modal overlay close
 document.getElementById('syncModal').addEventListener('click', function(e){ if(e.target===this) closeSyncModal(); });
+document.getElementById('groqModal').addEventListener('click', function(e){ if(e.target===this) closeGroqModal(); });
+
+// ── GROQ KEY MANAGEMENT ──
+function openGroqModal() {
+  const modal = document.getElementById('groqModal');
+  modal.style.display = 'flex';
+  const key = getGroqKey();
+  const input = document.getElementById('groqKeyInput');
+  if (key) {
+    input.value = key.slice(0,8) + '••••••••••••••••';
+    document.getElementById('groqKeyStatus').textContent = '✓ Chave configurada';
+  } else {
+    input.value = '';
+    document.getElementById('groqKeyStatus').textContent = '';
+  }
+}
+
+function closeGroqModal() {
+  document.getElementById('groqModal').style.display = 'none';
+}
+
+function saveGroqKey() {
+  const input = document.getElementById('groqKeyInput');
+  const val = input.value.trim();
+  if (!val || val.includes('•')) {
+    document.getElementById('groqKeyStatus').textContent = 'Cola a tua chave completa';
+    return;
+  }
+  if (!val.startsWith('gsk_')) {
+    document.getElementById('groqKeyStatus').textContent = '⚠ A chave Groq começa com gsk_';
+    return;
+  }
+  setGroqKey(val);
+  document.getElementById('groqKeyStatus').textContent = '✓ Chave guardada no browser!';
+  document.getElementById('groqConfigBtn').textContent = '✓ IA configurada';
+  setTimeout(closeGroqModal, 1500);
+}
+
+function clearGroqKey() {
+  localStorage.removeItem('dvGroqKey');
+  document.getElementById('groqKeyInput').value = '';
+  document.getElementById('groqKeyStatus').textContent = 'Chave removida';
+  document.getElementById('groqConfigBtn').textContent = '⚙️ Configurar IA';
+}
+
+// Update button state on load
+if (getGroqKey()) {
+  const btn = document.getElementById('groqConfigBtn');
+  if (btn) btn.textContent = '✓ IA configurada';
+}
 
 
 // ═══════════════════════════════════════════════════════════════════
