@@ -1716,6 +1716,9 @@ canvas { display:block; width:100% !important; max-width:100%; }
     <div class="nav-item" onclick="showSection('stats',this)">
       <span class="nav-icon">📈</span> Estatísticas
     </div>
+    <div class="nav-item" onclick="showSection('settings',this)">
+      <span class="nav-icon">⚙️</span> Configurações
+    </div>
   </nav>
 
   <div class="sidebar-bottom">
@@ -1723,15 +1726,9 @@ canvas { display:block; width:100% !important; max-width:100%; }
     <button onclick="logout()" style="margin-top:8px;width:100%;padding:6px;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(160,176,144,0.5);font-family:'JetBrains Mono',monospace;font-size:9px;cursor:pointer;letter-spacing:1px;text-transform:uppercase;transition:all 0.2s;" onmouseover="this.style.color='rgba(160,176,144,0.9)'" onmouseout="this.style.color='rgba(160,176,144,0.5)'">
       Sair / Bloquear
     </button>
-    <div id="syncStatus" style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:9px;text-align:center;letter-spacing:0.5px;color:var(--sage);opacity:0.7;height:14px;"></div>
-    <button onclick="syncToSheets()" style="margin-top:4px;width:100%;padding:7px;background:transparent;border:1px solid rgba(255,255,255,0.15);border-radius:6px;color:var(--sage);font-family:'JetBrains Mono',monospace;font-size:10px;cursor:pointer;letter-spacing:0.5px;">
-      &#9729; Sincronizar com Sheets
-    </button>
-    <button onclick="openGroqModal()" id="groqConfigBtn" style="margin-top:4px;width:100%;padding:7px;background:transparent;border:1px solid rgba(45,212,191,0.2);border-radius:6px;color:var(--moss-l);font-family:'JetBrains Mono',monospace;font-size:10px;cursor:pointer;letter-spacing:0.5px;transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(45,212,191,0.5)'" onmouseout="this.style.borderColor='rgba(45,212,191,0.2)'">
-      ⚙️ Configurar IA
-    </button>
-    <button onclick="openRemindersModal()" style="margin-top:4px;width:100%;padding:7px;background:transparent;border:1px solid rgba(245,158,11,0.2);border-radius:6px;color:var(--amber);font-family:'JetBrains Mono',monospace;font-size:10px;cursor:pointer;letter-spacing:0.5px;transition:all 0.2s;" onmouseover="this.style.borderColor='rgba(245,158,11,0.5)'" onmouseout="this.style.borderColor='rgba(245,158,11,0.2)'">
-      🔔 Lembretes
+    <div id="syncStatus" style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:9px;text-align:center;letter-spacing:0.5px;color:var(--moss-l);opacity:0.8;height:14px;"></div>
+    <button onclick="saveData();syncToSheets()" style="margin-top:4px;width:100%;padding:7px;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:10px;cursor:pointer;letter-spacing:0.5px;">
+      &#9729; Sincronizar Sheets
     </button>
   </div>
 </aside>
@@ -2568,6 +2565,79 @@ canvas { display:block; width:100% !important; max-width:100%; }
     <div id="achievementsPanel" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:8px;"></div>
   </div>
 
+</div>
+
+<!-- SETTINGS -->
+<div class="section" id="section-settings">
+  <div class="section-header">
+    <div class="section-title">⚙️ <em>Configurações</em></div>
+    <div class="section-sub">integrações e preferências</div>
+  </div>
+  <div class="card">
+    <div class="card-title">☁️ Google Sheets</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Os teus dados sincronizam automaticamente ao guardar. 1 linha por dia, atualizada a cada gravação.</p>
+    <div style="margin-bottom:14px;">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">URL do Apps Script</div>
+      <div style="display:flex;gap:8px;">
+        <input type="text" id="sheetsUrlSettingsInput" placeholder="https://script.google.com/macros/s/..." style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;outline:none;">
+        <button class="btn btn-primary" onclick="saveSettingsSheetsUrl()" style="white-space:nowrap;">Guardar</button>
+      </div>
+      <div id="sheetsSettingsStatus" style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:10px;"></div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;">
+      <button class="btn btn-secondary" onclick="syncToSheets()" style="font-size:11px;">☁ Sincronizar agora</button>
+      <button onclick="clearSheetsUrl()" style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:6px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);cursor:pointer;">🗑 Remover URL</button>
+    </div>
+    <div style="padding:14px;background:var(--surface);border-radius:10px;border:1px solid var(--border);">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--moss-l);margin-bottom:8px;letter-spacing:1px;">COMO CONFIGURAR</div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.8;">
+        1. Google Sheets → <strong style="color:var(--text2);">Extensões → Apps Script</strong><br>
+        2. Cola o ficheiro <code style="background:var(--bg);padding:1px 6px;border-radius:3px;font-size:11px;">google-apps-script.js</code><br>
+        3. <strong style="color:var(--text2);">Implementar → Nova implementação → App Web</strong><br>
+        4. "Executar como": <strong style="color:var(--text2);">Eu</strong> · "Acesso": <strong style="color:var(--text2);">Qualquer pessoa</strong><br>
+        5. Copia o URL e cola acima
+      </div>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">🤖 Inteligência Artificial (Groq)</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">A chave fica guardada apenas no teu browser — nunca no GitHub.</p>
+    <div style="margin-bottom:14px;">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Chave API Groq</div>
+      <div style="display:flex;gap:8px;">
+        <input type="password" id="groqKeySettingsInput" placeholder="gsk_..." style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;outline:none;letter-spacing:1px;">
+        <button class="btn btn-primary" onclick="saveSettingsGroqKey()" style="white-space:nowrap;">Guardar</button>
+      </div>
+      <div id="groqSettingsStatus" style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:10px;"></div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <a href="https://console.groq.com/keys" target="_blank" class="btn btn-secondary" style="font-size:11px;text-decoration:none;">🔑 Criar chave gratuita</a>
+      <button onclick="clearSettingsGroqKey()" style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:6px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);cursor:pointer;">🗑 Remover</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="card-title">🔔 Lembretes diários</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Notificações para não te esqueceres de preencher o diário.</p>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+      <input type="checkbox" id="remEnabledSettings" style="width:18px;height:18px;accent-color:var(--moss);">
+      <label for="remEnabledSettings" style="font-size:13px;color:var(--text);">Ativar lembretes</label>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:16px;">
+      <div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:6px;">🌅 MANHÃ</div><input type="text" id="remManhaSettings" placeholder="08:00" maxlength="5" oninput="fmtTime(this)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;outline:none;"></div>
+      <div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:6px;">🍽️ ALMOÇO</div><input type="text" id="remAlmocoSettings" placeholder="13:00" maxlength="5" oninput="fmtTime(this)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;outline:none;"></div>
+      <div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:6px;">🌙 NOITE</div><input type="text" id="remNoiteSettings" placeholder="22:00" maxlength="5" oninput="fmtTime(this)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;outline:none;"></div>
+    </div>
+    <button class="btn btn-primary" onclick="saveSettingsReminders()" style="width:100%;">💾 Guardar lembretes</button>
+    <div id="remSettingsStatus" style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--moss-l);"></div>
+  </div>
+  <div class="card">
+    <div class="card-title">🗄️ Dados & Privacidade</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">Todos os dados ficam guardados localmente no teu browser.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <button class="btn btn-secondary" onclick="exportData()" style="font-size:11px;">⬇ Exportar JSON</button>
+      <button onclick="clearAllData()" style="background:transparent;border:1px solid rgba(248,113,113,0.3);border-radius:6px;padding:6px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#f87171;cursor:pointer;">🗑 Apagar todos os dados</button>
+    </div>
+  </div>
 </div>
 
 </main>
@@ -5928,6 +5998,121 @@ async function saveReminders() {
 }
 
 // Inicializar
+// ═══════════════════════════════════════════════════════════════════
+// SETTINGS PAGE — funções
+// ═══════════════════════════════════════════════════════════════════
+
+function initSettingsPage() {
+  // Sheets URL
+  const urlInput = document.getElementById('sheetsUrlSettingsInput');
+  if (urlInput && sheetsUrl) urlInput.value = sheetsUrl;
+
+  // Groq key
+  const groqInput = document.getElementById('groqKeySettingsInput');
+  const key = getGroqKey();
+  if (groqInput && key) groqInput.value = key.slice(0,8) + '•••••••••••••••••';
+
+  // Reminders
+  const prefs = JSON.parse(localStorage.getItem('dvReminders') || '{}');
+  const en = document.getElementById('remEnabledSettings');
+  const mh = document.getElementById('remManhaSettings');
+  const al = document.getElementById('remAlmocoSettings');
+  const nt = document.getElementById('remNoiteSettings');
+  if (en) en.checked = prefs.enabled !== false;
+  if (mh) mh.value = prefs.manha || '08:00';
+  if (al) al.value = prefs.almoco || '13:00';
+  if (nt) nt.value = prefs.noite || '22:00';
+}
+
+function saveSettingsSheetsUrl() {
+  const input = document.getElementById('sheetsUrlSettingsInput');
+  const status = document.getElementById('sheetsSettingsStatus');
+  const url = (input?.value || '').trim();
+  if (!url || !url.includes('script.google.com')) {
+    if (status) { status.textContent = '⚠ URL inválido'; status.style.color = '#f87171'; }
+    return;
+  }
+  sheetsUrl = url;
+  localStorage.setItem(SHEETS_URL_KEY, url);
+  updateSyncStatus('Sheets configurado', 'ok');
+  if (status) { status.textContent = '✓ URL guardado! A sincronizar...'; status.style.color = 'var(--moss-l)'; }
+  setTimeout(() => syncAllData(), 800);
+}
+
+function clearSheetsUrl() {
+  if (!confirm('Remover o URL do Sheets?')) return;
+  sheetsUrl = '';
+  localStorage.removeItem(SHEETS_URL_KEY);
+  const input = document.getElementById('sheetsUrlSettingsInput');
+  const status = document.getElementById('sheetsSettingsStatus');
+  if (input) input.value = '';
+  if (status) { status.textContent = 'URL removido'; status.style.color = 'var(--muted)'; }
+  updateSyncStatus('Clica para ligar', 'off');
+}
+
+function saveSettingsGroqKey() {
+  const input = document.getElementById('groqKeySettingsInput');
+  const status = document.getElementById('groqSettingsStatus');
+  const val = (input?.value || '').trim();
+  if (!val || val.includes('•')) {
+    if (status) { status.textContent = '⚠ Cola a chave completa'; status.style.color = '#f87171'; }
+    return;
+  }
+  if (!val.startsWith('gsk_')) {
+    if (status) { status.textContent = '⚠ A chave Groq começa com gsk_'; status.style.color = '#f87171'; }
+    return;
+  }
+  setGroqKey(val);
+  if (status) { status.textContent = '✓ Chave guardada no browser!'; status.style.color = 'var(--moss-l)'; }
+  if (input) input.value = val.slice(0,8) + '•••••••••••••••••';
+}
+
+function clearSettingsGroqKey() {
+  localStorage.removeItem('dvGroqKey');
+  const input = document.getElementById('groqKeySettingsInput');
+  const status = document.getElementById('groqSettingsStatus');
+  if (input) input.value = '';
+  if (status) { status.textContent = 'Chave removida'; status.style.color = 'var(--muted)'; }
+}
+
+async function saveSettingsReminders() {
+  const granted = await requestNotifications();
+  if (!granted) { alert('Precisas de permitir notificações primeiro.'); return; }
+  const prefs = {
+    enabled: document.getElementById('remEnabledSettings')?.checked,
+    manha:   document.getElementById('remManhaSettings')?.value,
+    almoco:  document.getElementById('remAlmocoSettings')?.value,
+    noite:   document.getElementById('remNoiteSettings')?.value,
+  };
+  localStorage.setItem('dvReminders', JSON.stringify(prefs));
+  const status = document.getElementById('remSettingsStatus');
+  if (status) status.textContent = '✓ Lembretes guardados!';
+  sendNotification('🔔 Lembretes ativados!', 'Vais receber lembretes diários.');
+}
+
+function exportData() {
+  const data = { exportedAt: new Date().toISOString(), days: DB };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'diario-de-vida-' + new Date().toISOString().split('T')[0] + '.json';
+  a.click();
+}
+
+function clearAllData() {
+  if (!confirm('Apagar TODOS os dados? Esta ação é irreversível.')) return;
+  if (!confirm('Tens a certeza? Todos os registos serão eliminados permanentemente.')) return;
+  localStorage.removeItem(DB_KEY);
+  location.reload();
+}
+
+// Inicializar página de configurações ao abrir
+const _origShowSection = showSection;
+function showSection(id, el) {
+  _origShowSection(id, el);
+  if (id === 'settings') initSettingsPage();
+}
+
 initPWA();
 setTimeout(() => { checkAchievements(); renderTrends(); generateWeeklySummary(false); }, 2000);
 
