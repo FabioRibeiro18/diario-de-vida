@@ -5158,44 +5158,57 @@ async function saveSheetsUrl() {
   setTimeout(() => { closeSyncModal(); syncAllData(); }, 1000);
 }
 
+// ── HELPER: build row object from a day entry ──
+function buildRow(date, d) {
+  let sleepH = '';
+  if (d.bedtime && d.waketime) {
+    const [bh,bm] = d.bedtime.split(':').map(Number);
+    const [wh,wm] = d.waketime.split(':').map(Number);
+    let bM=bh*60+bm, wM=wh*60+wm;
+    if (wM<bM) wM+=24*60;
+    sleepH = ((wM-bM)/60).toFixed(1);
+  }
+  let totalCal=0;
+  if (d.meals) {
+    const mv = typeof d.meals==='object'&&!Array.isArray(d.meals) ? Object.values(d.meals).flat() : d.meals;
+    totalCal = mv.reduce((s,m)=>s+(parseInt(m.cal)||0),0);
+  }
+  const exArr = (typeof QUICK_EXERCISES !== 'undefined') ? QUICK_EXERCISES : [];
+  const habDone = d.habitsDone ? Object.values(d.habitsDone).filter(Boolean).length : 0;
+  const exDone  = d.habitsDone ? exArr.filter(e=>d.habitsDone[e.id]).length : 0;
+  const exKcal  = d.habitsDone ? exArr.filter(e=>d.habitsDone[e.id]).reduce((s,e)=>s+(e.kcal||0),0) : 0;
+  let workH = '';
+  if (d.workStart && d.workEnd) {
+    const [sh,sm]=d.workStart.split(':').map(Number),[eh,em]=d.workEnd.split(':').map(Number);
+    workH = (((eh*60+em)-(sh*60+sm)-(parseInt(d.lunchBreak)||60))/60).toFixed(1);
+  }
+  return {
+    data:date, sono_horas:sleepH, sono_qual:d.sleepQual||'', sonhos:d.dreams||'',
+    peso_kg:d.weight||'', altura_cm:d.height||'',
+    calorias:totalCal||'', agua_copos:d.waterCount||'',
+    exercicios:(d.exercises||[]).map(e=>e.name).join('; '),
+    habitos_feitos:habDone, exercicios_feitos:exDone, kcal_queimadas:exKcal,
+    urinar:(d.counters&&d.counters.urinar)||'', defecar:(d.counters&&d.counters.defecar)||'',
+    workStart:d.workStart||'', workEnd:d.workEnd||'',
+    trabalho_h:workH, trabalho_humor:d.workMood||'', trabalho_foco:d.workFocus||'',
+    humor:d.selectedMood||'', energia:d.energyLevel||'',
+    stress:d.stressLevel||'', ansiedade:d.anxietyLevel||'',
+    diario:(d.journalEntry||'').substring(0,500),
+    melhor_momento:d.bestMoment||'', gratidao:d.gratitude||'',
+    mi_passos:d.miSteps||'', mi_cal:d.miCalBurn||'', mi_distancia:d.miDistance||'',
+    mi_fc:d.miHR||'', mi_spo2:d.miSPO2||'',
+    guardado_em:d.savedAt||'',
+  };
+}
+
+// ── ENVIAR dados para Sheets ──
 async function syncAllData() {
   if (!sheetsUrl) { openSyncModal(); return; }
   updateSyncStatus('A sincronizar...', 'ing');
   const rows = [];
   for (const [date, d] of Object.entries(DB)) {
     if (!d || !date) continue;
-    let sleepH = '';
-    if (d.bedtime && d.waketime) {
-      const [bh,bm] = d.bedtime.split(':').map(Number);
-      const [wh,wm] = d.waketime.split(':').map(Number);
-      let bM=bh*60+bm, wM=wh*60+wm;
-      if (wM<bM) wM+=24*60;
-      sleepH = ((wM-bM)/60).toFixed(1);
-    }
-    let totalCal=0; if(d.meals){const mv=typeof d.meals==='object'&&!Array.isArray(d.meals)?Object.values(d.meals).flat():d.meals; totalCal=mv.reduce((s,m)=>s+(m.cal||0),0);}
-    const habDone  = d.habitsDone ? Object.values(d.habitsDone).filter(Boolean).length : 0;
-    const exArr    = (typeof QUICK_EXERCISES !== 'undefined') ? QUICK_EXERCISES : [];
-    const exDone   = d.habitsDone ? exArr.filter(e=>d.habitsDone[e.id]).length : 0;
-    let workH = '';
-    if (d.workStart && d.workEnd) {
-      const [sh,sm]=d.workStart.split(':').map(Number),[eh,em]=d.workEnd.split(':').map(Number);
-      workH = (((eh*60+em)-(sh*60+sm)-(parseInt(d.lunchBreak)||60))/60).toFixed(1);
-    }
-    rows.push({
-      data:date, sono_horas:sleepH, sono_qual:d.sleepQual||'',
-      peso_kg:d.weight||'', altura_cm:d.height||'',
-      calorias:totalCal||'', agua_copos:d.waterCount||'',
-      exercicios:(d.exercises||[]).map(e=>e.name).join('; '),
-      habitos_feitos:habDone, exercicios_feitos:exDone,
-      urinar:(d.counters&&d.counters.urinar)||'', defecar:(d.counters&&d.counters.defecar)||'',
-      trabalho_h:workH, trabalho_humor:d.workMood||'',
-      humor:d.selectedMood||'', energia:d.energyLevel||'',
-      stress:d.stressLevel||'', ansiedade:d.anxietyLevel||'',
-      diario:(d.journalEntry||'').substring(0,500),
-      melhor_momento:d.bestMoment||'', gratidao:d.gratitude||'',
-      mi_passos:d.miSteps||'', mi_fc:d.miHR||'', mi_spo2:d.miSPO2||'',
-      guardado_em:d.savedAt||'',
-    });
+    rows.push(buildRow(date, d));
   }
   if (!rows.length) { updateSyncStatus('Sem dados ainda', 'off'); return; }
   try {
@@ -5204,20 +5217,79 @@ async function syncAllData() {
       body: JSON.stringify({action:'sync', rows})
     });
     if (r.ok) {
-      const t = new Date(); const ts = t.getHours().toString().padStart(2,'0')+':'+t.getMinutes().toString().padStart(2,'0');
+      const t = new Date();
+      const ts = t.getHours().toString().padStart(2,'0')+':'+t.getMinutes().toString().padStart(2,'0');
       updateSyncStatus('Sincronizado '+ts, 'ok');
       const bar = document.getElementById('savedBar');
-      if (bar) { bar.textContent='Sincronizado com Google Sheets'; bar.classList.add('show'); setTimeout(()=>{bar.classList.remove('show');bar.textContent='Dados guardados';},3000); }
+      if (bar) { bar.textContent='✓ Sincronizado com Google Sheets'; bar.classList.add('show'); setTimeout(()=>{bar.classList.remove('show');bar.textContent='Dados guardados';},3000); }
     } else { throw new Error('HTTP '+r.status); }
   } catch(e) {
-    console.error('Sheets error:',e);
+    console.error('Sheets sync error:',e);
     updateSyncStatus('Erro — guardado local', 'err');
   }
 }
 
+// ── LER histórico do Sheets e fundir com DB local ──
+async function loadFromSheets() {
+  if (!sheetsUrl) return;
+  updateSyncStatus('A carregar histórico...', 'ing');
+  try {
+    const url = sheetsUrl + '?action=load';
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('HTTP '+r.status);
+    const json = await r.json();
+    if (!json.ok || !json.rows) throw new Error('Sem dados');
+
+    let imported = 0;
+    json.rows.forEach(row => {
+      const date = row.data;
+      if (!date) return;
+      // Só importa dias que não existem localmente (não sobrescreve dados locais)
+      if (!DB[date]) {
+        DB[date] = {
+          bedtime: row.bedtime||'', waketime: row.waketime||'',
+          sleepQual: row.sono_qual||'', dreams: row.sonhos||'',
+          weight: row.peso_kg||'', height: row.altura_cm||'',
+          waterCount: parseInt(row.agua_copos)||0,
+          workStart: row.workStart||'', workEnd: row.workEnd||'',
+          workMood: row.trabalho_humor||'', workFocus: row.trabalho_foco||'',
+          selectedMood: row.humor||'',
+          energyLevel: row.energia||'', stressLevel: row.stress||'', anxietyLevel: row.ansiedade||'',
+          journalEntry: row.diario||'', bestMoment: row.melhor_momento||'', gratitude: row.gratidao||'',
+          miSteps: row.mi_passos||'', miCalBurn: row.mi_cal||'', miDistance: row.mi_distancia||'',
+          miHR: row.mi_fc||'', miSPO2: row.mi_spo2||'',
+          savedAt: row.guardado_em||'',
+          meals:{breakfast:[],lunch:[],dinner:[],snacks:[]},
+          exercises:[], counters:{urinar:0,defecar:0,banho:0,pausas:0,intimacy:0},
+          habitsDone:{}, _fromSheets: true,
+        };
+        imported++;
+      }
+    });
+
+    if (imported > 0) {
+      localStorage.setItem(DB_KEY, JSON.stringify(DB));
+      console.log('Sheets: importados ' + imported + ' dias do histórico');
+    }
+
+    updateSyncStatus('Histórico carregado', 'ok');
+    // Atualizar estatísticas depois de carregar
+    if (typeof renderStats === 'function') renderStats();
+    updateOverview();
+  } catch(e) {
+    console.error('Sheets load error:', e);
+    updateSyncStatus('Sheets ligado', 'ok');
+  }
+}
+
 // Init on load
-if (sheetsUrl) { updateSyncStatus('Sheets ligado', 'ok'); setTimeout(syncAllData, 4000); }
-else { updateSyncStatus('Clica para ligar', 'off'); }
+if (sheetsUrl) {
+  updateSyncStatus('Sheets ligado', 'ok');
+  // Primeiro carrega histórico, depois sincroniza dados locais
+  setTimeout(() => loadFromSheets().then(() => setTimeout(syncAllData, 1000)), 3000);
+} else {
+  updateSyncStatus('Clica para ligar', 'off');
+}
 
 // Modal overlay close
 document.getElementById('syncModal').addEventListener('click', function(e){ if(e.target===this) closeSyncModal(); });
