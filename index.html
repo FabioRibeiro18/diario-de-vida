@@ -2498,12 +2498,6 @@ canvas { display:block; width:100% !important; max-width:100%; }
     <div style="margin-top:10px;display:flex;gap:16px;flex-wrap:wrap;" id="stats-weight-summary"></div>
   </div>
 
-  <!-- SLEEP chart -->
-  <div class="card" id="card-sleep-chart">
-    <div class="card-title">🌙 sono — horas por noite</div>
-    <canvas id="chart-sleep" height="200"></canvas>
-    <div style="margin-top:10px;display:flex;gap:16px;flex-wrap:wrap;" id="stats-sleep-summary"></div>
-  </div>
 
   <!-- CALORIES chart -->
   <div class="card" id="card-cal-chart">
@@ -2512,19 +2506,7 @@ canvas { display:block; width:100% !important; max-width:100%; }
     <div style="margin-top:10px;display:flex;gap:16px;flex-wrap:wrap;" id="stats-cal-summary"></div>
   </div>
 
-  <!-- WATER chart -->
-  <div class="card" id="card-water-chart">
-    <div class="card-title">💧 hidratação — copos por dia</div>
-    <canvas id="chart-water" height="180"></canvas>
-    <div style="margin-top:10px;display:flex;gap:16px;flex-wrap:wrap;" id="stats-water-summary"></div>
-  </div>
 
-  <!-- MOOD chart -->
-  <div class="card" id="card-mood-chart">
-    <div class="card-title">📝 humor & bem-estar</div>
-    <canvas id="chart-mood" height="180"></canvas>
-    <div style="margin-top:10px;display:flex;gap:16px;flex-wrap:wrap;" id="stats-mood-summary"></div>
-  </div>
 
   <!-- HABITS & EXERCISE chart -->
   <div class="card" id="card-habits-chart">
@@ -4505,19 +4487,9 @@ function renderAllCharts() {
     goal: weightGoalVal
   }]);
 
-  drawBarChart('chart-sleep', labels, [{
-    data: sleepData, color: CHART_COLORS.sky, goal: 8
-  }]);
-
   drawBarChart('chart-calories', labels, [{
     data: calData, color: CHART_COLORS.amber, goal: 2000
   }]);
-
-  drawBarChart('chart-water', labels, [{
-    data: waterData, color: CHART_COLORS.sky, goal: waterGoal
-  }]);
-
-  drawMoodChart('chart-mood', labels, moodData, energyData, stressData);
 
   drawHabitsChart('chart-habits', labels, habitsData, exData);
 
