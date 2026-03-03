@@ -3761,6 +3761,14 @@ function calcWorkHours() {
   updateOverview();
 }
 
+// ── Helper: converte HH:MM em minutos, retorna null se inválido
+function parseTimeToMins(t) {
+  if (!t || !t.includes(':')) return null;
+  const parts = t.split(':').map(Number);
+  if (parts.length !== 2 || isNaN(parts[0]) || isNaN(parts[1])) return null;
+  return parts[0] * 60 + parts[1];
+}
+
 // ── Banco de horas: soma overtime de todos os dias guardados
 function calcOvertimeBank() {
   let totalMins = 0;
@@ -3768,21 +3776,23 @@ function calcOvertimeBank() {
   const resetDate = localStorage.getItem('dvOvertimeReset') || '';
 
   Object.entries(DB).forEach(([date, d]) => {
-    if (!d || !d.workStart || !d.workEnd) return;
+    if (!d) return;
     if (resetDate && date <= resetDate) return;
 
-    const [sh,sm] = d.workStart.split(':').map(Number);
-    const [eh,em] = d.workEnd.split(':').map(Number);
+    const startM = parseTimeToMins(d.workStart);
+    const endM   = parseTimeToMins(d.workEnd);
+    if (startM === null || endM === null) return;
 
-    // Almoço real ou 60min
+    // Almoço real ou 60min por defeito
     let lunch = 60;
-    if (d.lunchStart && d.lunchEnd) {
-      const [lsh,lsm] = d.lunchStart.split(':').map(Number);
-      const [leh,lem] = d.lunchEnd.split(':').map(Number);
-      lunch = Math.max(0, (leh*60+lem) - (lsh*60+lsm));
+    const lsM = parseTimeToMins(d.lunchStart);
+    const leM = parseTimeToMins(d.lunchEnd);
+    if (lsM !== null && leM !== null) {
+      lunch = Math.max(0, leM - lsM);
     }
 
-    const worked = (eh*60+em) - (sh*60+sm) - lunch;
+    const worked = endM - startM - lunch;
+    if (isNaN(worked)) return;
     totalMins += worked - 480; // overtime = trabalhado - 8h
     daysCount++;
   });
