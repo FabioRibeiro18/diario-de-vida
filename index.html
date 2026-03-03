@@ -2171,9 +2171,18 @@ canvas { display:block; width:100% !important; max-width:100%; }
           <div style="font-family:'Source Serif 4',serif;font-size:22px;font-weight:300;color:var(--moss-d);" id="idealExit">—</div>
         </div>
         <div style="background:rgba(184,144,80,0.07);border:1px solid rgba(184,144,80,0.2);border-radius:10px;padding:10px 14px;flex:1;min-width:120px;" id="overtimeCard">
-          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--amber);margin-bottom:4px;">⏱ Overtime</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--amber);margin-bottom:4px;">⏱ Overtime hoje</div>
           <div style="font-family:'Source Serif 4',serif;font-size:22px;font-weight:300;color:var(--amber);" id="overtimeVal">—</div>
         </div>
+        <div style="background:rgba(96,165,250,0.07);border:1px solid rgba(96,165,250,0.2);border-radius:10px;padding:10px 14px;flex:1;min-width:120px;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--sky);margin-bottom:4px;">📊 Banco de horas</div>
+          <div style="font-family:'Source Serif 4',serif;font-size:22px;font-weight:300;" id="overtimeAccum">—</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-top:4px;" id="overtimeAccumDays"></div>
+        </div>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px;align-items:center;">
+        <button onclick="resetOvertimeBank()" style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);cursor:pointer;letter-spacing:0.5px;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">↺ Resetar banco</button>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--faint);">acumula desde o primeiro registo</span>
       </div>
     </div>
   </div>
@@ -3049,7 +3058,7 @@ function restoreFields() {
   set('height', d.height); set('weightDeadline', d.weightDeadline);
   set('workStart', d.workStart); set('workEnd', d.workEnd);
   set('lunchStart', d.lunchStart||''); set('lunchEnd', d.lunchEnd||'');
-  markWorkEntry(); markWorkExit(); calcWorkHours();
+  markWorkEntry(); markWorkExit(); calcWorkHours(); renderOvertimeBank();
   set('workMood', d.workMood); set('workFocus', d.workFocus); set('workNotes', d.workNotes);
   set('screenStart', d.screenStart); set('screenEnd', d.screenEnd);
   set('bathroomNotes', d.bathroomNotes);
@@ -3669,53 +3678,139 @@ function removeExercise(i) { exercises.splice(i,1); renderExercises(); }
 // ═══════════════════════════════════════════════════════════════════
 
 function calcWorkHours() {
-  const s=document.getElementById('workStart').value, e=document.getElementById('workEnd').value;
-  const ls=document.getElementById('lunchStart').value, le=document.getElementById('lunchEnd').value;
-  // Lunch duration from actual times or default 60min
-  let b = 60;
+  const s  = document.getElementById('workStart').value;
+  const e  = document.getElementById('workEnd').value;
+  const ls = document.getElementById('lunchStart').value;
+  const le = document.getElementById('lunchEnd').value;
+
+  // ── Duração do almoço (real ou 60min por defeito)
+  let lunchMins = 60;
   if (ls && le) {
-    const [lsh,lsm]=ls.split(':').map(Number), [leh,lem]=le.split(':').map(Number);
-    b = (leh*60+lem) - (lsh*60+lsm);
-    if (b < 0) b = 0;
+    const [lsh,lsm] = ls.split(':').map(Number);
+    const [leh,lem] = le.split(':').map(Number);
+    lunchMins = Math.max(0, (leh*60+lem) - (lsh*60+lsm));
     const lbl = document.getElementById('lunchDurLabel');
-    if (lbl) lbl.textContent = b + ' min de pausa';
+    if (lbl) lbl.textContent = lunchMins + ' min de pausa';
     const lunchCard = document.getElementById('lunchCard');
-    if (lunchCard && b > 0) lunchCard.style.borderColor = 'rgba(184,144,80,0.5)';
+    if (lunchCard && lunchMins > 0) lunchCard.style.borderColor = 'rgba(184,144,80,0.5)';
   }
-  // Still calculate ideal exit if we have entry
-  if (s && !e) {
-    let bEst = 60; // default lunch
-    if (ls && le) {
-      const [lsh2,lsm2]=ls.split(':').map(Number),[leh2,lem2]=le.split(':').map(Number);
-      bEst = Math.max(0,(leh2*60+lem2)-(lsh2*60+lsm2));
-    }
-    const [sh2,sm2]=s.split(':').map(Number);
-    const iM=sh2*60+sm2+480+bEst;
-    const iH=Math.floor(iM/60)%24,iMin=iM%60;
-    const iEl=document.getElementById('idealExit');
-    if(iEl) iEl.textContent=String(iH).padStart(2,'0')+':'+String(iMin).padStart(2,'0')+'h';
-    document.getElementById('workTotal').textContent='0:00';
-    const ovEl=document.getElementById('overtimeVal');
-    if(ovEl) ovEl.textContent='—';
+
+  // ── Hora de saída ideal: entrada + 8h trabalho + almoço real
+  if (s) {
+    const [sh,sm] = s.split(':').map(Number);
+    const idealMins = sh*60 + sm + 480 + lunchMins; // 480 = 8h
+    const iH = Math.floor(idealMins/60) % 24;
+    const iM = idealMins % 60;
+    const iEl = document.getElementById('idealExit');
+    if (iEl) iEl.textContent = String(iH).padStart(2,'0') + ':' + String(iM).padStart(2,'0') + 'h';
+  }
+
+  // Se não tiver saída ainda, mostra apenas a hora ideal
+  if (!s || !e) {
+    document.getElementById('workTotal').textContent = '0:00';
+    const ovEl = document.getElementById('overtimeVal');
+    if (ovEl) ovEl.textContent = '—';
+    renderOvertimeBank();
     return;
   }
-  if(!s||!e) return;
-  let[sh,sm]=s.split(':').map(Number),[eh,em]=e.split(':').map(Number);
-  let mins=(eh*60+em)-(sh*60+sm)-b; if(mins<0)mins=0;
-  const h=Math.floor(mins/60),m=mins%60;
-  document.getElementById('workTotal').textContent=`${h}:${m.toString().padStart(2,'0')}`;
-  document.getElementById('ov-work').textContent=`${h}h${m?m+'m':''}`;
-  const tag=document.getElementById('workTag');
-  if(mins>9*60) tag.innerHTML='<span class="tag tag-red">dia muito longo</span>';
-  else if(mins>=7*60) tag.innerHTML='<span class="tag tag-green">dentro do horário ✓</span>';
-  else if(mins>0) tag.innerHTML='<span class="tag tag-sky">dia curto</span>';
 
-  // Auto-sync screen time = work hours (trabalho = ecrã)
-  const ssEl=document.getElementById('screenStart'), seEl=document.getElementById('screenEnd');
-  if(ssEl && seEl) { ssEl.value=s; seEl.value=e; calcScreenTime(); }
+  // ── Minutos trabalhados = (saída - entrada) - almoço real
+  const [sh,sm] = s.split(':').map(Number);
+  const [eh,em] = e.split(':').map(Number);
+  const totalMins = (eh*60+em) - (sh*60+sm) - lunchMins;
+  const workedMins = Math.max(0, totalMins);
 
+  // Mostrar total
+  const h = Math.floor(workedMins/60);
+  const m = workedMins % 60;
+  document.getElementById('workTotal').textContent = `${h}:${m.toString().padStart(2,'0')}`;
+  document.getElementById('ov-work').textContent = `${h}h${m?m+'m':''}`;
+
+  // ── Overtime do dia = trabalhado - 8h (480 min)
+  const overtimeMins = totalMins - 480;
+  const ovEl = document.getElementById('overtimeVal');
+  if (ovEl) {
+    if (overtimeMins > 0) {
+      const oh = Math.floor(overtimeMins/60), om = overtimeMins%60;
+      ovEl.textContent = `+${oh}h${om?om+'m':''}`;
+      ovEl.style.color = 'var(--moss-l)';
+    } else if (overtimeMins < 0) {
+      const oh = Math.floor(Math.abs(overtimeMins)/60), om = Math.abs(overtimeMins)%60;
+      ovEl.textContent = `-${oh}h${om?om+'m':''}`;
+      ovEl.style.color = '#f87171';
+    } else {
+      ovEl.textContent = '0h00 ✓';
+      ovEl.style.color = 'var(--moss-l)';
+    }
+  }
+
+  // Tag
+  const tag = document.getElementById('workTag');
+  if (tag) {
+    if (workedMins > 9*60)      tag.innerHTML = '<span class="tag tag-red">dia muito longo</span>';
+    else if (workedMins >= 8*60) tag.innerHTML = '<span class="tag tag-green">dentro do horário ✓</span>';
+    else if (workedMins > 0)     tag.innerHTML = '<span class="tag tag-sky">dia curto</span>';
+  }
+
+  // Auto-sync screen time
+  const ssEl = document.getElementById('screenStart'), seEl = document.getElementById('screenEnd');
+  if (ssEl && seEl) { ssEl.value = s; seEl.value = e; calcScreenTime(); }
+
+  renderOvertimeBank();
   updateSidebarCals();
   updateOverview();
+}
+
+// ── Banco de horas: soma overtime de todos os dias guardados
+function calcOvertimeBank() {
+  let totalMins = 0;
+  let daysCount = 0;
+  const resetDate = localStorage.getItem('dvOvertimeReset') || '';
+
+  Object.entries(DB).forEach(([date, d]) => {
+    if (!d || !d.workStart || !d.workEnd) return;
+    if (resetDate && date <= resetDate) return;
+
+    const [sh,sm] = d.workStart.split(':').map(Number);
+    const [eh,em] = d.workEnd.split(':').map(Number);
+
+    // Almoço real ou 60min
+    let lunch = 60;
+    if (d.lunchStart && d.lunchEnd) {
+      const [lsh,lsm] = d.lunchStart.split(':').map(Number);
+      const [leh,lem] = d.lunchEnd.split(':').map(Number);
+      lunch = Math.max(0, (leh*60+lem) - (lsh*60+lsm));
+    }
+
+    const worked = (eh*60+em) - (sh*60+sm) - lunch;
+    totalMins += worked - 480; // overtime = trabalhado - 8h
+    daysCount++;
+  });
+
+  return { totalMins, daysCount };
+}
+
+function renderOvertimeBank() {
+  const el = document.getElementById('overtimeAccum');
+  const elDays = document.getElementById('overtimeAccumDays');
+  if (!el) return;
+
+  const { totalMins, daysCount } = calcOvertimeBank();
+  const abs = Math.abs(totalMins);
+  const h = Math.floor(abs/60), m = abs%60;
+  const sign = totalMins >= 0 ? '+' : '-';
+  const color = totalMins >= 0 ? 'var(--moss-l)' : '#f87171';
+
+  el.textContent = `${sign}${h}h${m?m+'m':''}`;
+  el.style.color = color;
+  if (elDays) elDays.textContent = `em ${daysCount} dia${daysCount!==1?'s':''}`;
+}
+
+function resetOvertimeBank() {
+  if (!confirm('Resetar o banco de horas? O contador começa do zero a partir de hoje.')) return;
+  const today = new Date().toISOString().split('T')[0];
+  localStorage.setItem('dvOvertimeReset', today);
+  renderOvertimeBank();
 }
 
 function calcScreenTime() {
