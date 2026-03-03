@@ -2601,7 +2601,7 @@ canvas { display:block; width:100% !important; max-width:100%; }
 
 
 <!-- Groq Key Modal -->
-<div class="sync-modal-overlay" id="groqModal" style="display:none;">
+<div class="sync-modal-overlay" id="groqModal">
   <div class="sync-modal">
     <h2>🤖 Configurar IA (Groq)</h2>
     <div class="sync-modal-sub">chave guardada apenas no teu browser · nunca enviada para nenhum servidor</div>
@@ -5226,7 +5226,7 @@ document.getElementById('groqModal').addEventListener('click', function(e){ if(e
 // ── GROQ KEY MANAGEMENT ──
 function openGroqModal() {
   const modal = document.getElementById('groqModal');
-  modal.style.display = 'flex';
+  modal.classList.add('open');
   const key = getGroqKey();
   const input = document.getElementById('groqKeyInput');
   if (key) {
@@ -5239,7 +5239,7 @@ function openGroqModal() {
 }
 
 function closeGroqModal() {
-  document.getElementById('groqModal').style.display = 'none';
+  document.getElementById('groqModal').classList.remove('open');
 }
 
 function saveGroqKey() {
