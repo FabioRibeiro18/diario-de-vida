@@ -6107,11 +6107,14 @@ function clearAllData() {
 }
 
 // Inicializar página de configurações ao abrir
-const _origShowSection = showSection;
-function showSection(id, el) {
-  _origShowSection(id, el);
-  if (id === 'settings') initSettingsPage();
-}
+// Monkey-patch showSection depois de definida
+(function() {
+  const _orig = showSection;
+  showSection = function(id, el) {
+    _orig(id, el);
+    if (id === 'settings') initSettingsPage();
+  };
+})();
 
 initPWA();
 setTimeout(() => { checkAchievements(); renderTrends(); generateWeeklySummary(false); }, 2000);
