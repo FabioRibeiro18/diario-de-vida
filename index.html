@@ -2181,7 +2181,15 @@ canvas { display:block; width:100% !important; max-width:100%; }
               style="background:none;border:none;outline:none;font-family:'Source Serif 4',serif;font-size:18px;font-weight:300;color:var(--amber);width:80px;cursor:pointer;">
           </div>
         </div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);" id="lunchDurLabel">— não registado —</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:8px;" id="lunchDurLabel">— não registado —</div>
+        <div style="display:flex;gap:6px;">
+          <button onclick="stampLunchStart()" style="flex:1;padding:5px 4px;background:rgba(184,144,80,0.1);border:1px solid rgba(184,144,80,0.3);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--amber);cursor:pointer;" onmouseover="this.style.background='rgba(184,144,80,0.2)'" onmouseout="this.style.background='rgba(184,144,80,0.1)'">
+            ⏱ Início
+          </button>
+          <button onclick="stampLunchEnd()" style="flex:1;padding:5px 4px;background:rgba(184,144,80,0.1);border:1px solid rgba(184,144,80,0.3);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--amber);cursor:pointer;" onmouseover="this.style.background='rgba(184,144,80,0.2)'" onmouseout="this.style.background='rgba(184,144,80,0.1)'">
+            ⏱ Fim
+          </button>
+        </div>
       </div>
     </div>
 
@@ -4269,7 +4277,6 @@ const SECTION_FIELDS = {
 };
 
 function saveSection(section) {
-  // Guardar apenas os campos desta secção
   saveData();
 
   const saveBtn = document.getElementById('saveBtn-' + section);
@@ -4277,16 +4284,13 @@ function saveSection(section) {
   const msg     = document.getElementById('saveMsg-' + section);
   const fields  = SECTION_FIELDS[section] || [];
 
-  // Bloquear campos
+  // Bloquear campos — usar readonly em vez de disabled para manter os valores guardados
   fields.forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
-    el.setAttribute('data-saved-val', el.value);
-    if (el.tagName === 'SELECT' || el.tagName === 'TEXTAREA' || el.tagName === 'INPUT') {
-      el.disabled = true;
-      el.style.opacity = '0.7';
-      el.style.cursor = 'default';
-    }
+    el.setAttribute('readonly', true);
+    el.style.pointerEvents = 'none';
+    el.style.opacity = '0.65';
   });
 
   if (saveBtn) saveBtn.style.display = 'none';
@@ -4307,16 +4311,15 @@ function editSection(section) {
   fields.forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
-    el.disabled = false;
+    el.removeAttribute('readonly');
+    el.style.pointerEvents = '';
     el.style.opacity = '';
-    el.style.cursor = '';
   });
 
   if (saveBtn) saveBtn.style.display = 'flex';
   if (editBtn) editBtn.style.display = 'none';
   if (msg) msg.textContent = 'a editar...';
 
-  // Focar primeiro campo editável
   const first = document.getElementById(fields[0]);
   if (first) first.focus();
 }
@@ -5230,6 +5233,16 @@ function updateOverview() {
 function getNowTime() {
   const n = new Date();
   return String(n.getHours()).padStart(2,'0') + ':' + String(n.getMinutes()).padStart(2,'0');
+}
+
+function stampLunchStart() {
+  document.getElementById('lunchStart').value = getNowTime();
+  calcWorkHours();
+}
+
+function stampLunchEnd() {
+  document.getElementById('lunchEnd').value = getNowTime();
+  calcWorkHours();
 }
 
 function stampWorkEntry() {
