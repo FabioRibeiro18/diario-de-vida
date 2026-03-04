@@ -3194,6 +3194,35 @@ function showSection(id, el) {
 // RESTORE FIELDS
 // ═══════════════════════════════════════════════════════════════════
 
+// ═══════════════════════════════════════════════════════════════════
+// RECARREGAR DIA DE HOJE DA DB (após sync ou importação)
+// ═══════════════════════════════════════════════════════════════════
+
+function reloadTodayFromDB() {
+  const fresh = DB[TODAY] || {};
+
+  // Re-sincronizar todas as variáveis globais com o que está na DB
+  DAY = fresh;
+  counters   = fresh.counters   || {urinar:0,defecar:0,banho:0,pausas:0,intimacy:0};
+  meals      = fresh.meals      || {breakfast:[],lunch:[],dinner:[],snacks:[]};
+  exercises  = fresh.exercises  || [];
+  waterCount = fresh.waterCount || 0;
+  waterGoal  = fresh.waterGoal  || 8;
+  selectedMood = fresh.selectedMood || '';
+  habitsDone = fresh.habitsDone || {};
+  hobbies    = fresh.hobbies    || [];
+
+  // Migrar formato antigo de refeições (array flat → objeto por slot)
+  if (Array.isArray(meals)) {
+    const old = meals;
+    meals = {breakfast:[],lunch:[],dinner:[],snacks:[]};
+    old.forEach(m => meals.lunch.push(m));
+  }
+
+  // Re-renderizar todos os campos e componentes
+  restoreFields();
+}
+
 function restoreFields() {
   const d = DAY;
   const set = (id, v) => { const el = document.getElementById(id); if(el && v != null) el.value = v; };
@@ -5654,6 +5683,7 @@ async function syncAllData() {
       updateSyncStatus('Sincronizado '+ts, 'ok');
       const bar = document.getElementById('savedBar');
       if (bar) { bar.textContent='✓ Sincronizado com Google Sheets'; bar.classList.add('show'); setTimeout(()=>{bar.classList.remove('show');bar.textContent='Dados guardados';},3000); }
+      reloadTodayFromDB();
     } else { throw new Error('HTTP '+r.status); }
   } catch(e) {
     console.error('Sheets sync error:',e);
@@ -5707,6 +5737,7 @@ async function loadFromSheets() {
     updateSyncStatus('Histórico carregado', 'ok');
     // Atualizar estatísticas depois de carregar
     if (typeof renderStats === 'function') renderStats();
+    reloadTodayFromDB();
     updateOverview();
   } catch(e) {
     console.error('Sheets load error:', e);
