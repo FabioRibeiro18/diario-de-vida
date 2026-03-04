@@ -3198,29 +3198,36 @@ function showSection(id, el) {
 // RECARREGAR DIA DE HOJE DA DB (após sync ou importação)
 // ═══════════════════════════════════════════════════════════════════
 
+let _reloading = false; // guard contra loop infinito
+
 function reloadTodayFromDB() {
+  if (_reloading) return;
+  _reloading = true;
+
   const fresh = DB[TODAY] || {};
 
   // Re-sincronizar todas as variáveis globais com o que está na DB
   DAY = fresh;
-  counters   = fresh.counters   || {urinar:0,defecar:0,banho:0,pausas:0,intimacy:0};
-  meals      = fresh.meals      || {breakfast:[],lunch:[],dinner:[],snacks:[]};
-  exercises  = fresh.exercises  || [];
-  waterCount = fresh.waterCount || 0;
-  waterGoal  = fresh.waterGoal  || 8;
+  counters     = fresh.counters   || {urinar:0,defecar:0,banho:0,pausas:0,intimacy:0};
+  meals        = fresh.meals      || {breakfast:[],lunch:[],dinner:[],snacks:[]};
+  exercises    = fresh.exercises  || [];
+  waterCount   = fresh.waterCount || 0;
+  waterGoal    = fresh.waterGoal  || 8;
   selectedMood = fresh.selectedMood || '';
-  habitsDone = fresh.habitsDone || {};
-  hobbies    = fresh.hobbies    || [];
+  habitsDone   = fresh.habitsDone || {};
+  hobbies      = fresh.hobbies    || [];
 
-  // Migrar formato antigo de refeições (array flat → objeto por slot)
+  // Migrar formato antigo
   if (Array.isArray(meals)) {
     const old = meals;
     meals = {breakfast:[],lunch:[],dinner:[],snacks:[]};
     old.forEach(m => meals.lunch.push(m));
   }
 
-  // Re-renderizar todos os campos e componentes
+  // Re-renderizar sem disparar onchange (setar via .value direto não dispara onchange)
   restoreFields();
+
+  _reloading = false;
 }
 
 function restoreFields() {
@@ -4412,8 +4419,8 @@ function saveData() {
   // Atualizar resumo a partir do snap guardado (funciona mesmo noutras secções)
   updateOverviewFromSnap(snap);
   updateSidebarCals();
-  // Sync to Sheets if configured
-  if(typeof sheetsUrl !== 'undefined' && sheetsUrl) setTimeout(syncAllData, 600);
+  // Sync to Sheets if configured (não sincronizar durante reload para evitar loop)
+  if(!_reloading && typeof sheetsUrl !== 'undefined' && sheetsUrl) setTimeout(syncAllData, 600);
 }
 
 // Auto-save every 5 minutes
@@ -5687,7 +5694,8 @@ async function syncAllData() {
     } else { throw new Error('HTTP '+r.status); }
   } catch(e) {
     console.error('Sheets sync error:',e);
-    updateSyncStatus('Erro — guardado local', 'err');
+    const msg = e.message || 'erro desconhecido';
+    updateSyncStatus('Erro: ' + msg.substring(0,40), 'err');
   }
 }
 
