@@ -5650,11 +5650,27 @@ function buildRow(date, d) {
   const habDone = d.habitsDone ? Object.values(d.habitsDone).filter(Boolean).length : 0;
   const exDone  = d.habitsDone ? exArr.filter(e=>d.habitsDone[e.id]).length : 0;
   const exKcal  = d.habitsDone ? exArr.filter(e=>d.habitsDone[e.id]).reduce((s,e)=>s+(e.kcal||0),0) : 0;
-  let workH = '';
+
+  // ── Cálculo de horas de trabalho com almoço real ──
+  let workH = '', overtimeH = '', lunchMinsReal = '';
   if (d.workStart && d.workEnd) {
-    const [sh,sm]=d.workStart.split(':').map(Number),[eh,em]=d.workEnd.split(':').map(Number);
-    workH = (((eh*60+em)-(sh*60+sm)-(parseInt(d.lunchBreak)||60))/60).toFixed(1);
+    const [sh,sm] = d.workStart.split(':').map(Number);
+    const [eh,em] = d.workEnd.split(':').map(Number);
+    let lunch = 60; // default
+    if (d.lunchStart && d.lunchEnd) {
+      const [lsh,lsm] = d.lunchStart.split(':').map(Number);
+      const [leh,lem] = d.lunchEnd.split(':').map(Number);
+      lunch = Math.max(0, (leh*60+lem) - (lsh*60+lsm));
+      lunchMinsReal = lunch;
+    }
+    const workedMins = (eh*60+em) - (sh*60+sm) - lunch;
+    workH = (workedMins/60).toFixed(2);
+    const ot = workedMins - 480; // overtime vs 8h
+    const sign = ot >= 0 ? '+' : '-';
+    const ah = Math.floor(Math.abs(ot)/60), am = Math.abs(ot)%60;
+    overtimeH = `${sign}${ah}h${am ? am+'m' : ''}`;
   }
+
   return {
     data:date, sono_horas:sleepH, sono_qual:d.sleepQual||'', sonhos:d.dreams||'',
     peso_kg:d.weight||'', altura_cm:d.height||'',
@@ -5663,7 +5679,9 @@ function buildRow(date, d) {
     habitos_feitos:habDone, exercicios_feitos:exDone, kcal_queimadas:exKcal,
     urinar:(d.counters&&d.counters.urinar)||'', defecar:(d.counters&&d.counters.defecar)||'',
     workStart:d.workStart||'', workEnd:d.workEnd||'',
-    trabalho_h:workH, trabalho_humor:d.workMood||'', trabalho_foco:d.workFocus||'',
+    lunchStart:d.lunchStart||'', lunchEnd:d.lunchEnd||'', almoco_mins:lunchMinsReal,
+    trabalho_h:workH, overtime_dia:overtimeH,
+    trabalho_humor:d.workMood||'', trabalho_foco:d.workFocus||'',
     humor:d.selectedMood||'', energia:d.energyLevel||'',
     stress:d.stressLevel||'', ansiedade:d.anxietyLevel||'',
     diario:(d.journalEntry||'').substring(0,500),
@@ -5684,10 +5702,17 @@ async function syncAllData() {
     rows.push(buildRow(date, d));
   }
   if (!rows.length) { updateSyncStatus('Sem dados ainda', 'off'); return; }
+
+  // Calcular banco de horas total para enviar como resumo
+  const { totalMins, daysCount } = calcOvertimeBank();
+  const otSign = totalMins >= 0 ? '+' : '-';
+  const otH = Math.floor(Math.abs(totalMins)/60), otM = Math.abs(totalMins)%60;
+  const overtimeBankStr = `${otSign}${otH}h${otM ? otM+'m' : ''} (${daysCount} dias)`;
+
   try {
     const r = await fetch(sheetsUrl, {
       method:'POST', headers:{'Content-Type':'text/plain'},
-      body: JSON.stringify({action:'sync', rows})
+      body: JSON.stringify({action:'sync', rows, overtimeBank: overtimeBankStr})
     });
     if (r.ok) {
       const t = new Date();
