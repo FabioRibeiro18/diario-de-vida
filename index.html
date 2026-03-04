@@ -3151,6 +3151,7 @@ function toggleHabit(id) {
   if(exKcalEl) exKcalEl.textContent = exKcalTotal + ' kcal queimadas hoje';
   updateSidebarCals();
   renderOverviewHabits();
+  saveData();
 }
 
 function renderOverviewHabits() {
@@ -3348,20 +3349,19 @@ function renderWaterDrops() {
 }
 
 function addWater() {
-  if (waterCount < waterGoal) { waterCount++; renderWaterDrops(); }
+  if (waterCount < waterGoal) { waterCount++; renderWaterDrops(); saveData(); }
 }
 
 function toggleWaterCup(idx) {
   if (idx < waterCount) {
-    // Clicking a filled cup: remove it and everything after
     waterCount = idx;
   } else {
-    // Clicking an empty cup: fill up to and including it
     waterCount = idx + 1;
   }
   waterCount = Math.max(0, Math.min(waterCount, waterGoal));
   renderWaterDrops();
   updateOverview();
+  saveData();
 }
 
 function updateWaterProgress() {
@@ -3433,6 +3433,7 @@ setTimeout(setupWaterAlerts, 1000);
 function changeCounter(name, delta) {
   counters[name] = Math.max(0, (counters[name] || 0) + delta);
   updateCounters();
+  saveData();
 }
 
 function updateCounters() {
@@ -3752,6 +3753,7 @@ function removeMealFromSlot(slot, idx) {
   meals[slot].splice(idx, 1);
   renderMeals();
   updateSidebarCals();
+  saveData();
 }
 
 function renderMeals() {
@@ -3856,6 +3858,7 @@ function addExercise() {
   exercises.push({name,duration:dur,intensity,icon});
   document.getElementById('exName').value=''; document.getElementById('exDuration').value='';
   renderExercises();
+  saveData();
 }
 
 function renderExercises() {
@@ -3873,7 +3876,7 @@ function renderExercises() {
   document.getElementById('ov-ex').textContent = exercises.length;
 }
 
-function removeExercise(i) { exercises.splice(i,1); renderExercises(); }
+function removeExercise(i) { exercises.splice(i,1); renderExercises(); saveData(); }
 
 // ═══════════════════════════════════════════════════════════════════
 // WORK & SCREEN
