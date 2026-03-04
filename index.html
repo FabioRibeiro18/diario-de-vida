@@ -1908,7 +1908,7 @@ canvas { display:block; width:100% !important; max-width:100%; }
     <div class="advisor-stats" id="advisorStats"></div>
   </div>
 
-  <!-- Pequeno Almoço -->
+    <!-- Pequeno Almoço -->
   <div class="meal-slot" id="slot-breakfast">
     <div class="meal-slot-header">
       <span class="meal-slot-icon">🌅</span>
@@ -1917,14 +1917,15 @@ canvas { display:block; width:100% !important; max-width:100%; }
     </div>
     <div class="meal-slot-body">
       <div id="list-breakfast"></div>
-      <div class="meal-add-row">
-        <input type="text" placeholder="o que comeste... (ex: 2 ovos mexidos com torrada)" id="name-breakfast" autocomplete="off" onkeydown="if(event.key==='Enter')addMealToSlot('breakfast')" style="flex:1;">
-        <button class="btn btn-secondary" onclick="addMealToSlot('breakfast')" id="btn-breakfast">+ Adicionar</button>
+      <div class="meal-add-row" style="flex-wrap:wrap;gap:6px;">
+        <input type="text" placeholder="o que comeste..." id="name-breakfast" autocomplete="off" onkeydown="if(event.key==='Enter')addMealAI('breakfast')" style="flex:1;min-width:140px;">
+        <input type="number" placeholder="kcal" id="kcal-breakfast" min="0" step="1" style="width:70px;" onkeydown="if(event.key==='Enter')addMealManual('breakfast')">
+        <button class="btn btn-secondary" onclick="addMealManual('breakfast')" title="Adicionar com as calorias que escreveste" style="white-space:nowrap;">+ Manual</button>
+        <button class="btn btn-primary" onclick="addMealAI('breakfast')" id="btn-breakfast" title="Calcular calorias com IA" style="white-space:nowrap;">🤖 IA</button>
       </div>
       <div id="ai-status-breakfast" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--moss-l);margin-top:6px;min-height:14px;"></div>
     </div>
   </div>
-
   <!-- Almoço -->
   <div class="meal-slot" id="slot-lunch">
     <div class="meal-slot-header">
@@ -1934,14 +1935,15 @@ canvas { display:block; width:100% !important; max-width:100%; }
     </div>
     <div class="meal-slot-body">
       <div id="list-lunch"></div>
-      <div class="meal-add-row">
-        <input type="text" placeholder="o que comeste... (ex: frango grelhado 150g com arroz)" id="name-lunch" autocomplete="off" onkeydown="if(event.key==='Enter')addMealToSlot('lunch')" style="flex:1;">
-        <button class="btn btn-secondary" onclick="addMealToSlot('lunch')" id="btn-lunch">+ Adicionar</button>
+      <div class="meal-add-row" style="flex-wrap:wrap;gap:6px;">
+        <input type="text" placeholder="o que comeste..." id="name-lunch" autocomplete="off" onkeydown="if(event.key==='Enter')addMealAI('lunch')" style="flex:1;min-width:140px;">
+        <input type="number" placeholder="kcal" id="kcal-lunch" min="0" step="1" style="width:70px;" onkeydown="if(event.key==='Enter')addMealManual('lunch')">
+        <button class="btn btn-secondary" onclick="addMealManual('lunch')" title="Adicionar com as calorias que escreveste" style="white-space:nowrap;">+ Manual</button>
+        <button class="btn btn-primary" onclick="addMealAI('lunch')" id="btn-lunch" title="Calcular calorias com IA" style="white-space:nowrap;">🤖 IA</button>
       </div>
       <div id="ai-status-lunch" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--moss-l);margin-top:6px;min-height:14px;"></div>
     </div>
   </div>
-
   <!-- Jantar -->
   <div class="meal-slot" id="slot-dinner">
     <div class="meal-slot-header">
@@ -1951,15 +1953,16 @@ canvas { display:block; width:100% !important; max-width:100%; }
     </div>
     <div class="meal-slot-body">
       <div id="list-dinner"></div>
-      <div class="meal-add-row">
-        <input type="text" placeholder="o que comeste..." id="name-dinner" autocomplete="off" onkeydown="if(event.key==='Enter')addMealToSlot('dinner')" style="flex:1;">
-        <button class="btn btn-secondary" onclick="addMealToSlot('dinner')" id="btn-dinner">+ Adicionar</button>
+      <div class="meal-add-row" style="flex-wrap:wrap;gap:6px;">
+        <input type="text" placeholder="o que comeste..." id="name-dinner" autocomplete="off" onkeydown="if(event.key==='Enter')addMealAI('dinner')" style="flex:1;min-width:140px;">
+        <input type="number" placeholder="kcal" id="kcal-dinner" min="0" step="1" style="width:70px;" onkeydown="if(event.key==='Enter')addMealManual('dinner')">
+        <button class="btn btn-secondary" onclick="addMealManual('dinner')" title="Adicionar com as calorias que escreveste" style="white-space:nowrap;">+ Manual</button>
+        <button class="btn btn-primary" onclick="addMealAI('dinner')" id="btn-dinner" title="Calcular calorias com IA" style="white-space:nowrap;">🤖 IA</button>
       </div>
       <div id="ai-status-dinner" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--moss-l);margin-top:6px;min-height:14px;"></div>
     </div>
   </div>
-
-  <!-- Lanches -->
+  <!-- Lanches & Snacks -->
   <div class="meal-slot" id="slot-snacks">
     <div class="meal-slot-header">
       <span class="meal-slot-icon">🍎</span>
@@ -1968,9 +1971,11 @@ canvas { display:block; width:100% !important; max-width:100%; }
     </div>
     <div class="meal-slot-body">
       <div id="list-snacks"></div>
-      <div class="meal-add-row">
-        <input type="text" placeholder="snack, café, fruta..." id="name-snacks" autocomplete="off" onkeydown="if(event.key==='Enter')addMealToSlot('snacks')" style="flex:1;">
-        <button class="btn btn-secondary" onclick="addMealToSlot('snacks')" id="btn-snacks">+ Adicionar</button>
+      <div class="meal-add-row" style="flex-wrap:wrap;gap:6px;">
+        <input type="text" placeholder="snack, café, fruta..." id="name-snacks" autocomplete="off" onkeydown="if(event.key==='Enter')addMealAI('snacks')" style="flex:1;min-width:140px;">
+        <input type="number" placeholder="kcal" id="kcal-snacks" min="0" step="1" style="width:70px;" onkeydown="if(event.key==='Enter')addMealManual('snacks')">
+        <button class="btn btn-secondary" onclick="addMealManual('snacks')" title="Adicionar com as calorias que escreveste" style="white-space:nowrap;">+ Manual</button>
+        <button class="btn btn-primary" onclick="addMealAI('snacks')" id="btn-snacks" title="Calcular calorias com IA" style="white-space:nowrap;">🤖 IA</button>
       </div>
       <div id="ai-status-snacks" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--moss-l);margin-top:6px;min-height:14px;"></div>
     </div>
@@ -3608,24 +3613,42 @@ const SLOTS = {
   snacks:    {label:'Lanches & Snacks', icon:'🍎'},
 };
 
-async function addMealToSlot(slot) {
+// Adicionar manualmente (utilizador escreve as calorias)
+function addMealManual(slot) {
   const nameEl   = document.getElementById('name-' + slot);
+  const kcalEl   = document.getElementById('kcal-' + slot);
+  const statusEl = document.getElementById('ai-status-' + slot);
+  const name = (nameEl.value || '').trim();
+  if (!name) { nameEl.focus(); return; }
+  const cal = parseInt(kcalEl.value) || 0;
+  meals[slot].push({ name, cal, aiCalc: false });
+  nameEl.value = ''; kcalEl.value = '';
+  if (statusEl) { statusEl.style.color = 'var(--moss-l)'; statusEl.textContent = cal ? `✓ ${cal} kcal adicionado` : '✓ adicionado (sem calorias)'; setTimeout(() => { statusEl.textContent = ''; }, 3000); }
+  nameEl.focus();
+  renderMeals();
+  updateSidebarCals();
+}
+
+// Adicionar via IA (calcula calorias automaticamente)
+async function addMealAI(slot) {
+  const nameEl   = document.getElementById('name-' + slot);
+  const kcalEl   = document.getElementById('kcal-' + slot);
   const addBtn   = document.getElementById('btn-' + slot);
   const statusEl = document.getElementById('ai-status-' + slot);
   const name = (nameEl.value || '').trim();
   if (!name) { nameEl.focus(); return; }
 
-  if (addBtn)   { addBtn.textContent = '⏳ a calcular...'; addBtn.disabled = true; }
-  if (statusEl) { statusEl.textContent = '🤖 A calcular calorias com IA...'; statusEl.style.color = 'var(--moss-l)'; }
+  if (addBtn)   { addBtn.textContent = '⏳...'; addBtn.disabled = true; }
+  if (statusEl) { statusEl.textContent = '🤖 A calcular calorias...'; statusEl.style.color = 'var(--moss-l)'; }
 
   try {
     const result = await calcCaloriesAI(name);
-    // Usa o valor mais alto para não subestimar
     const cal = result.calorias_alto || result.calorias || 0;
     meals[slot].push({ name, cal, aiCalc: true });
+    if (kcalEl) kcalEl.value = cal;
     if (statusEl) {
       statusEl.textContent = `✓ ${cal} kcal  ·  P:${result.proteina||0}g  HC:${result.carbo||0}g  G:${result.gordura||0}g`;
-      setTimeout(() => { statusEl.textContent = ''; }, 5000);
+      setTimeout(() => { statusEl.textContent = ''; if(kcalEl) kcalEl.value=''; }, 5000);
     }
   } catch(e) {
     meals[slot].push({ name, cal: 0, aiCalc: false });
@@ -3636,12 +3659,15 @@ async function addMealToSlot(slot) {
     }
   }
 
-  if (addBtn) { addBtn.textContent = '+ Adicionar'; addBtn.disabled = false; }
+  if (addBtn) { addBtn.textContent = '🤖 IA'; addBtn.disabled = false; }
   nameEl.value = '';
   nameEl.focus();
   renderMeals();
   updateSidebarCals();
 }
+
+// Alias para compatibilidade com Enter no campo nome
+async function addMealToSlot(slot) { return addMealAI(slot); }
 
 function removeMealFromSlot(slot, idx) {
   meals[slot].splice(idx, 1);
