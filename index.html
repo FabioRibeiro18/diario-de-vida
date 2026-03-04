@@ -1915,10 +1915,10 @@ canvas { display:block; width:100% !important; max-width:100%; }
     <div class="meal-slot-body">
       <div id="list-breakfast"></div>
       <div class="meal-add-row">
-        <input type="text" placeholder="o que comeste..." id="name-breakfast" autocomplete="off" onkeydown="if(event.key==='Enter')addMealToSlot('breakfast')">
-        <input type="number" placeholder="kcal" id="kcal-breakfast" min="0" max="9999" placeholder="kcal (auto)" onkeydown="if(event.key==='Enter')addMealToSlot('breakfast')">
-        <button class="btn btn-secondary" onclick="addMealToSlot('breakfast')">+ Adicionar</button>
+        <input type="text" placeholder="o que comeste... (ex: 2 ovos mexidos com torrada)" id="name-breakfast" autocomplete="off" onkeydown="if(event.key==='Enter')addMealToSlot('breakfast')" style="flex:1;">
+        <button class="btn btn-secondary" onclick="addMealToSlot('breakfast')" id="btn-breakfast">+ Adicionar</button>
       </div>
+      <div id="ai-status-breakfast" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--moss-l);margin-top:6px;min-height:14px;"></div>
     </div>
   </div>
 
@@ -1932,10 +1932,10 @@ canvas { display:block; width:100% !important; max-width:100%; }
     <div class="meal-slot-body">
       <div id="list-lunch"></div>
       <div class="meal-add-row">
-        <input type="text" placeholder="o que comeste..." id="name-lunch" autocomplete="off" onkeydown="if(event.key==='Enter')addMealToSlot('lunch')">
-        <input type="number" placeholder="kcal" id="kcal-lunch" min="0" max="9999" placeholder="kcal (auto)" onkeydown="if(event.key==='Enter')addMealToSlot('lunch')">
-        <button class="btn btn-secondary" onclick="addMealToSlot('lunch')">+ Adicionar</button>
+        <input type="text" placeholder="o que comeste... (ex: frango grelhado 150g com arroz)" id="name-lunch" autocomplete="off" onkeydown="if(event.key==='Enter')addMealToSlot('lunch')" style="flex:1;">
+        <button class="btn btn-secondary" onclick="addMealToSlot('lunch')" id="btn-lunch">+ Adicionar</button>
       </div>
+      <div id="ai-status-lunch" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--moss-l);margin-top:6px;min-height:14px;"></div>
     </div>
   </div>
 
@@ -1949,14 +1949,14 @@ canvas { display:block; width:100% !important; max-width:100%; }
     <div class="meal-slot-body">
       <div id="list-dinner"></div>
       <div class="meal-add-row">
-        <input type="text" placeholder="o que comeste..." id="name-dinner" autocomplete="off" onkeydown="if(event.key==='Enter')addMealToSlot('dinner')">
-        <input type="number" placeholder="kcal" id="kcal-dinner" min="0" max="9999" placeholder="kcal (auto)" onkeydown="if(event.key==='Enter')addMealToSlot('dinner')">
-        <button class="btn btn-secondary" onclick="addMealToSlot('dinner')">+ Adicionar</button>
+        <input type="text" placeholder="o que comeste..." id="name-dinner" autocomplete="off" onkeydown="if(event.key==='Enter')addMealToSlot('dinner')" style="flex:1;">
+        <button class="btn btn-secondary" onclick="addMealToSlot('dinner')" id="btn-dinner">+ Adicionar</button>
       </div>
+      <div id="ai-status-dinner" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--moss-l);margin-top:6px;min-height:14px;"></div>
     </div>
   </div>
 
-  <!-- Outras Refeições -->
+  <!-- Lanches -->
   <div class="meal-slot" id="slot-snacks">
     <div class="meal-slot-header">
       <span class="meal-slot-icon">🍎</span>
@@ -1966,10 +1966,10 @@ canvas { display:block; width:100% !important; max-width:100%; }
     <div class="meal-slot-body">
       <div id="list-snacks"></div>
       <div class="meal-add-row">
-        <input type="text" placeholder="snack, café, fruta..." id="name-snacks" autocomplete="off" onkeydown="if(event.key==='Enter')addMealToSlot('snacks')">
-        <input type="number" placeholder="kcal" id="kcal-snacks" min="0" max="9999" placeholder="kcal (auto)" onkeydown="if(event.key==='Enter')addMealToSlot('snacks')">
-        <button class="btn btn-secondary" onclick="addMealToSlot('snacks')">+ Adicionar</button>
+        <input type="text" placeholder="snack, café, fruta..." id="name-snacks" autocomplete="off" onkeydown="if(event.key==='Enter')addMealToSlot('snacks')" style="flex:1;">
+        <button class="btn btn-secondary" onclick="addMealToSlot('snacks')" id="btn-snacks">+ Adicionar</button>
       </div>
+      <div id="ai-status-snacks" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--moss-l);margin-top:6px;min-height:14px;"></div>
     </div>
   </div>
 
@@ -2783,7 +2783,24 @@ canvas { display:block; width:100% !important; max-width:100%; }
 // STATE & PERSISTENCE
 // ═══════════════════════════════════════════════════════════════════
 
-const TODAY = new Date().toISOString().split('T')[0];
+const _d = new Date();
+const TODAY = _d.getFullYear() + '-' + String(_d.getMonth()+1).padStart(2,'0') + '-' + String(_d.getDate()).padStart(2,'0');
+
+// Helper: data local (evita problemas de fuso horário UTC vs PT)
+function localDateStr(d) {
+  d = d || new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+// ── Detetar mudança de dia (ex: browser aberto durante a noite) ──
+setInterval(() => {
+  const nowDate = localDateStr();
+  if (nowDate !== TODAY) {
+    // Dia mudou — recarregar página para começar dia novo limpo
+    window.location.reload();
+  }
+}, 60 * 1000); // verifica a cada minuto
+
 
 // ── FORMAT TIME INPUTS (HH:MM, 24h) ──
 function fmtTime(el) {
@@ -3350,54 +3367,37 @@ function calcWCTip() {
 // GEMINI AI HELPER
 // ═══════════════════════════════════════════════════════════════════
 
-// IA via Groq — gratuito, rápido, funciona de qualquer computador
-// Chave Groq guardada localmente no browser (nunca no GitHub)
-const GROQ_MODEL = 'llama-3.1-8b-instant';
-function getGroqKey() {
-  return localStorage.getItem('dvGroqKey') || '';
-}
-function setGroqKey(k) {
-  localStorage.setItem('dvGroqKey', k.trim());
-}
-// Compatibilidade com código existente
-Object.defineProperty(window, 'GROQ_KEY', { get: getGroqKey });
-
+// IA via Anthropic — sem chave necessária
 async function callGemini(systemPrompt, userPrompt, maxTokens) {
-  const GROQ_KEY = getGroqKey();
-  if (!GROQ_KEY) {
-    throw new Error('Chave Groq não configurada. Clica no ícone ⚙️ para adicionar a tua chave.');
-  }
-
-  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+  const response = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + GROQ_KEY,
-    },
+    headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      model: GROQ_MODEL,
+      model: 'claude-sonnet-4-20250514',
       max_tokens: maxTokens || 800,
-      temperature: 0.4,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user',   content: userPrompt   }
-      ]
+      system: systemPrompt,
+      messages: [{ role: 'user', content: userPrompt }]
     })
   });
 
   if (!response.ok) {
     const err = await response.text();
-    let msg = 'Groq HTTP ' + response.status;
+    let msg = 'IA HTTP ' + response.status;
     try { const j = JSON.parse(err); msg = j.error?.message || msg; } catch(e) {}
     throw new Error(msg);
   }
 
   const data = await response.json();
   if (data.error) throw new Error(data.error.message);
-  const text = data.choices?.[0]?.message?.content;
-  if (!text) throw new Error('Resposta vazia');
+  const text = data.content?.[0]?.text;
+  if (!text) throw new Error('Resposta vazia da IA');
   return text;
 }
+
+// Manter compatibilidade com código que verifica chave
+function getGroqKey() { return 'anthropic'; }
+function setGroqKey(k) {}
+Object.defineProperty(window, 'GROQ_KEY', { get: getGroqKey });
 
 function extractJSON(text) {
   // Try direct parse first
@@ -3419,9 +3419,8 @@ let foodSearchTimeout = null;
 let foodResults = [];
 
 async function calcCaloriesAI(foodName) {
-  // Uses Groq to estimate calories for any food description
   const text = await callGemini(
-    'Nutricionista. Responde APENAS em JSON sem markdown: {"calorias":0,"proteina":0,"carbo":0,"gordura":0,"nota":""}. Estimativa para a quantidade descrita ou porção normal se não indicada.',
+    'Nutricionista. Responde APENAS em JSON sem markdown nem texto extra: {"calorias":0,"calorias_alto":0,"proteina":0,"carbo":0,"gordura":0}. "calorias" = estimativa média, "calorias_alto" = estimativa conservadora pelo valor mais alto possível. Para a quantidade descrita ou porção normal se não indicada.',
     'Alimento: ' + foodName,
     200
   );
@@ -3585,32 +3584,35 @@ const SLOTS = {
 };
 
 async function addMealToSlot(slot) {
-  const nameEl = document.getElementById('name-' + slot);
-  const kcalEl = document.getElementById('kcal-' + slot);
-  const addBtn = document.querySelector(`[onclick="addMealToSlot('${slot}')"]`);
+  const nameEl   = document.getElementById('name-' + slot);
+  const addBtn   = document.getElementById('btn-' + slot);
+  const statusEl = document.getElementById('ai-status-' + slot);
   const name = (nameEl.value || '').trim();
-  let cal = parseInt(kcalEl.value) || 0;
   if (!name) { nameEl.focus(); return; }
 
-  // Auto-calc with AI if no kcal entered and Groq is configured
-  if (!cal && GROQ_KEY) {
-    if (addBtn) { addBtn.textContent = '...'; addBtn.disabled = true; }
-    try {
-      const result = await calcCaloriesAI(name);
-      cal = result.calorias || 0;
-      kcalEl.value = cal;
-      // Show brief feedback
-      kcalEl.style.borderColor = 'var(--moss)';
-      setTimeout(() => { kcalEl.style.borderColor = ''; }, 1500);
-    } catch(e) {
-      // AI failed — add with 0 and let user fill in
-      console.warn('AI calc failed:', e.message);
+  if (addBtn)   { addBtn.textContent = '⏳ a calcular...'; addBtn.disabled = true; }
+  if (statusEl) { statusEl.textContent = '🤖 A calcular calorias com IA...'; statusEl.style.color = 'var(--moss-l)'; }
+
+  try {
+    const result = await calcCaloriesAI(name);
+    // Usa o valor mais alto para não subestimar
+    const cal = result.calorias_alto || result.calorias || 0;
+    meals[slot].push({ name, cal, aiCalc: true });
+    if (statusEl) {
+      statusEl.textContent = `✓ ${cal} kcal  ·  P:${result.proteina||0}g  HC:${result.carbo||0}g  G:${result.gordura||0}g`;
+      setTimeout(() => { statusEl.textContent = ''; }, 5000);
     }
-    if (addBtn) { addBtn.textContent = '+ Adicionar'; addBtn.disabled = false; }
+  } catch(e) {
+    meals[slot].push({ name, cal: 0, aiCalc: false });
+    if (statusEl) {
+      statusEl.textContent = '⚠️ ' + (e.message || 'Erro IA') + ' — adicionado com 0 kcal';
+      statusEl.style.color = '#f87171';
+      setTimeout(() => { statusEl.textContent = ''; statusEl.style.color = 'var(--moss-l)'; }, 7000);
+    }
   }
 
-  meals[slot].push({name, cal});
-  nameEl.value = ''; kcalEl.value = '';
+  if (addBtn) { addBtn.textContent = '+ Adicionar'; addBtn.disabled = false; }
+  nameEl.value = '';
   nameEl.focus();
   renderMeals();
   updateSidebarCals();
@@ -3711,7 +3713,7 @@ async function getExerciseSuggestions() {
       `Situação do utilizador: ${q}`, 800
     );
     resp.textContent = text;
-  } catch(e) { resp.textContent = 'Erro de ligação.'; }
+  } catch(e) { resp.textContent = e.message && e.message.includes('configurada') ? '⚙️ ' + e.message : '❌ ' + (e.message || 'Erro de ligação'); }
   btn.disabled = false; btn.textContent = 'Sugerir';
 }
 
@@ -3888,7 +3890,7 @@ function renderOvertimeBank() {
 
 function resetOvertimeBank() {
   if (!confirm('Resetar o banco de horas? O contador começa do zero a partir de hoje.')) return;
-  const today = new Date().toISOString().split('T')[0];
+  const today = localDateStr();
   localStorage.setItem('dvOvertimeReset', today);
   renderOvertimeBank();
 }
@@ -3982,7 +3984,7 @@ async function getJournalInsight() {
       `Humor: ${selectedMood||'não selecionado'}. Energia: ${energy}/10. Ansiedade: ${anxiety}/10. Stress: ${stress}/10. Reflexão: "${entry||'(sem texto)'}"`, 600
     );
     resp.textContent = text;
-  } catch(e) { resp.textContent='Erro de ligação.'; }
+  } catch(e) { resp.textContent = e.message && e.message.includes('configurada') ? '⚙️ ' + e.message : '❌ ' + (e.message || 'Erro de ligação'); }
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -4000,7 +4002,7 @@ async function getDailyHabitTip() {
       `Data: ${new Date().toLocaleDateString('pt-PT')}. Sugere uma ação de bem-estar para hoje.`, 700
     );
     resp.textContent = text;
-  } catch(e) { resp.textContent='Erro de ligação.'; }
+  } catch(e) { resp.textContent = e.message && e.message.includes('configurada') ? '⚙️ ' + e.message : '❌ ' + (e.message || 'Erro de ligação'); }
   btn.disabled = false;
 }
 
@@ -4033,7 +4035,7 @@ async function generateDaySummary() {
       `Dados do meu dia:\n${JSON.stringify(summary,null,2)}`, 800
     );
     resp.textContent = text;
-  } catch(e){resp.textContent='Erro de ligação.';}
+  } catch(e){resp.textContent = e.message && e.message.includes('configurada') ? '⚙️ ' + e.message : '❌ ' + (e.message || 'Erro de ligação');}
   btn.disabled=false;
 }
 
@@ -4047,7 +4049,7 @@ async function getWeightAdvice() {
       `Peso atual: ${w||'?'}kg. Objetivo: ${g||'?'}kg. Altura: ${h||'?'}cm.`, 600
     );
     resp.textContent = text;
-  }catch(e){resp.textContent='Erro de ligação.';}
+  }catch(e){resp.textContent = e.message && e.message.includes('configurada') ? '⚙️ ' + e.message : '❌ ' + (e.message || 'Erro de ligação');}
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -4264,8 +4266,11 @@ function setStatsPeriod(days, btn) {
 function getLastNDays(n) {
   const days = [];
   for(let i = n-1; i >= 0; i--) {
-    const d = new Date(); d.setDate(d.getDate()-i);
-    days.push(d.toISOString().split('T')[0]);
+    const d = new Date();
+    d.setDate(d.getDate()-i);
+    // Use local date, not UTC
+    const dateStr = d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+    days.push(dateStr);
   }
   return days;
 }
@@ -4617,7 +4622,7 @@ function renderActivityCalendar() {
   while(cur <= endDate || week.length) {
     if(week.length === 7) { weeks.push(week); week=[]; }
     if(cur > endDate) { week.push(null); cur.setDate(cur.getDate()+1); continue; }
-    const dateStr = cur.toISOString().split('T')[0];
+    const dateStr = localDateStr(cur);
     const d = DB[dateStr] || null;
     const score = d ? calcDayScore(d) : 0;
     week.push({date:dateStr, score, day:cur.getDate(), month:cur.getMonth(), hasData:!!d});
@@ -5803,7 +5808,7 @@ function calcWeekAvg(metric, weeksAgo) {
   const vals = [];
   for (let i = 0; i < 7; i++) {
     const d = new Date(); d.setDate(d.getDate() - (weeksAgo*7) - i);
-    const day = DB[d.toISOString().split('T')[0]];
+    const day = DB[localDateStr(d)];
     if (!day) continue;
     let val = null;
     if (metric === 'sleep') val = getSleepH(day) || null;
@@ -5865,7 +5870,7 @@ function checkStreak(days) {
   let streak = 0;
   for (let i = 0; i <= days+5; i++) {
     const d = new Date(); d.setDate(d.getDate()-i);
-    if (DB[d.toISOString().split('T')[0]]?.savedAt) streak++; else break;
+    if (DB[localDateStr(d)]?.savedAt) streak++; else break;
   }
   return streak >= days;
 }
@@ -5874,7 +5879,7 @@ function countDaysWhere(fn, lastN) {
   let count = 0;
   for (let i = 0; i < lastN; i++) {
     const d = new Date(); d.setDate(d.getDate()-i);
-    const day = DB[d.toISOString().split('T')[0]];
+    const day = DB[localDateStr(d)];
     if (day && fn(day)) count++;
   }
   return count;
@@ -5943,7 +5948,7 @@ async function generateWeeklySummary(force) {
   const stats=[];
   for (let i=1;i<=7;i++) {
     const d=new Date(); d.setDate(d.getDate()-i);
-    const key=d.toISOString().split('T')[0];
+    const key=localDateStr(d);
     const day=DB[key]; if(!day) continue;
     let cal=0;
     if(day.meals){const mv=typeof day.meals==='object'&&!Array.isArray(day.meals)?Object.values(day.meals).flat():day.meals;cal=mv.reduce((s,m)=>s+(parseInt(m.cal)||0),0);}
@@ -5953,9 +5958,10 @@ async function generateWeeklySummary(force) {
   if (!stats.length) { el.innerHTML='<span style="color:var(--muted);">Sem dados suficientes.</span>'; if(btn) btn.disabled=false; return; }
 
   try {
-    const txt = await callGroq(
+    const txt = await callGemini(
+      'Coach de saude holistica em Portugal. Tom caloroso e direto.',
       'Dados da semana:\n'+stats.join('\n')+'\n\nFaz um resumo motivador com pontos positivos, areas a melhorar e 3 sugestoes concretas para a proxima semana. Max 250 palavras.',
-      'Coach de saude holistica em Portugal. Tom caloroso e direto.'
+      900
     );
     el.innerHTML = txt.replace(/\n/g,'<br>');
     localStorage.setItem(lastKey, now.toISOString());
@@ -6095,7 +6101,7 @@ function exportData() {
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'diario-de-vida-' + new Date().toISOString().split('T')[0] + '.json';
+  a.download = 'diario-de-vida-' + localDateStr() + '.json';
   a.click();
 }
 
