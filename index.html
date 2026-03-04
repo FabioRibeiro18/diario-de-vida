@@ -1851,6 +1851,17 @@ canvas { display:block; width:100% !important; max-width:100%; }
       <textarea id="sleepNotes" rows="2" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-s);padding:10px 13px;font-size:13px;font-family:'Lora',serif;color:var(--text);outline:none;width:100%;resize:vertical;" placeholder="Acordaste a meio da noite? Levantaste para ir à casa de banho?"></textarea>
     </div>
   </div>
+
+  <div id="savebar-sleep" style="position:sticky;bottom:0;z-index:10;background:var(--bg);border-top:1px solid var(--border);padding:12px 0 10px;margin-top:18px;display:flex;gap:10px;align-items:center;">
+    <button class="btn btn-primary" onclick="saveSection('sleep')" id="saveBtn-sleep" style="flex:1;font-size:13px;">
+      💾 Guardar Sono
+    </button>
+    <button class="btn btn-secondary" onclick="editSection('sleep')" id="editBtn-sleep" style="display:none;flex:1;font-size:13px;">
+      ✏️ Editar
+    </button>
+    <span id="saveMsg-sleep" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--moss-l);min-width:90px;text-align:right;"></span>
+  </div>
+
 </div>
 
 <!-- ▸ WEIGHT -->
@@ -1883,6 +1894,17 @@ canvas { display:block; width:100% !important; max-width:100%; }
     <button class="btn btn-primary" onclick="getWeightAdvice()">💡 Pedir conselho sobre o meu peso</button>
     <div class="ai-response" id="weightResponse"></div>
   </div>
+
+  <div id="savebar-weight" style="position:sticky;bottom:0;z-index:10;background:var(--bg);border-top:1px solid var(--border);padding:12px 0 10px;margin-top:18px;display:flex;gap:10px;align-items:center;">
+    <button class="btn btn-primary" onclick="saveSection('weight')" id="saveBtn-weight" style="flex:1;font-size:13px;">
+      💾 Guardar Peso
+    </button>
+    <button class="btn btn-secondary" onclick="editSection('weight')" id="editBtn-weight" style="display:none;flex:1;font-size:13px;">
+      ✏️ Editar
+    </button>
+    <span id="saveMsg-weight" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--moss-l);min-width:90px;text-align:right;"></span>
+  </div>
+
 </div>
 
 <!-- ▸ MEALS -->
@@ -2211,9 +2233,21 @@ canvas { display:block; width:100% !important; max-width:100%; }
       <textarea id="workNotes" rows="3" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-s);padding:10px 13px;font-family:'Lora',serif;font-size:13px;color:var(--text);outline:none;width:100%;resize:vertical;" placeholder="O que fizeste hoje? Que desafios enfrentaste? Conquistas..."></textarea>
     </div>
   </div>
+
+  <div id="savebar-work" style="position:sticky;bottom:0;z-index:10;background:var(--bg);border-top:1px solid var(--border);padding:12px 0 10px;margin-top:18px;display:flex;gap:10px;align-items:center;">
+    <button class="btn btn-primary" onclick="saveSection('work')" id="saveBtn-work" style="flex:1;font-size:13px;">
+      💾 Guardar Trabalho
+    </button>
+    <button class="btn btn-secondary" onclick="editSection('work')" id="editBtn-work" style="display:none;flex:1;font-size:13px;">
+      ✏️ Editar
+    </button>
+    <span id="saveMsg-work" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--moss-l);min-width:90px;text-align:right;"></span>
+  </div>
+
 </div>
 
 <!-- ▸ SCREEN -->
+<d
 <div class="section" id="section-screen">
   <div class="section-header">
     <div class="section-title">Tempo de <em>Ecrã</em></div>
@@ -4224,6 +4258,69 @@ function updateOverviewFromSnap(s) {
 // ═══════════════════════════════════════════════════════════════════
 // SAVE
 // ═══════════════════════════════════════════════════════════════════
+
+// ═══════════════════════════════════════════════════════════════════
+// GUARDAR / EDITAR por secção
+// ═══════════════════════════════════════════════════════════════════
+
+const SECTION_FIELDS = {
+  sleep: ['bedtime','waketime','sleepQual','dreams','sleepNotes'],
+  weight: ['weight','weightTime','height','weightGoal','weightDeadline'],
+  work: ['workStart','workEnd','lunchStart','lunchEnd','workMood','workFocus','workNotes'],
+};
+
+function saveSection(section) {
+  // Guardar apenas os campos desta secção
+  saveData();
+
+  const saveBtn = document.getElementById('saveBtn-' + section);
+  const editBtn = document.getElementById('editBtn-' + section);
+  const msg     = document.getElementById('saveMsg-' + section);
+  const fields  = SECTION_FIELDS[section] || [];
+
+  // Bloquear campos
+  fields.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.setAttribute('data-saved-val', el.value);
+    if (el.tagName === 'SELECT' || el.tagName === 'TEXTAREA' || el.tagName === 'INPUT') {
+      el.disabled = true;
+      el.style.opacity = '0.7';
+      el.style.cursor = 'default';
+    }
+  });
+
+  if (saveBtn) saveBtn.style.display = 'none';
+  if (editBtn) editBtn.style.display = 'flex';
+  if (msg) {
+    const now = new Date();
+    msg.textContent = '✓ guardado às ' + now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+  }
+}
+
+function editSection(section) {
+  const saveBtn = document.getElementById('saveBtn-' + section);
+  const editBtn = document.getElementById('editBtn-' + section);
+  const msg     = document.getElementById('saveMsg-' + section);
+  const fields  = SECTION_FIELDS[section] || [];
+
+  // Desbloquear campos
+  fields.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.disabled = false;
+    el.style.opacity = '';
+    el.style.cursor = '';
+  });
+
+  if (saveBtn) saveBtn.style.display = 'flex';
+  if (editBtn) editBtn.style.display = 'none';
+  if (msg) msg.textContent = 'a editar...';
+
+  // Focar primeiro campo editável
+  const first = document.getElementById(fields[0]);
+  if (first) first.focus();
+}
 
 function saveData() {
   const snap = {
