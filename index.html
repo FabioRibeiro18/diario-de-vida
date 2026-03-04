@@ -1713,6 +1713,9 @@ canvas { display:block; width:100% !important; max-width:100%; }
     <div class="nav-item" onclick="showSection('mifitness',this)">
       <span class="nav-icon">⌚</span> Mi Fitness
     </div>
+    <div class="nav-item" onclick="showSection('last5',this)">
+      <span class="nav-icon">📅</span> Últimos 5 Dias
+    </div>
     <div class="nav-item" onclick="showSection('stats',this)">
       <span class="nav-icon">📈</span> Estatísticas
     </div>
@@ -2567,6 +2570,15 @@ canvas { display:block; width:100% !important; max-width:100%; }
 
 </div>
 
+<!-- ÚLTIMOS 5 DIAS -->
+<div class="section" id="section-last5">
+  <div class="section-header">
+    <div class="section-title">Últimos <em>5 Dias</em></div>
+    <div class="section-sub">sono · peso · trabalho</div>
+  </div>
+  <div id="last5Container"></div>
+</div>
+
 <!-- SETTINGS -->
 <div class="section" id="section-settings">
   <div class="section-header">
@@ -3367,37 +3379,50 @@ function calcWCTip() {
 // GEMINI AI HELPER
 // ═══════════════════════════════════════════════════════════════════
 
-// IA via Anthropic — sem chave necessária
+// IA via Groq — gratuito, suporta CORS no browser
+const GROQ_MODEL = 'llama-3.3-70b-versatile';
+function getGroqKey() { return localStorage.getItem('dvGroqKey') || ''; }
+function setGroqKey(k) { localStorage.setItem('dvGroqKey', k.trim()); }
+Object.defineProperty(window, 'GROQ_KEY', { get: getGroqKey });
+
 async function callGemini(systemPrompt, userPrompt, maxTokens) {
-  const response = await fetch('https://api.anthropic.com/v1/messages', {
+  const key = getGroqKey();
+  if (!key) throw new Error('Chave Groq não configurada. Vai a ⚙️ Configurações → IA e adiciona a tua chave gratuita.');
+
+  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': 'Bearer ' + key,
+    },
     body: JSON.stringify({
-      model: 'claude-sonnet-4-20250514',
+      model: GROQ_MODEL,
       max_tokens: maxTokens || 800,
-      system: systemPrompt,
-      messages: [{ role: 'user', content: userPrompt }]
+      temperature: 0.4,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user',   content: userPrompt   }
+      ]
     })
   });
 
   if (!response.ok) {
     const err = await response.text();
-    let msg = 'IA HTTP ' + response.status;
-    try { const j = JSON.parse(err); msg = j.error?.message || msg; } catch(e) {}
+    let msg = 'Groq HTTP ' + response.status;
+    try { const j = JSON.parse(err); msg = j.error?.message || msg; } catch(e2) {}
+    if (response.status === 401) msg = 'Chave inválida. Vai a ⚙️ Configurações → IA e cola a chave novamente.';
+    if (response.status === 429) msg = 'Limite atingido. Espera 1 min e tenta novamente.';
     throw new Error(msg);
   }
 
   const data = await response.json();
   if (data.error) throw new Error(data.error.message);
-  const text = data.content?.[0]?.text;
-  if (!text) throw new Error('Resposta vazia da IA');
+  const text = data.choices?.[0]?.message?.content;
+  if (!text) throw new Error('Resposta vazia');
   return text;
 }
 
-// Manter compatibilidade com código que verifica chave
-function getGroqKey() { return 'anthropic'; }
-function setGroqKey(k) {}
-Object.defineProperty(window, 'GROQ_KEY', { get: getGroqKey });
+// Compatibilidade — getGroqKey já definida acima
 
 function extractJSON(text) {
   // Try direct parse first
@@ -6008,6 +6033,139 @@ async function saveReminders() {
 // SETTINGS PAGE — funções
 // ═══════════════════════════════════════════════════════════════════
 
+// ═══════════════════════════════════════════════════════════════════
+// ÚLTIMOS 5 DIAS
+// ═══════════════════════════════════════════════════════════════════
+
+function renderLast5Days() {
+  const container = document.getElementById('last5Container');
+  if (!container) return;
+
+  const days = [];
+  for (let i = 4; i >= 0; i--) {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    days.push(localDateStr(d));
+  }
+
+  const dayNames = ['Dom','Seg','Ter','Qua','Qui','Sex','Sáb'];
+  const monthNames = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+  let html = '';
+
+  days.forEach(dateStr => {
+    const data = DB[dateStr] || {};
+    const isToday = dateStr === TODAY;
+    const d = new Date(dateStr + 'T12:00:00');
+    const label = isToday ? 'Hoje' : dayNames[d.getDay()];
+    const dateLabel = d.getDate() + ' ' + monthNames[d.getMonth()];
+
+    // ── SONO ──
+    let sonoTxt = '—';
+    let sonoSub = '';
+    let sonoColor = 'var(--muted)';
+    if (data.bedtime && data.waketime) {
+      const [bh,bm] = data.bedtime.split(':').map(Number);
+      const [wh,wm] = data.waketime.split(':').map(Number);
+      let bMin = bh*60+bm, wMin = wh*60+wm;
+      if (wMin < bMin) wMin += 24*60;
+      const h = ((wMin - bMin)/60);
+      sonoTxt = h.toFixed(1) + 'h';
+      sonoSub = data.bedtime + ' → ' + data.waketime;
+      sonoColor = h >= 7 ? 'var(--moss-l)' : h >= 6 ? 'var(--amber, #f59e0b)' : '#f87171';
+    } else if (isToday) {
+      sonoTxt = 'por registar';
+    }
+
+    // ── PESO ──
+    let pesoTxt = '—';
+    let pesoSub = '';
+    let pesoColor = 'var(--muted)';
+    if (data.weight) {
+      pesoTxt = data.weight + ' kg';
+      if (data.weightGoal) {
+        const diff = (parseFloat(data.weight) - parseFloat(data.weightGoal)).toFixed(1);
+        pesoSub = diff > 0 ? '↑ ' + diff + 'kg acima da meta' : diff < 0 ? '✓ abaixo da meta' : '= na meta';
+        pesoColor = diff <= 0 ? 'var(--moss-l)' : 'var(--muted)';
+      }
+    } else if (isToday) {
+      pesoTxt = 'por registar';
+    }
+
+    // ── TRABALHO ──
+    let trabalhoTxt = '—';
+    let trabalhoSub = '';
+    let trabalhoColor = 'var(--muted)';
+    if (data.workStart && data.workEnd) {
+      const [sh,sm] = data.workStart.split(':').map(Number);
+      const [eh,em] = data.workEnd.split(':').map(Number);
+      let sMin = sh*60+sm, eMin = eh*60+em;
+      if (eMin < sMin) eMin += 24*60;
+      const totalMin = eMin - sMin;
+      const lunchMin = 60; // pausa almoço
+      const netMin = totalMin - lunchMin;
+      const netH = (netMin/60).toFixed(1);
+      const stdMin = 8*60; // 8h standard
+      const diffMin = netMin - stdMin;
+      trabalhoTxt = netH + 'h';
+      trabalhoSub = data.workStart + ' → ' + data.workEnd;
+      if (diffMin > 0) {
+        const extraH = Math.floor(diffMin/60), extraM = diffMin%60;
+        trabalhoSub += ' · +' + extraH + 'h' + (extraM ? extraM+'m' : '') + ' extra';
+        trabalhoColor = '#f87171';
+      } else if (diffMin < 0) {
+        const faltaH = Math.floor(-diffMin/60), faltaM = (-diffMin)%60;
+        trabalhoSub += ' · -' + faltaH + 'h' + (faltaM ? faltaM+'m' : '') + ' em falta';
+        trabalhoColor = 'var(--amber, #f59e0b)';
+      } else {
+        trabalhoColor = 'var(--moss-l)';
+      }
+    } else if (data.workStart) {
+      trabalhoTxt = data.workStart + ' →';
+      trabalhoSub = 'saída não registada';
+      trabalhoColor = 'var(--amber, #f59e0b)';
+    } else if (isToday) {
+      trabalhoTxt = 'por registar';
+    }
+
+    html += `
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:16px 18px;margin-bottom:14px;${isToday ? 'border-color:var(--moss);' : ''}">
+      <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:14px;">
+        <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;color:${isToday ? 'var(--moss-l)' : 'var(--text1)'};">${label}</span>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);">${dateLabel}</span>
+        ${isToday ? '<span style="font-family:\'JetBrains Mono\',monospace;font-size:9px;background:var(--moss);color:#fff;padding:2px 7px;border-radius:20px;margin-left:auto;">hoje</span>' : ''}
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+
+        <div style="background:var(--bg);border-radius:10px;padding:12px;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">🌙 Sono</div>
+          <div style="font-size:18px;font-weight:700;color:${sonoColor};font-family:'JetBrains Mono',monospace;">${sonoTxt}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:3px;font-family:'JetBrains Mono',monospace;">${sonoSub}</div>
+        </div>
+
+        <div style="background:var(--bg);border-radius:10px;padding:12px;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">⚖️ Peso</div>
+          <div style="font-size:18px;font-weight:700;color:${pesoColor};font-family:'JetBrains Mono',monospace;">${pesoTxt}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:3px;font-family:'JetBrains Mono',monospace;">${pesoSub}</div>
+        </div>
+
+        <div style="background:var(--bg);border-radius:10px;padding:12px;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">💼 Trabalho</div>
+          <div style="font-size:18px;font-weight:700;color:${trabalhoColor};font-family:'JetBrains Mono',monospace;">${trabalhoTxt}</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:3px;font-family:'JetBrains Mono',monospace;">${trabalhoSub}</div>
+        </div>
+
+      </div>
+    </div>`;
+  });
+
+  if (!html) {
+    html = '<div style="text-align:center;color:var(--muted);padding:40px;font-family:\'JetBrains Mono\',monospace;font-size:12px;">Sem registos nos últimos 5 dias.</div>';
+  }
+
+  container.innerHTML = html;
+}
+
 function initSettingsPage() {
   // Sheets URL
   const urlInput = document.getElementById('sheetsUrlSettingsInput');
@@ -6119,6 +6277,7 @@ function clearAllData() {
   showSection = function(id, el) {
     _orig(id, el);
     if (id === 'settings') initSettingsPage();
+    if (id === 'last5') renderLast5Days();
   };
 })();
 
