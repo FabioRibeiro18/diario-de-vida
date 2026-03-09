@@ -4024,14 +4024,16 @@ function parseTimeToMins(t) {
 }
 
 // ── Banco de horas: soma overtime de todos os dias guardados
+const OVERTIME_START_DATE = '2026-03-04'; // data de início do banco de horas
+
 function calcOvertimeBank() {
   let totalMins = 0;
   let daysCount = 0;
-  const resetDate = localStorage.getItem('dvOvertimeReset') || '';
 
   Object.entries(DB).forEach(([date, d]) => {
     if (!d) return;
-    if (resetDate && date <= resetDate) return;
+    // Só contar a partir da data de início
+    if (date < OVERTIME_START_DATE) return;
 
     const startM = parseTimeToMins(d.workStart);
     const endM   = parseTimeToMins(d.workEnd);
@@ -4046,8 +4048,8 @@ function calcOvertimeBank() {
     }
 
     const worked = endM - startM - lunch;
-    if (isNaN(worked)) return;
-    totalMins += worked - 480; // overtime = trabalhado - 8h
+    if (isNaN(worked) || worked < 0) return;
+    totalMins += worked - 480;
     daysCount++;
   });
 
@@ -4125,27 +4127,33 @@ function renderWorkCalendar() {
     const isWeekend = dow === 0 || dow === 6;
     const dateStr = localDateStr(d);
     const isToday = dateStr === today;
+    const isBefore = dateStr < OVERTIME_START_DATE;
     const data    = getDayOT(dateStr);
 
     // Semana ISO (seg=início)
     const weekKey = getISOWeek(d);
     if (!weeks[weekKey]) weeks[weekKey] = { ot: 0, worked: 0, days: 0, label: '' };
-    if (data && !isWeekend) {
+    if (data && !isWeekend && !isBefore) {
       weeks[weekKey].ot     += data.ot;
       weeks[weekKey].worked += data.worked;
       weeks[weekKey].days++;
     }
 
-    let bg = '', border = '', label = '', color = '';
+    let bg = '', border = '', label = '';
 
     if (isWeekend) {
       bg     = 'background:transparent;';
-      border = 'border:1px dashed rgba(100,116,139,0.15);';
-      label  = `<span style="font-size:8px;color:var(--faint);">${day}</span>`;
+      border = 'border:1px dashed rgba(100,116,139,0.12);';
+      label  = `<span style="font-size:8px;color:rgba(100,116,139,0.3);">${day}</span>`;
+    } else if (isBefore) {
+      // Antes da data de início — mostrar como inativo
+      bg     = 'background:rgba(30,40,55,0.4);';
+      border = 'border:1px solid rgba(100,116,139,0.1);';
+      label  = `<span style="font-size:8px;color:rgba(100,116,139,0.2);">${day}</span>`;
     } else if (!data) {
       // Sem registo (dia útil)
-      bg     = 'background:rgba(100,116,139,0.08);';
-      border = 'border:1px dashed var(--border);';
+      bg     = 'background:rgba(51,65,85,0.5);';
+      border = 'border:1px dashed rgba(100,116,139,0.3);';
       label  = `<span style="font-size:8px;color:var(--muted);">${day}</span>`;
     } else {
       const ot    = data.ot;
@@ -4158,31 +4166,43 @@ function renderWorkCalendar() {
       const wTxt  = `${wH}:${String(wM).padStart(2,'0')}`;
 
       if (ot > 0) {
-        const intensity = Math.min(ot / 120, 1); // max intensity at +2h
-        bg     = `background:rgba(45,212,191,${0.1 + intensity*0.25});`;
-        border = `border:1px solid rgba(45,212,191,${0.3 + intensity*0.4});`;
-        color  = 'color:var(--moss-l);';
+        // Verde escuro → teal vivo conforme intensidade
+        const intensity = Math.min(ot / 90, 1);
+        const alpha = 0.25 + intensity * 0.5;
+        bg     = `background:rgba(13,148,136,${alpha});`;
+        border = `border:1px solid rgba(45,212,191,${0.4 + intensity*0.5});`;
+        label  = `
+          <span style="font-size:8px;color:#fff;font-weight:600;">${day}</span>
+          <span style="font-size:10px;font-weight:800;color:#5eead4;font-family:'JetBrains Mono',monospace;">${otTxt}</span>
+          <span style="font-size:7px;color:rgba(255,255,255,0.6);font-family:'JetBrains Mono',monospace;">${wTxt}</span>
+        `;
       } else if (ot < 0) {
-        const intensity = Math.min(-ot / 120, 1);
-        bg     = `background:rgba(248,113,113,${0.08 + intensity*0.2});`;
-        border = `border:1px solid rgba(248,113,113,${0.2 + intensity*0.4});`;
-        color  = 'color:#f87171;';
+        // Vermelho escuro → vivo conforme intensidade
+        const intensity = Math.min(-ot / 90, 1);
+        const alpha = 0.25 + intensity * 0.45;
+        bg     = `background:rgba(153,27,27,${alpha});`;
+        border = `border:1px solid rgba(248,113,113,${0.4 + intensity*0.5});`;
+        label  = `
+          <span style="font-size:8px;color:#fff;font-weight:600;">${day}</span>
+          <span style="font-size:10px;font-weight:800;color:#fca5a5;font-family:'JetBrains Mono',monospace;">${otTxt}</span>
+          <span style="font-size:7px;color:rgba(255,255,255,0.6);font-family:'JetBrains Mono',monospace;">${wTxt}</span>
+        `;
       } else {
-        bg     = 'background:rgba(45,212,191,0.08);';
-        border = 'border:1px solid rgba(45,212,191,0.2);';
-        color  = 'color:var(--moss);';
+        bg     = 'background:rgba(13,148,136,0.2);';
+        border = 'border:1px solid rgba(45,212,191,0.35);';
+        label  = `
+          <span style="font-size:8px;color:#fff;font-weight:600;">${day}</span>
+          <span style="font-size:10px;font-weight:800;color:#5eead4;font-family:'JetBrains Mono',monospace;">8:00 ✓</span>
+          <span style="font-size:7px;color:rgba(255,255,255,0.6);font-family:'JetBrains Mono',monospace;">${wTxt}</span>
+        `;
       }
-      label = `
-        <span style="font-size:8px;${color}font-weight:600;">${day}</span>
-        <span style="font-size:9px;font-weight:700;${color}font-family:'JetBrains Mono',monospace;">${otTxt}</span>
-        <span style="font-size:7px;color:var(--muted);font-family:'JetBrains Mono',monospace;">${wTxt}</span>
-      `;
     }
 
-    const todayRing = isToday ? 'box-shadow:0 0 0 2px var(--moss);' : '';
+    const todayRing = isToday ? 'box-shadow:0 0 0 2px #2dd4bf, 0 0 8px rgba(45,212,191,0.4);' : '';
     html += `
-      <div style="height:56px;border-radius:8px;${bg}${border}${todayRing}padding:5px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:default;transition:transform 0.1s;" 
-           onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform=''">
+      <div style="height:56px;border-radius:8px;${bg}${border}${todayRing}padding:5px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:default;transition:transform 0.12s,filter 0.12s;" 
+           onmouseover="this.style.transform='scale(1.08)';this.style.filter='brightness(1.2)'" 
+           onmouseout="this.style.transform='';this.style.filter=''">
         ${label}
       </div>`;
   }
@@ -4197,13 +4217,16 @@ function renderWorkCalendar() {
     const sign  = w.ot >= 0 ? '+' : '-';
     const ah    = Math.floor(Math.abs(w.ot)/60), am = Math.abs(w.ot)%60;
     const otTxt = `${sign}${ah}h${am ? am+'m' : ''}`;
-    const col   = w.ot >= 0 ? 'var(--moss-l)' : '#f87171';
+    const isPos = w.ot >= 0;
+    const bg    = isPos ? 'rgba(13,148,136,0.2)' : 'rgba(153,27,27,0.25)';
+    const bord  = isPos ? '1px solid rgba(45,212,191,0.4)' : '1px solid rgba(248,113,113,0.4)';
+    const col   = isPos ? '#5eead4' : '#fca5a5';
     const wh    = Math.floor(w.worked/60), wm = w.worked%60;
     weekHtml += `
-      <div style="flex:0 0 auto;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 12px;min-width:100px;">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);margin-bottom:4px;">SEM ${wk.split('-W')[1]}</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:${col};">${otTxt}</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-top:2px;">${wh}h${wm?wm+'m':''} · ${w.days}d</div>
+      <div style="flex:0 0 auto;background:${bg};border:${bord};border-radius:10px;padding:8px 14px;min-width:110px;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:rgba(255,255,255,0.4);margin-bottom:4px;text-transform:uppercase;letter-spacing:1px;">SEM ${wk.split('-W')[1]}</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:800;color:${col};">${otTxt}</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(255,255,255,0.45);margin-top:2px;">${wh}h${wm?wm+'m':''} · ${w.days}d</div>
       </div>`;
   });
   if (weekDiv) weekDiv.innerHTML = weekHtml || `<span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--faint);padding:8px;">sem registos este mês</span>`;
