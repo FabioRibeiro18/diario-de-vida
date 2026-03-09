@@ -2242,6 +2242,54 @@ canvas { display:block; width:100% !important; max-width:100%; }
     </div>
   </div>
 
+  <!-- ▸ CALENDÁRIO BANCO DE HORAS -->
+  <div class="card" style="padding:0;overflow:hidden;">
+    <div style="padding:16px 18px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);">
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:4px;">banco de horas</div>
+        <div style="display:flex;align-items:baseline;gap:8px;">
+          <span style="font-family:'Source Serif 4',serif;font-size:26px;font-weight:300;" id="calOtTotal">—</span>
+          <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);" id="calOtDays"></span>
+        </div>
+      </div>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <button onclick="calPrevMonth()" style="background:none;border:1px solid var(--border);border-radius:8px;width:30px;height:30px;color:var(--muted);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;">‹</button>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);min-width:90px;text-align:center;" id="calMonthLabel"></span>
+        <button onclick="calNextMonth()" style="background:none;border:1px solid var(--border);border-radius:8px;width:30px;height:30px;color:var(--muted);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center;">›</button>
+      </div>
+    </div>
+
+    <!-- Legenda -->
+    <div style="padding:10px 18px 6px;display:flex;gap:14px;flex-wrap:wrap;">
+      <div style="display:flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);">
+        <div style="width:10px;height:10px;border-radius:3px;background:rgba(45,212,191,0.25);border:1px solid rgba(45,212,191,0.5);"></div> overtime
+      </div>
+      <div style="display:flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);">
+        <div style="width:10px;height:10px;border-radius:3px;background:rgba(248,113,113,0.2);border:1px solid rgba(248,113,113,0.4);"></div> em falta
+      </div>
+      <div style="display:flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);">
+        <div style="width:10px;height:10px;border-radius:3px;background:rgba(100,116,139,0.15);border:1px dashed var(--border);"></div> sem registo
+      </div>
+    </div>
+
+    <!-- Dias da semana -->
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);padding:0 12px;gap:3px;margin-bottom:2px;">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--faint);text-align:center;padding:4px 0;">SEG</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--faint);text-align:center;padding:4px 0;">TER</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--faint);text-align:center;padding:4px 0;">QUA</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--faint);text-align:center;padding:4px 0;">QUI</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--faint);text-align:center;padding:4px 0;">SEX</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--faint);text-align:center;padding:4px 0;">SÁB</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--faint);text-align:center;padding:4px 0;">DOM</div>
+    </div>
+
+    <!-- Grid do calendário -->
+    <div id="workCalGrid" style="display:grid;grid-template-columns:repeat(7,1fr);padding:0 12px 12px;gap:3px;"></div>
+
+    <!-- Resumo semanal -->
+    <div id="workWeekSummary" style="border-top:1px solid var(--border);padding:12px 18px;display:flex;gap:6px;overflow-x:auto;"></div>
+  </div>
+
   <div id="savebar-work" style="position:sticky;bottom:0;z-index:10;background:var(--bg);border-top:1px solid var(--border);padding:12px 0 10px;margin-top:18px;display:flex;gap:10px;align-items:center;">
     <button class="btn btn-primary" onclick="saveSection('work')" id="saveBtn-work" style="flex:1;font-size:13px;">
       💾 Guardar Trabalho
@@ -3962,6 +4010,7 @@ function calcWorkHours() {
   if (ssEl && seEl) { ssEl.value = s; seEl.value = e; calcScreenTime(); }
 
   renderOvertimeBank();
+  renderWorkCalendar();
   updateSidebarCals();
   updateOverview();
 }
@@ -4003,6 +4052,180 @@ function calcOvertimeBank() {
   });
 
   return { totalMins, daysCount };
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// CALENDÁRIO BANCO DE HORAS
+// ═══════════════════════════════════════════════════════════════════
+
+let calYear  = new Date().getFullYear();
+let calMonth = new Date().getMonth(); // 0-based
+
+function calPrevMonth() {
+  calMonth--;
+  if (calMonth < 0) { calMonth = 11; calYear--; }
+  renderWorkCalendar();
+}
+function calNextMonth() {
+  calMonth++;
+  if (calMonth > 11) { calMonth = 0; calYear++; }
+  renderWorkCalendar();
+}
+
+function renderWorkCalendar() {
+  const grid      = document.getElementById('workCalGrid');
+  const weekDiv   = document.getElementById('workWeekSummary');
+  const labelEl   = document.getElementById('calMonthLabel');
+  const totalEl   = document.getElementById('calOtTotal');
+  const daysEl    = document.getElementById('calOtDays');
+  if (!grid) return;
+
+  const monthNames = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+  if (labelEl) labelEl.textContent = monthNames[calMonth] + ' ' + calYear;
+
+  // ── dados do mês ──
+  const firstDay = new Date(calYear, calMonth, 1);
+  const lastDay  = new Date(calYear, calMonth + 1, 0);
+  const totalDays = lastDay.getDate();
+
+  // Offset: semana começa à segunda (0=seg..6=dom)
+  let startOffset = firstDay.getDay() - 1;
+  if (startOffset < 0) startOffset = 6;
+
+  // Calcular overtime por dia deste mês
+  function getDayOT(dateStr) {
+    const d = DB[dateStr];
+    if (!d || !d.workStart || !d.workEnd) return null;
+    const [sh,sm] = d.workStart.split(':').map(Number);
+    const [eh,em] = d.workEnd.split(':').map(Number);
+    let lunch = 60;
+    if (d.lunchStart && d.lunchEnd) {
+      const [lsh,lsm] = d.lunchStart.split(':').map(Number);
+      const [leh,lem] = d.lunchEnd.split(':').map(Number);
+      lunch = Math.max(0, (leh*60+lem)-(lsh*60+lsm));
+    }
+    const worked = (eh*60+em)-(sh*60+sm)-lunch;
+    return { worked, ot: worked - 480, workStart: d.workStart, workEnd: d.workEnd, lunch };
+  }
+
+  // ── render células ──
+  let html = '';
+
+  // células vazias antes do dia 1
+  for (let i = 0; i < startOffset; i++) {
+    html += `<div style="height:56px;"></div>`;
+  }
+
+  const today = localDateStr();
+  const weeks = {}; // semana ISO → {totalOt, days}
+
+  for (let day = 1; day <= totalDays; day++) {
+    const d   = new Date(calYear, calMonth, day);
+    const dow = d.getDay(); // 0=dom
+    const isWeekend = dow === 0 || dow === 6;
+    const dateStr = localDateStr(d);
+    const isToday = dateStr === today;
+    const data    = getDayOT(dateStr);
+
+    // Semana ISO (seg=início)
+    const weekKey = getISOWeek(d);
+    if (!weeks[weekKey]) weeks[weekKey] = { ot: 0, worked: 0, days: 0, label: '' };
+    if (data && !isWeekend) {
+      weeks[weekKey].ot     += data.ot;
+      weeks[weekKey].worked += data.worked;
+      weeks[weekKey].days++;
+    }
+
+    let bg = '', border = '', label = '', color = '';
+
+    if (isWeekend) {
+      bg     = 'background:transparent;';
+      border = 'border:1px dashed rgba(100,116,139,0.15);';
+      label  = `<span style="font-size:8px;color:var(--faint);">${day}</span>`;
+    } else if (!data) {
+      // Sem registo (dia útil)
+      bg     = 'background:rgba(100,116,139,0.08);';
+      border = 'border:1px dashed var(--border);';
+      label  = `<span style="font-size:8px;color:var(--muted);">${day}</span>`;
+    } else {
+      const ot    = data.ot;
+      const otH   = Math.floor(Math.abs(ot)/60);
+      const otM   = Math.abs(ot)%60;
+      const sign  = ot >= 0 ? '+' : '-';
+      const otTxt = `${sign}${otH}h${otM ? otM+'m' : ''}`;
+      const wH    = Math.floor(data.worked/60);
+      const wM    = data.worked%60;
+      const wTxt  = `${wH}:${String(wM).padStart(2,'0')}`;
+
+      if (ot > 0) {
+        const intensity = Math.min(ot / 120, 1); // max intensity at +2h
+        bg     = `background:rgba(45,212,191,${0.1 + intensity*0.25});`;
+        border = `border:1px solid rgba(45,212,191,${0.3 + intensity*0.4});`;
+        color  = 'color:var(--moss-l);';
+      } else if (ot < 0) {
+        const intensity = Math.min(-ot / 120, 1);
+        bg     = `background:rgba(248,113,113,${0.08 + intensity*0.2});`;
+        border = `border:1px solid rgba(248,113,113,${0.2 + intensity*0.4});`;
+        color  = 'color:#f87171;';
+      } else {
+        bg     = 'background:rgba(45,212,191,0.08);';
+        border = 'border:1px solid rgba(45,212,191,0.2);';
+        color  = 'color:var(--moss);';
+      }
+      label = `
+        <span style="font-size:8px;${color}font-weight:600;">${day}</span>
+        <span style="font-size:9px;font-weight:700;${color}font-family:'JetBrains Mono',monospace;">${otTxt}</span>
+        <span style="font-size:7px;color:var(--muted);font-family:'JetBrains Mono',monospace;">${wTxt}</span>
+      `;
+    }
+
+    const todayRing = isToday ? 'box-shadow:0 0 0 2px var(--moss);' : '';
+    html += `
+      <div style="height:56px;border-radius:8px;${bg}${border}${todayRing}padding:5px 4px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1px;cursor:default;transition:transform 0.1s;" 
+           onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform=''">
+        ${label}
+      </div>`;
+  }
+
+  grid.innerHTML = html;
+
+  // ── resumo semanal ──
+  const sortedWeeks = Object.entries(weeks).sort((a,b) => a[0].localeCompare(b[0]));
+  let weekHtml = '';
+  sortedWeeks.forEach(([wk, w]) => {
+    if (w.days === 0) return;
+    const sign  = w.ot >= 0 ? '+' : '-';
+    const ah    = Math.floor(Math.abs(w.ot)/60), am = Math.abs(w.ot)%60;
+    const otTxt = `${sign}${ah}h${am ? am+'m' : ''}`;
+    const col   = w.ot >= 0 ? 'var(--moss-l)' : '#f87171';
+    const wh    = Math.floor(w.worked/60), wm = w.worked%60;
+    weekHtml += `
+      <div style="flex:0 0 auto;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:8px 12px;min-width:100px;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);margin-bottom:4px;">SEM ${wk.split('-W')[1]}</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:14px;font-weight:700;color:${col};">${otTxt}</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-top:2px;">${wh}h${wm?wm+'m':''} · ${w.days}d</div>
+      </div>`;
+  });
+  if (weekDiv) weekDiv.innerHTML = weekHtml || `<span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--faint);padding:8px;">sem registos este mês</span>`;
+
+  // ── banco total do mês visível ──
+  const { totalMins, daysCount } = calcOvertimeBank();
+  if (totalEl) {
+    const sign = totalMins >= 0 ? '+' : '-';
+    const h = Math.floor(Math.abs(totalMins)/60), m = Math.abs(totalMins)%60;
+    totalEl.textContent = `${sign}${h}h${m ? m+'m' : ''}`;
+    totalEl.style.color = totalMins >= 0 ? 'var(--moss-l)' : '#f87171';
+  }
+  if (daysEl) daysEl.textContent = `acumulado · ${daysCount} dias`;
+}
+
+function getISOWeek(date) {
+  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+  const dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+  const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+  return `${d.getUTCFullYear()}-W${String(weekNo).padStart(2,'0')}`;
 }
 
 function renderOvertimeBank() {
@@ -6481,6 +6704,7 @@ function clearAllData() {
     _orig(id, el);
     if (id === 'settings') initSettingsPage();
     if (id === 'last5') renderLast5Days();
+    if (id === 'work') renderWorkCalendar();
   };
 })();
 
