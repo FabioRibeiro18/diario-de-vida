@@ -2144,17 +2144,16 @@ canvas { display:block; width:100% !important; max-width:100%; }
       <div style="display:flex;align-items:center;gap:8px;">
         <button onclick="workDatePrev()" style="background:none;border:1px solid var(--border);border-radius:8px;width:28px;height:28px;color:var(--muted);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;">‹</button>
         <input type="date" id="workDatePicker"
-          style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:4px 10px;font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--text2);cursor:pointer;outline:none;"
+          style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:4px 10px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);cursor:pointer;outline:none;"
           onchange="workDateChange(this.value)">
         <button onclick="workDateNext()" id="workDateNextBtn" style="background:none;border:1px solid var(--border);border-radius:8px;width:28px;height:28px;color:var(--muted);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;">›</button>
       </div>
     </div>
-    <div id="workDateBanner" style="display:none;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:8px 14px;margin-bottom:14px;font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--sand);">
+    <div id="workDateBanner" style="display:none;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:8px 14px;margin-bottom:14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--sand);" >
       <span id="workDateBannerText">A editar dia anterior</span>
       <button onclick="workDateReset()" style="float:right;background:none;border:none;color:var(--sand);cursor:pointer;font-size:11px;text-decoration:underline;">← voltar a hoje</button>
     </div>
 
-    <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
     <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
 
       <!-- Entrada -->
