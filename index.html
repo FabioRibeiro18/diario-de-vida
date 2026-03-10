@@ -2139,8 +2139,22 @@ canvas { display:block; width:100% !important; max-width:100%; }
   </div>
 
   <div class="card">
-    <div class="card-title">horário de trabalho</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px;">
+      <div class="card-title" style="margin-bottom:0;">horário de trabalho</div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button onclick="workDatePrev()" style="background:none;border:1px solid var(--border);border-radius:8px;width:28px;height:28px;color:var(--muted);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;">‹</button>
+        <input type="date" id="workDatePicker"
+          style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:4px 10px;font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--text2);cursor:pointer;outline:none;"
+          onchange="workDateChange(this.value)">
+        <button onclick="workDateNext()" id="workDateNextBtn" style="background:none;border:1px solid var(--border);border-radius:8px;width:28px;height:28px;color:var(--muted);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;">›</button>
+      </div>
+    </div>
+    <div id="workDateBanner" style="display:none;background:rgba(245,158,11,0.1);border:1px solid rgba(245,158,11,0.3);border-radius:10px;padding:8px 14px;margin-bottom:14px;font-family:"JetBrains Mono",monospace;font-size:11px;color:var(--sand);">
+      <span id="workDateBannerText">A editar dia anterior</span>
+      <button onclick="workDateReset()" style="float:right;background:none;border:none;color:var(--sand);cursor:pointer;font-size:11px;text-decoration:underline;">← voltar a hoje</button>
+    </div>
 
+    <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
     <div style="display:flex;gap:12px;margin-bottom:16px;flex-wrap:wrap;">
 
       <!-- Entrada -->
@@ -4564,7 +4578,11 @@ const SECTION_FIELDS = {
 };
 
 function saveSection(section) {
-  saveData();
+  if (section === 'work') {
+    saveWorkDay();
+  } else {
+    saveData();
+  }
 
   const saveBtn = document.getElementById('saveBtn-' + section);
   const editBtn = document.getElementById('editBtn-' + section);
@@ -5532,11 +5550,123 @@ function stampLunchEnd() {
   calcWorkHours();
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// WORK DATE PICKER — editar dias anteriores
+// ═══════════════════════════════════════════════════════════════════
+
+let workEditDate = TODAY; // data atualmente visível na secção trabalho
+
+function initWorkDatePicker() {
+  const picker = document.getElementById('workDatePicker');
+  if (!picker) return;
+  picker.max = TODAY;
+  picker.value = TODAY;
+  workEditDate = TODAY;
+  updateWorkDateBanner();
+}
+
+function workDateChange(val) {
+  if (!val) return;
+  workEditDate = val;
+  loadWorkDayIntoForm(val);
+  updateWorkDateBanner();
+}
+
+function workDatePrev() {
+  const d = new Date(workEditDate + 'T12:00:00');
+  d.setDate(d.getDate() - 1);
+  const newDate = localDateStr(d);
+  const picker = document.getElementById('workDatePicker');
+  if (picker) picker.value = newDate;
+  workDateChange(newDate);
+}
+
+function workDateNext() {
+  const d = new Date(workEditDate + 'T12:00:00');
+  d.setDate(d.getDate() + 1);
+  const newDate = localDateStr(d);
+  if (newDate > TODAY) return; // não avançar para o futuro
+  const picker = document.getElementById('workDatePicker');
+  if (picker) picker.value = newDate;
+  workDateChange(newDate);
+}
+
+function workDateReset() {
+  const picker = document.getElementById('workDatePicker');
+  if (picker) picker.value = TODAY;
+  workDateChange(TODAY);
+}
+
+function updateWorkDateBanner() {
+  const banner = document.getElementById('workDateBanner');
+  const bannerText = document.getElementById('workDateBannerText');
+  const nextBtn = document.getElementById('workDateNextBtn');
+  if (!banner) return;
+
+  if (workEditDate === TODAY) {
+    banner.style.display = 'none';
+  } else {
+    const d = new Date(workEditDate + 'T12:00:00');
+    const days = Math.round((new Date(TODAY + 'T12:00:00') - d) / 86400000);
+    const label = days === 1 ? 'ontem' : `há ${days} dias`;
+    const dayNames = ['domingo','segunda','terça','quarta','quinta','sexta','sábado'];
+    bannerText.textContent = `✏️  A editar ${dayNames[d.getDay()]} ${workEditDate} (${label})`;
+    banner.style.display = 'block';
+  }
+
+  // Desativar botão › se já estamos em hoje
+  if (nextBtn) nextBtn.style.opacity = workEditDate >= TODAY ? '0.3' : '1';
+
+  // Desativar/ativar botões stamp conforme se é hoje ou não
+  const isToday = workEditDate === TODAY;
+  ['stampWorkEntry', 'stampWorkExit', 'stampLunchStart', 'stampLunchEnd'].forEach(fn => {
+    document.querySelectorAll(`[onclick="${fn}()"]`).forEach(btn => {
+      btn.style.display = isToday ? '' : 'none';
+    });
+  });
+}
+
+function loadWorkDayIntoForm(date) {
+  const d = DB[date] || {};
+  // Preencher campos sem disparar saveData do dia errado
+  const set = (id, val) => { const el = document.getElementById(id); if (el) el.value = val || ''; };
+  set('workStart',   d.workStart   || '');
+  set('workEnd',     d.workEnd     || '');
+  set('lunchStart',  d.lunchStart  || '');
+  set('lunchEnd',    d.lunchEnd    || '');
+  set('workMood',    d.workMood    || '');
+  set('workFocus',   d.workFocus   || '');
+  set('workNotes',   d.workNotes   || '');
+  markWorkEntry(); markWorkExit(); calcWorkHours();
+}
+
+function saveWorkDay() {
+  // Guardar no dia correto (workEditDate, não necessariamente TODAY)
+  if (!DB[workEditDate]) DB[workEditDate] = {};
+  const d = DB[workEditDate];
+  const get = id => { const el = document.getElementById(id); return el ? el.value : ''; };
+  d.workStart  = get('workStart');
+  d.workEnd    = get('workEnd');
+  d.lunchStart = get('lunchStart');
+  d.lunchEnd   = get('lunchEnd');
+  d.workMood   = get('workMood');
+  d.workFocus  = get('workFocus');
+  d.workNotes  = get('workNotes');
+  d.savedAt    = new Date().toISOString();
+  localStorage.setItem('diarioVida', JSON.stringify(DB));
+  renderWorkCalendar();
+  renderOvertimeBank();
+  // Mostrar confirmação
+  const msg = document.getElementById('saveMsg-work');
+  if (msg) msg.textContent = '✓ ' + (workEditDate === TODAY ? 'guardado' : workEditDate + ' guardado');
+}
+
 function stampWorkEntry() {
   document.getElementById('workStart').value = getNowTime();
   markWorkEntry();
   calcWorkHours();
 }
+
 
 function stampWorkExit() {
   document.getElementById('workEnd').value = getNowTime();
@@ -6727,7 +6857,7 @@ function clearAllData() {
     _orig(id, el);
     if (id === 'settings') initSettingsPage();
     if (id === 'last5') renderLast5Days();
-    if (id === 'work') renderWorkCalendar();
+    if (id === 'work')     { initWorkDatePicker(); renderWorkCalendar(); }
   };
 })();
 
