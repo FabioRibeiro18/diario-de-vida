@@ -1716,6 +1716,9 @@ canvas { display:block; width:100% !important; max-width:100%; }
     <div class="nav-item" onclick="showSection('last5',this)">
       <span class="nav-icon">📅</span> Últimos 5 Dias
     </div>
+    <div class="nav-item" onclick="showSection('noventa',this)">
+      <span class="nav-icon">🎯</span> 90 Dias
+    </div>
     <div class="nav-item" onclick="showSection('stats',this)">
       <span class="nav-icon">📈</span> Estatísticas
     </div>
@@ -2564,6 +2567,131 @@ canvas { display:block; width:100% !important; max-width:100%; }
 </div>
 
 <!-- ▸ STATISTICS -->
+
+<!-- ▸ 90 DIAS -->
+<div class="section" id="section-noventa">
+  <div class="section-header">
+    <div class="section-title">90 Dias <em>& Alta Performance</em></div>
+    <div class="section-sub" id="n90-subtitle">o teu plano de transformação</div>
+  </div>
+
+  <!-- ESTADO: sem plano iniciado -->
+  <div id="n90-start-screen">
+    <div class="card" style="text-align:center;padding:36px 24px;">
+      <div style="font-size:48px;margin-bottom:16px;">🎯</div>
+      <div style="font-family:'Source Serif 4',serif;font-size:22px;font-weight:300;color:var(--text);margin-bottom:8px;">Plano de 90 Dias</div>
+      <div style="font-family:'Lora',serif;font-size:13px;color:var(--muted);line-height:1.7;max-width:420px;margin:0 auto 24px;">
+        Mindset, performance física, trabalho e alimentação — tudo integrado com os teus dados reais. A IA adapta o plano semanalmente com base no que registas.
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;max-width:380px;margin:0 auto 28px;text-align:left;">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;">
+          <div style="font-size:20px;margin-bottom:4px;">🧠</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;color:var(--muted);letter-spacing:1px;">Mindset</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px;">Disciplina & foco diário</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;">
+          <div style="font-size:20px;margin-bottom:4px;">💪</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;color:var(--muted);letter-spacing:1px;">Físico</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px;">Treino, sono, peso</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;">
+          <div style="font-size:20px;margin-bottom:4px;">💼</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;color:var(--muted);letter-spacing:1px;">Trabalho</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px;">Produtividade & foco</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px 14px;">
+          <div style="font-size:20px;margin-bottom:4px;">🥗</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;color:var(--muted);letter-spacing:1px;">Alimentação</div>
+          <div style="font-size:11px;color:var(--text2);margin-top:2px;">Hábitos & energia</div>
+        </div>
+      </div>
+      <button onclick="n90Init()" class="btn btn-primary" style="padding:14px 40px;font-size:14px;">
+        🚀 Iniciar plano de 90 dias
+      </button>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-top:12px;">precisa de chave Groq configurada</div>
+    </div>
+  </div>
+
+  <!-- ESTADO: plano ativo -->
+  <div id="n90-active-screen" style="display:none;">
+
+    <!-- Progresso geral -->
+    <div class="card" style="padding:18px 20px;">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:4px;">progresso</div>
+          <div style="font-family:'Source Serif 4',serif;font-size:26px;font-weight:300;color:var(--text);">
+            Dia <span id="n90-day-num" style="color:var(--moss-l);font-weight:600;">1</span>
+            <span style="font-size:14px;color:var(--muted);"> / 90</span>
+          </div>
+        </div>
+        <div style="text-align:right;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);">semana</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:var(--moss);" id="n90-week-num">1</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);">de 13</div>
+        </div>
+      </div>
+      <!-- Barra de progresso -->
+      <div style="background:var(--surface);border-radius:99px;height:8px;overflow:hidden;margin-bottom:8px;">
+        <div id="n90-progress-bar" style="height:100%;background:linear-gradient(90deg,var(--moss-d),var(--moss-l));border-radius:99px;transition:width 0.5s;width:1%;"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);">
+        <span id="n90-start-label"></span>
+        <span id="n90-end-label"></span>
+      </div>
+    </div>
+
+    <!-- Fase atual -->
+    <div class="card" id="n90-phase-card">
+      <div style="display:flex;align-items:flex-start;gap:14px;">
+        <div id="n90-phase-icon" style="font-size:32px;flex-shrink:0;">🌱</div>
+        <div style="flex:1;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:4px;" id="n90-phase-label">FASE 1 · DIAS 1–30</div>
+          <div style="font-family:'Source Serif 4',serif;font-size:18px;color:var(--text);margin-bottom:6px;" id="n90-phase-name">Fundação</div>
+          <div style="font-size:12px;color:var(--text2);line-height:1.6;" id="n90-phase-desc">Criar as bases: rotinas de sono, movimento diário e foco no trabalho.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Foco da semana (IA) -->
+    <div class="card">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+        <div class="card-title" style="margin-bottom:0;">foco desta semana</div>
+        <button onclick="n90GenerateWeek()" id="n90-gen-btn"
+          style="background:rgba(45,212,191,0.1);border:1px solid rgba(45,212,191,0.3);border-radius:8px;padding:6px 12px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--moss);cursor:pointer;">
+          🤖 gerar com IA
+        </button>
+      </div>
+      <div id="n90-week-content">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-align:center;padding:20px;">
+          Clica em "gerar com IA" para receber o foco personalizado desta semana com base nos teus dados.
+        </div>
+      </div>
+      <div id="n90-ai-status" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:8px;display:none;"></div>
+    </div>
+
+    <!-- Checklist diária -->
+    <div class="card">
+      <div class="card-title">checklist de hoje</div>
+      <div id="n90-daily-checks" style="display:flex;flex-direction:column;gap:8px;"></div>
+    </div>
+
+    <!-- Estrutura fixa das 13 semanas -->
+    <div class="card">
+      <div class="card-title">roadmap das 13 semanas</div>
+      <div id="n90-roadmap" style="display:flex;flex-direction:column;gap:6px;"></div>
+    </div>
+
+    <!-- Botão reset -->
+    <div style="text-align:center;padding:8px 0 16px;">
+      <button onclick="n90Reset()" style="background:none;border:none;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);cursor:pointer;text-decoration:underline;">
+        reiniciar plano
+      </button>
+    </div>
+
+  </div>
+</div>
+
 <div class="section" id="section-stats">
   <div class="section-header">
     <div class="section-title">Estatísticas <em>& Evolução</em></div>
@@ -6064,6 +6192,7 @@ function buildRow(date, d) {
     mi_passos:d.miSteps||'', mi_cal:d.miCalBurn||'', mi_distancia:d.miDistance||'',
     mi_fc:d.miHR||'', mi_spo2:d.miSPO2||'',
     guardado_em:d.savedAt||'',
+    n90_score:d.n90Score||'', n90_checks:d.n90Checks||'',
   };
 }
 
@@ -6615,6 +6744,335 @@ async function saveReminders() {
 // ÚLTIMOS 5 DIAS
 // ═══════════════════════════════════════════════════════════════════
 
+
+// ═══════════════════════════════════════════════════════════════════
+// 90 DIAS — PLANO DE ALTA PERFORMANCE
+// ═══════════════════════════════════════════════════════════════════
+
+const N90_PHASES = [
+  {
+    days: [1,30], icon: '🌱', name: 'Fundação',
+    label: 'FASE 1 · DIAS 1–30',
+    desc: 'Criar as bases inabaláveis: sono consistente, movimento diário, foco no trabalho e limpeza alimentar.',
+    color: 'rgba(45,212,191,0.15)', border: 'rgba(45,212,191,0.3)'
+  },
+  {
+    days: [31,60], icon: '⚡', name: 'Aceleração',
+    label: 'FASE 2 · DIAS 31–60',
+    desc: 'Construir momentum: intensificar treino, otimizar produtividade e consolidar hábitos mentais.',
+    color: 'rgba(245,158,11,0.12)', border: 'rgba(245,158,11,0.35)'
+  },
+  {
+    days: [61,90], icon: '🔥', name: 'Domínio',
+    label: 'FASE 3 · DIAS 61–90',
+    desc: 'Peak performance: sistemas automáticos, disciplina sem esforço e preparar o próximo ciclo.',
+    color: 'rgba(248,113,113,0.12)', border: 'rgba(248,113,113,0.3)'
+  }
+];
+
+const N90_WEEKS = [
+  // Fase 1 — Fundação
+  { w:1,  phase:1, focus:'Audit & Reset',        theme:'🧭', desc:'Avalia onde estás. Define os teus 3 objetivos principais. Começa as rotinas base.' },
+  { w:2,  phase:1, focus:'Sono & Energia',        theme:'🌙', desc:'Sono consistente 7-8h. Hora de deitar fixa. Sem ecrãs 1h antes de dormir.' },
+  { w:3,  phase:1, focus:'Movimento Diário',      theme:'🚶', desc:'20 min de movimento todos os dias. Sem exceções. Qualquer forma conta.' },
+  { w:4,  phase:1, focus:'Alimentação Limpa',     theme:'🥗', desc:'Reduz açúcar e ultra-processados. 8 copos de água. Regista tudo.' },
+  { w:5,  phase:1, focus:'Foco Profundo',         theme:'🎯', desc:'Blocos de trabalho de 90 min. Uma tarefa de cada vez. Elimina distrações.' },
+  { w:6,  phase:1, focus:'Revisão Fase 1',        theme:'📊', desc:'Analisa os últimos 30 dias. O que funcionou? Ajusta o que não funcionou.' },
+  // Fase 2 — Aceleração
+  { w:7,  phase:2, focus:'Intensidade Física',    theme:'💪', desc:'Adiciona treino de força 3x/semana. Aumenta volume gradualmente.' },
+  { w:8,  phase:2, focus:'Gestão de Tempo',       theme:'⏱', desc:'Time-blocking semanal. Elimina tarefas de baixo impacto. Automatiza.' },
+  { w:9,  phase:2, focus:'Mindset Resiliente',    theme:'🧠', desc:'Diário de gratidão. Reflexão diária. Confronta o desconforto intencionalmente.' },
+  { w:10, phase:2, focus:'Nutrição Otimizada',    theme:'⚗️', desc:'Proteína em cada refeição. Timing das refeições alinhado com o treino.' },
+  { w:11, phase:2, focus:'Recuperação Ativa',     theme:'🧘', desc:'Alongamento, descanso intencional, caminhadas. A recuperação é treino.' },
+  { w:12, phase:2, focus:'Revisão Fase 2',        theme:'📈', desc:'Compara métricas com o início. Identifica o teu maior ganho. Celebra.' },
+  // Fase 3 — Domínio
+  { w:13, phase:3, focus:'Sistemas Automáticos',  theme:'🔁', desc:'Os hábitos devem ser automáticos agora. Refina e prepara o próximo ciclo de 90 dias.' },
+];
+
+const N90_DAILY_CHECKS = {
+  mindset:   ['✍️ Reflexão matinal (5 min)', '🙏 3 gratidões', '🎯 1 objetivo do dia definido', '📵 Sem redes sociais antes das 10h'],
+  fisico:    ['🌅 Exposição ao sol matinal', '💧 8 copos de água', '🏃 20 min de movimento', '😴 Na cama antes das 23h'],
+  trabalho:  ['📋 Top 3 tarefas definidas', '⏱ Bloco de foco profundo (90 min)', '📵 Telefone silenciado no trabalho', '✅ Revisão do dia (5 min)'],
+  alimentacao: ['🥗 Proteína ao pequeno-almoço', '🍽️ Comer devagar e sem distrações', '🚫 Sem açúcar depois das 20h', '📝 Refeições registadas no app'],
+};
+
+function n90GetState() {
+  const raw = localStorage.getItem('n90State');
+  return raw ? JSON.parse(raw) : null;
+}
+
+function n90SaveState(state) {
+  localStorage.setItem('n90State', JSON.stringify(state));
+}
+
+function n90Init() {
+  if (!confirm('Iniciar o teu plano de 90 dias a partir de hoje?')) return;
+  const state = {
+    startDate: TODAY,
+    weekFocus: {},   // { 'YYYY-Www': { text, date } }
+    dailyChecks: {}, // { 'YYYY-MM-DD': [checked ids] }
+  };
+  n90SaveState(state);
+  renderN90();
+}
+
+function n90Reset() {
+  if (!confirm('Tens a certeza? Perdes o progresso guardado.')) return;
+  localStorage.removeItem('n90State');
+  renderN90();
+}
+
+function n90DayNum(startDate) {
+  const start = new Date(startDate + 'T12:00:00');
+  const now   = new Date(TODAY + 'T12:00:00');
+  return Math.max(1, Math.min(90, Math.round((now - start) / 86400000) + 1));
+}
+
+function n90WeekNum(dayNum) {
+  return Math.min(13, Math.ceil(dayNum / 7));
+}
+
+function renderN90() {
+  const state = n90GetState();
+  document.getElementById('n90-start-screen').style.display  = state ? 'none' : '';
+  document.getElementById('n90-active-screen').style.display = state ? ''     : 'none';
+  if (!state) return;
+
+  const dayNum  = n90DayNum(state.startDate);
+  const weekNum = n90WeekNum(dayNum);
+  const pct     = Math.round((dayNum / 90) * 100);
+
+  // Progresso
+  document.getElementById('n90-day-num').textContent      = dayNum;
+  document.getElementById('n90-week-num').textContent      = weekNum;
+  document.getElementById('n90-progress-bar').style.width = pct + '%';
+
+  // Datas início/fim
+  const startD = new Date(state.startDate + 'T12:00:00');
+  const endD   = new Date(startD); endD.setDate(endD.getDate() + 89);
+  document.getElementById('n90-start-label').textContent = state.startDate;
+  document.getElementById('n90-end-label').textContent   = localDateStr(endD);
+  document.getElementById('n90-subtitle').textContent    = `dia ${dayNum} de 90 · semana ${weekNum}`;
+
+  // Fase atual
+  const phase = N90_PHASES.find(p => dayNum >= p.days[0] && dayNum <= p.days[1]) || N90_PHASES[0];
+  document.getElementById('n90-phase-icon').textContent  = phase.icon;
+  document.getElementById('n90-phase-name').textContent  = phase.name;
+  document.getElementById('n90-phase-label').textContent = phase.label;
+  document.getElementById('n90-phase-desc').textContent  = phase.desc;
+  const phaseCard = document.getElementById('n90-phase-card');
+  phaseCard.style.background = phase.color;
+  phaseCard.style.borderColor = phase.border;
+
+  // Foco da semana guardado
+  const weekKey = getISOWeek(new Date(TODAY + 'T12:00:00'));
+  const savedFocus = state.weekFocus && state.weekFocus[weekKey];
+  if (savedFocus) {
+    document.getElementById('n90-week-content').innerHTML = n90WeekHtml(savedFocus.text);
+  }
+
+  // Checklist diária
+  n90RenderDailyChecks(state);
+
+  // Roadmap
+  n90RenderRoadmap(weekNum);
+}
+
+function n90WeekHtml(text) {
+  // Converte markdown simples em HTML
+  const lines = text.split('\n').filter(l => l.trim());
+  let html = '';
+  lines.forEach(line => {
+    const trimmed = line.trim();
+    if (trimmed.startsWith('##')) {
+      html += `<div style="font-family:'Source Serif 4',serif;font-size:15px;color:var(--text);margin:14px 0 6px;font-weight:600;">${trimmed.replace(/^##\s*/,'')}</div>`;
+    } else if (trimmed.startsWith('#')) {
+      html += `<div style="font-family:'Source Serif 4',serif;font-size:17px;color:var(--moss-l);margin:0 0 10px;font-weight:600;">${trimmed.replace(/^#\s*/,'')}</div>`;
+    } else if (trimmed.startsWith('- ') || trimmed.startsWith('• ')) {
+      html += `<div style="display:flex;gap:8px;padding:5px 0;border-bottom:1px solid var(--border);"><span style="color:var(--moss);flex-shrink:0;">▸</span><span style="font-size:12px;color:var(--text2);line-height:1.5;">${trimmed.replace(/^[-•]\s*/,'')}</span></div>`;
+    } else if (trimmed.startsWith('**') && trimmed.endsWith('**')) {
+      html += `<div style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin:10px 0 4px;">${trimmed.replace(/\*\*/g,'')}</div>`;
+    } else if (trimmed) {
+      html += `<p style="font-size:12px;color:var(--text2);line-height:1.6;margin:6px 0;">${trimmed}</p>`;
+    }
+  });
+  return html || text;
+}
+
+function n90RenderDailyChecks(state) {
+  const container = document.getElementById('n90-daily-checks');
+  // Preferir dados da DB (sincronizados) sobre localStorage
+  const dbChecks = DB[TODAY] && DB[TODAY].n90Checks ? DB[TODAY].n90Checks.split(',').filter(Boolean) : null;
+  const saved     = dbChecks || (state.dailyChecks && state.dailyChecks[TODAY]) || [];
+  const allChecks = [
+    ...N90_DAILY_CHECKS.mindset.map((t,i)    => ({ id:`m${i}`, cat:'🧠 Mindset',     text:t })),
+    ...N90_DAILY_CHECKS.fisico.map((t,i)     => ({ id:`f${i}`, cat:'💪 Físico',      text:t })),
+    ...N90_DAILY_CHECKS.trabalho.map((t,i)   => ({ id:`w${i}`, cat:'💼 Trabalho',    text:t })),
+    ...N90_DAILY_CHECKS.alimentacao.map((t,i)=> ({ id:`a${i}`, cat:'🥗 Alimentação', text:t })),
+  ];
+
+  let lastCat = '';
+  let html = '';
+  allChecks.forEach(c => {
+    if (c.cat !== lastCat) {
+      html += `<div style="font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-top:10px;margin-bottom:4px;">${c.cat}</div>`;
+      lastCat = c.cat;
+    }
+    const done = saved.includes(c.id);
+    html += `
+      <div onclick="n90ToggleCheck('${c.id}')" style="display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:8px;cursor:pointer;background:${done ? 'rgba(45,212,191,0.08)' : 'var(--surface)'};border:1px solid ${done ? 'rgba(45,212,191,0.3)' : 'var(--border)'};transition:all 0.15s;">
+        <div style="width:18px;height:18px;border-radius:5px;border:2px solid ${done ? 'var(--moss)' : 'var(--border)'};background:${done ? 'var(--moss)' : 'transparent'};display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;color:#0f172a;font-weight:700;">${done ? '✓' : ''}</div>
+        <span style="font-size:12px;color:${done ? 'var(--muted)' : 'var(--text2)'};text-decoration:${done ? 'line-through' : 'none'};">${c.text}</span>
+      </div>`;
+  });
+
+  const doneCount = allChecks.filter(c => saved.includes(c.id)).length;
+  const total     = allChecks.length;
+  const pct       = Math.round((doneCount/total)*100);
+  container.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:8px;">
+      <div style="flex:1;background:var(--surface);border-radius:99px;height:6px;overflow:hidden;">
+        <div style="height:100%;background:linear-gradient(90deg,var(--moss-d),var(--moss-l));border-radius:99px;width:${pct}%;transition:width 0.3s;"></div>
+      </div>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--moss-l);">${doneCount}/${total}</span>
+    </div>
+    ${html}`;
+}
+
+function n90ToggleCheck(id) {
+  const state = n90GetState(); if (!state) return;
+  if (!state.dailyChecks) state.dailyChecks = {};
+  if (!state.dailyChecks[TODAY]) state.dailyChecks[TODAY] = [];
+  const arr = state.dailyChecks[TODAY];
+  const idx = arr.indexOf(id);
+  if (idx >= 0) arr.splice(idx, 1); else arr.push(id);
+  n90SaveState(state);
+
+  // Guardar também na DB principal para sync com Sheets
+  if (!DB[TODAY]) DB[TODAY] = {};
+  DB[TODAY].n90Checks = arr.join(',');
+  DB[TODAY].n90Score  = arr.length;
+  saveData();
+
+  n90RenderDailyChecks(state);
+}
+
+function n90RenderRoadmap(currentWeek) {
+  const container = document.getElementById('n90-roadmap');
+  let html = '';
+  let lastPhase = 0;
+
+  N90_WEEKS.forEach(w => {
+    if (w.phase !== lastPhase) {
+      const p = N90_PHASES[w.phase - 1];
+      html += `<div style="font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin:12px 0 6px;padding-left:4px;">${p.icon} ${p.name.toUpperCase()}</div>`;
+      lastPhase = w.phase;
+    }
+    const isCurrent  = w.w === currentWeek;
+    const isPast     = w.w < currentWeek;
+    const bg     = isCurrent ? 'rgba(45,212,191,0.1)' : isPast ? 'rgba(100,116,139,0.06)' : 'var(--surface)';
+    const border = isCurrent ? '1.5px solid var(--moss)' : '1px solid var(--border)';
+    const numCol = isCurrent ? 'var(--moss-l)' : isPast ? 'var(--muted)' : 'var(--text2)';
+    html += `
+      <div style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;border-radius:10px;background:${bg};border:${border};">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;color:${numCol};min-width:24px;padding-top:1px;">W${w.w}</div>
+        <div style="flex:1;">
+          <div style="font-size:12px;font-weight:600;color:${isCurrent ? 'var(--text)' : isPast ? 'var(--muted)' : 'var(--text2)'};margin-bottom:2px;">${w.theme} ${w.focus}</div>
+          <div style="font-size:11px;color:var(--muted);line-height:1.5;">${w.desc}</div>
+        </div>
+        ${isPast ? '<div style="font-size:14px;">✓</div>' : ''}
+        ${isCurrent ? '<div style="font-family:\'JetBrains Mono\',monospace;font-size:8px;background:var(--moss);color:#0f172a;border-radius:4px;padding:2px 6px;font-weight:700;white-space:nowrap;align-self:center;">AGORA</div>' : ''}
+      </div>`;
+  });
+  container.innerHTML = html;
+}
+
+async function n90GenerateWeek() {
+  const state  = n90GetState(); if (!state) return;
+  const btn    = document.getElementById('n90-gen-btn');
+  const status = document.getElementById('n90-ai-status');
+  const content= document.getElementById('n90-week-content');
+  const groqKey = getGroqKey();
+  if (!groqKey) { alert('Configura a chave Groq em ⚙️ Configurações primeiro.'); return; }
+
+  const dayNum  = n90DayNum(state.startDate);
+  const weekNum = n90WeekNum(dayNum);
+  const weekDef = N90_WEEKS[weekNum - 1] || N90_WEEKS[0];
+
+  // Recolher dados reais dos últimos 7 dias
+  const last7 = getLastNDays(7);
+  const stats = { sonoMedio:0, pesoAtual:'—', humorMedio:0, aguaMedia:0, diasTrabalhados:0, diasCount:0 };
+  last7.forEach(date => {
+    const d = DB[date]; if (!d) return;
+    stats.diasCount++;
+    if (d.bedtime && d.waketime) {
+      const [bh,bm]=d.bedtime.split(':').map(Number),[wh,wm]=d.waketime.split(':').map(Number);
+      let bM=bh*60+bm,wM=wh*60+wm; if(wM<bM) wM+=24*60;
+      stats.sonoMedio += (wM-bM)/60;
+    }
+    if (d.weight) stats.pesoAtual = d.weight + 'kg';
+    if (d.selectedMood) stats.humorMedio++;
+    if (d.waterCount) stats.aguaMedia += parseInt(d.waterCount)||0;
+    if (d.workStart && d.workEnd) stats.diasTrabalhados++;
+  });
+  if (stats.diasCount > 0) {
+    stats.sonoMedio  = (stats.sonoMedio / stats.diasCount).toFixed(1);
+    stats.aguaMedia  = (stats.aguaMedia / stats.diasCount).toFixed(1);
+  }
+
+  btn.textContent = '⏳ a gerar...';
+  btn.disabled = true;
+  status.style.display = 'block';
+  status.textContent = 'A analisar os teus dados e gerar plano personalizado...';
+
+  const systemPrompt = `És um coach de alta performance. Responde sempre em português de Portugal. Sê direto, prático e motivador. Usa listas curtas com ações concretas.`;
+
+  const userPrompt = `Estou no Dia ${dayNum} (Semana ${weekNum}/13) do meu plano de 90 dias de alta performance.
+
+FASE ATUAL: ${N90_PHASES.find(p=>dayNum>=p.days[0]&&dayNum<=p.days[1])?.name} — ${weekDef.focus}
+
+DADOS REAIS DOS ÚLTIMOS 7 DIAS:
+- Sono médio: ${stats.sonoMedio}h (objetivo: 7-8h)
+- Peso atual: ${stats.pesoAtual}
+- Copos de água/dia: ${stats.aguaMedia} (objetivo: 8)
+- Dias de trabalho registados: ${stats.diasTrabalhados}/7
+
+Gera o FOCO DESTA SEMANA com:
+# Semana ${weekNum} — ${weekDef.focus}
+
+**PRIORIDADE 1**
+- [1 ação específica de mindset/disciplina]
+
+**PRIORIDADE 2**
+- [1 ação de performance física baseada nos meus dados]
+
+**PRIORIDADE 3**
+- [1 ação de trabalho/produtividade]
+
+**ALIMENTAÇÃO**
+- [1 ação de nutrição]
+
+**ALERTA DA SEMANA**
+- [1 frase direta sobre o que precisas de melhorar com base nos dados]
+
+Máximo 200 palavras. Sem fluff. Ações concretas e mensuráveis.`;
+
+  try {
+    const text = await callGemini(systemPrompt, userPrompt, 600);
+    const weekKey = getISOWeek(new Date(TODAY + 'T12:00:00'));
+    if (!state.weekFocus) state.weekFocus = {};
+    state.weekFocus[weekKey] = { text, date: TODAY };
+    n90SaveState(state);
+    content.innerHTML = n90WeekHtml(text);
+    status.textContent = '✓ gerado em ' + new Date().toLocaleTimeString('pt-PT', {hour:'2-digit',minute:'2-digit'});
+    setTimeout(() => { status.style.display = 'none'; }, 3000);
+  } catch(err) {
+    status.textContent = '✗ erro: ' + err.message;
+  }
+  btn.textContent = '🤖 gerar com IA';
+  btn.disabled = false;
+}
+
 function renderLast5Days() {
   const container = document.getElementById('last5Container');
   if (!container) return;
@@ -6857,6 +7315,7 @@ function clearAllData() {
     if (id === 'settings') initSettingsPage();
     if (id === 'last5') renderLast5Days();
     if (id === 'work')     { initWorkDatePicker(); renderWorkCalendar(); }
+    if (id === 'noventa')   renderN90();
   };
 })();
 
