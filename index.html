@@ -5183,7 +5183,7 @@ async function getWeightAdvice() {
 // OVERVIEW UPDATE
 // ═══════════════════════════════════════════════════════════════════
 
-function updateOverview() {
+function _updateOverviewBase() {
   // ── SONO ──
   const bed = document.getElementById('bedtime').value;
   const wake = document.getElementById('waketime').value;
@@ -6262,7 +6262,7 @@ function toggleFlowDetail(stepId) {
 }
 
 // Hook into updateOverview to also refresh flow
-const _origUpdateOverview = updateOverview;
+const _origUpdateOverview = _updateOverviewBase;
 function updateOverview() {
   _origUpdateOverview();
   renderDailyFlow();
@@ -6737,6 +6737,7 @@ async function saveSheetsUrl() {
   resultEl.innerHTML = '<span class="sync-badge sync-badge-ing">A testar...</span>';
   sheetsUrl = url;
   localStorage.setItem(SHEETS_URL_KEY, url);
+  saveSheetsUrlToCloud(url);
   updateSyncStatus('Sheets configurado', 'ok');
   const curEl = document.getElementById('currentSyncUrl');
   if (curEl) curEl.textContent = 'URL guardado';
@@ -7111,8 +7112,19 @@ function handleLocalGuestLogin() {
 
 async function onUserAuthenticated(user) {
   localStorage.removeItem('dvGuestMode');
+  // Se entrou um utilizador diferente neste dispositivo, limpa os dados locais do anterior
+  const lastUser = localStorage.getItem('dvLastUserId');
+  if (lastUser && user && user.id && lastUser !== user.id) {
+    localStorage.removeItem(DB_KEY);
+    localStorage.removeItem(SHEETS_URL_KEY);
+    localStorage.setItem('dvLastUserId', user.id);
+    location.reload();
+    return;
+  }
+  if (user && user.id) localStorage.setItem('dvLastUserId', user.id);
   showApp(user);
   await loadFromSupabase();
+  await loadSheetsUrlFromCloud();
 }
 
 function showApp(user) {
@@ -7129,10 +7141,23 @@ function showApp(user) {
 }
 
 async function logout() {
+  let hadSession = false;
   if (supabaseClient) {
-    try { await supabaseClient.auth.signOut(); } catch(e) {}
+    try {
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      hadSession = !!(session && session.user);
+      await supabaseClient.auth.signOut();
+    } catch(e) {}
   }
   localStorage.removeItem('dvGuestMode');
+  if (hadSession) {
+    // Os dados da conta estão no Supabase: limpa a cópia local para não ficar no dispositivo
+    localStorage.removeItem(DB_KEY);
+    localStorage.removeItem(SHEETS_URL_KEY);
+    localStorage.removeItem('dvLastUserId');
+    location.reload();
+    return;
+  }
   document.getElementById('appContent').style.display = 'none';
   document.getElementById('authOverlay').style.display = 'flex';
   const emailInput = document.getElementById('authEmail');
@@ -7195,6 +7220,62 @@ async function saveToSupabase(date, snap) {
     }
   } catch(e) {
     console.error('Supabase save error:', e);
+  }
+}
+
+// ── LINK DO GOOGLE SHEETS GUARDADO NA CONTA (Supabase, tabela diario_perfil) ──
+async function saveSheetsUrlToCloud(url) {
+  if (!supabaseClient) return;
+  try {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session || !session.user) return;
+    const { error } = await supabaseClient
+      .from('diario_perfil')
+      .upsert({
+        user_id: session.user.id,
+        sheets_url: url || null,
+        atualizado_em: new Date().toISOString()
+      }, { onConflict: 'user_id' });
+    if (error) console.error('Supabase perfil error:', error);
+  } catch(e) {
+    console.error('Erro ao guardar o link do Sheets na conta:', e);
+  }
+}
+
+async function loadSheetsUrlFromCloud() {
+  if (!supabaseClient) return;
+  try {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session || !session.user) return;
+    const { data, error } = await supabaseClient
+      .from('diario_perfil')
+      .select('sheets_url')
+      .eq('user_id', session.user.id)
+      .maybeSingle();
+    if (error) { console.error('Supabase perfil load error:', error); return; }
+
+    const cloudUrl = (data && data.sheets_url) ? data.sheets_url : '';
+    const input = document.getElementById('sheetsUrlSettingsInput');
+    if (cloudUrl) {
+      if (cloudUrl !== sheetsUrl) {
+        sheetsUrl = cloudUrl;
+        localStorage.setItem(SHEETS_URL_KEY, cloudUrl);
+        if (input) input.value = cloudUrl;
+        updateSyncStatus('Sheets ligado', 'ok');
+        loadFromSheets().then(() => setTimeout(syncAllData, 1000));
+      }
+    } else if (data) {
+      // A conta tem o perfil mas sem link: o link foi removido noutro dispositivo
+      sheetsUrl = '';
+      localStorage.removeItem(SHEETS_URL_KEY);
+      if (input) input.value = '';
+      updateSyncStatus('Clica para ligar', 'off');
+    } else if (sheetsUrl) {
+      // Conta sem perfil ainda: guarda o link que já existia neste dispositivo
+      saveSheetsUrlToCloud(sheetsUrl);
+    }
+  } catch(e) {
+    console.error('Erro ao carregar o link do Sheets da conta:', e);
   }
 }
 
@@ -8157,6 +8238,7 @@ function saveSettingsSheetsUrl() {
   }
   sheetsUrl = url;
   localStorage.setItem(SHEETS_URL_KEY, url);
+  saveSheetsUrlToCloud(url);
   updateSyncStatus('Sheets configurado', 'ok');
   if (status) { status.textContent = '✓ URL guardado! A sincronizar...'; status.style.color = 'var(--moss-l)'; }
   setTimeout(() => syncAllData(), 800);
@@ -8166,6 +8248,7 @@ function clearSheetsUrl() {
   if (!confirm('Remover o URL do Sheets?')) return;
   sheetsUrl = '';
   localStorage.removeItem(SHEETS_URL_KEY);
+  saveSheetsUrlToCloud('');
   const input = document.getElementById('sheetsUrlSettingsInput');
   const status = document.getElementById('sheetsSettingsStatus');
   if (input) input.value = '';
