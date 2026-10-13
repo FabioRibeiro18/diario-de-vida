@@ -2973,13 +2973,16 @@ canvas { display:block; width:100% !important; max-width:100%; }
     </div>
   </div>
   <div class="card">
-    <div class="card-title">🤖 Inteligência Artificial (OpenRouter & Groq)</div>
-    <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Utiliza vários modelos de IA (Llama, Gemini, DeepSeek, Claude, GPT) para estimar calorias e macronutrientes automaticamente.</p>
+    <div class="card-title">🤖 Inteligência Artificial</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Quatro providers com rotação automática de chaves. Modo <strong>Auto</strong> tenta todos em cadeia se um falhar.</p>
     
     <div style="margin-bottom:14px;">
       <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Provedor de IA</div>
       <select id="aiProviderSelect" onchange="changeAiProvider()" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;">
-        <option value="openrouter">OpenRouter (Recomendado — Múltiplas IA's)</option>
+        <option value="auto">⚡ Auto (todos em cadeia — Recomendado)</option>
+        <option value="openrouter">OpenRouter (Múltiplas IA's)</option>
+        <option value="huggingface">Hugging Face (Llama 3.1)</option>
+        <option value="gemini">Google Gemini 2.0 Flash</option>
         <option value="groq">Groq (Llama 3.3)</option>
       </select>
     </div>
@@ -2987,11 +2990,15 @@ canvas { display:block; width:100% !important; max-width:100%; }
     <!-- OpenRouter Box -->
     <div id="openrouterSettingsBox">
       <div style="margin-bottom:14px;">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Chave API OpenRouter</div>
-        <div style="display:flex;gap:8px;">
-          <input type="password" id="openrouterKeySettingsInput" placeholder="sk-or-v1-..." style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;outline:none;">
-          <button class="btn btn-primary" onclick="saveSettingsOpenRouter()" style="white-space:nowrap;">Guardar</button>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Chaves API OpenRouter <span style="color:var(--moss);">(uma por linha — rotação automática)</span></div>
+        <textarea id="openrouterKeysSettingsInput" rows="4" placeholder="sk-or-v1-...
+sk-or-v1-... (2ª chave)
+sk-or-v1-... (3ª chave)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;outline:none;resize:vertical;letter-spacing:0.5px;line-height:1.6;"></textarea>
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <button class="btn btn-primary" onclick="saveSettingsOpenRouter()" style="flex:1;">💾 Guardar chaves</button>
+          <button onclick="clearSettingsOpenRouterKey()" style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:6px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);cursor:pointer;">🗑 Limpar</button>
         </div>
+        <div id="openrouterKeysBadge" style="margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--moss-l);"></div>
       </div>
       
       <div style="margin-bottom:14px;">
@@ -3012,8 +3019,7 @@ canvas { display:block; width:100% !important; max-width:100%; }
       </div>
 
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
-        <a href="https://openrouter.ai/keys" target="_blank" class="btn btn-secondary" style="font-size:11px;text-decoration:none;">🔑 Obter chave OpenRouter</a>
-        <button onclick="clearSettingsOpenRouterKey()" style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:6px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);cursor:pointer;">🗑 Remover chave</button>
+        <a href="https://openrouter.ai/keys" target="_blank" class="btn btn-secondary" style="font-size:11px;text-decoration:none;">🔑 Obter chaves OpenRouter</a>
       </div>
       <div id="openrouterSettingsStatus" style="font-family:'JetBrains Mono',monospace;font-size:10px;"></div>
     </div>
@@ -3021,17 +3027,56 @@ canvas { display:block; width:100% !important; max-width:100%; }
     <!-- Groq Box -->
     <div id="groqSettingsBox" style="display:none;">
       <div style="margin-bottom:14px;">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Chave API Groq</div>
-        <div style="display:flex;gap:8px;">
-          <input type="password" id="groqKeySettingsInput" placeholder="gsk_..." style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;outline:none;letter-spacing:1px;">
-          <button class="btn btn-primary" onclick="saveSettingsGroqKey()" style="white-space:nowrap;">Guardar</button>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Chaves API Groq <span style="color:var(--moss);">(uma por linha — rotação automática)</span></div>
+        <textarea id="groqKeysSettingsInput" rows="4" placeholder="gsk_...
+gsk_... (2ª chave)
+gsk_... (3ª chave)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;outline:none;resize:vertical;letter-spacing:0.5px;line-height:1.6;"></textarea>
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <button class="btn btn-primary" onclick="saveSettingsGroqKey()" style="flex:1;">💾 Guardar chaves</button>
+          <button onclick="clearSettingsGroqKey()" style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:6px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);cursor:pointer;">🗑 Limpar</button>
         </div>
+        <div id="groqKeysBadge" style="margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--moss-l);"></div>
       </div>
       <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
-        <a href="https://console.groq.com/keys" target="_blank" class="btn btn-secondary" style="font-size:11px;text-decoration:none;">🔑 Criar chave gratuita</a>
-        <button onclick="clearSettingsGroqKey()" style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:6px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);cursor:pointer;">🗑 Remover</button>
+        <a href="https://console.groq.com/keys" target="_blank" class="btn btn-secondary" style="font-size:11px;text-decoration:none;">🔑 Criar chaves gratuitas</a>
       </div>
       <div id="groqSettingsStatus" style="font-family:'JetBrains Mono',monospace;font-size:10px;"></div>
+    </div>
+
+    <!-- Hugging Face Box -->
+    <div id="hfSettingsBox" style="display:none;">
+      <div style="margin-bottom:14px;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Chaves API Hugging Face <span style="color:var(--moss);">(uma por linha — rotação automática)</span></div>
+        <textarea id="hfKeysSettingsInput" rows="4" placeholder="hf_...
+hf_... (2ª chave)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;outline:none;resize:vertical;letter-spacing:0.5px;line-height:1.6;"></textarea>
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <button class="btn btn-primary" onclick="saveSettingsHFKey()" style="flex:1;">💾 Guardar chaves</button>
+          <button onclick="clearSettingsHFKey()" style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:6px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);cursor:pointer;">🗑 Limpar</button>
+        </div>
+        <div id="hfKeysBadge" style="margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--moss-l);"></div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
+        <a href="https://huggingface.co/settings/tokens" target="_blank" class="btn btn-secondary" style="font-size:11px;text-decoration:none;">🔑 Criar token HF</a>
+      </div>
+      <div id="hfSettingsStatus" style="font-family:'JetBrains Mono',monospace;font-size:10px;"></div>
+    </div>
+
+    <!-- Gemini Box -->
+    <div id="geminiSettingsBox" style="display:none;">
+      <div style="margin-bottom:14px;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Chaves API Google Gemini <span style="color:var(--moss);">(uma por linha — rotação automática)</span></div>
+        <textarea id="geminiKeysSettingsInput" rows="4" placeholder="AIza...
+ (2ª chave)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;outline:none;resize:vertical;letter-spacing:0.5px;line-height:1.6;"></textarea>
+        <div style="display:flex;gap:8px;margin-top:8px;">
+          <button class="btn btn-primary" onclick="saveSettingsGeminiKey()" style="flex:1;">💾 Guardar chaves</button>
+          <button onclick="clearSettingsGeminiKey()" style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:6px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);cursor:pointer;">🗑 Limpar</button>
+        </div>
+        <div id="geminiKeysBadge" style="margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--moss-l);"></div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:8px;">
+        <a href="https://aistudio.google.com/app/apikey" target="_blank" class="btn btn-secondary" style="font-size:11px;text-decoration:none;">🔑 Obter chave Gemini</a>
+      </div>
+      <div id="geminiSettingsStatus" style="font-family:'JetBrains Mono',monospace;font-size:10px;"></div>
     </div>
   </div>
   <div class="card">
@@ -3174,7 +3219,7 @@ canvas { display:block; width:100% !important; max-width:100%; }
 <div class="sync-modal-overlay" id="groqModal">
   <div class="sync-modal">
     <h2>🤖 Configurar IA (Groq)</h2>
-    <div class="sync-modal-sub">chave guardada apenas no teu browser · nunca enviada para nenhum servidor</div>
+    <div class="sync-modal-sub">chaves guardadas apenas no teu browser · rotação automática quando limite atingido</div>
 
     <div class="sync-step">
       <div class="sync-step-num">1</div>
@@ -3186,25 +3231,27 @@ canvas { display:block; width:100% !important; max-width:100%; }
     <div class="sync-step">
       <div class="sync-step-num">2</div>
       <div class="sync-step-text">
-        Clica em <strong>Create API Key</strong>, dá-lhe um nome (ex: "diario") e copia a chave.
+        Clica em <strong>Create API Key</strong>, cria várias chaves (ex: "diario1", "diario2") e copia-as.
       </div>
     </div>
     <div class="sync-step">
       <div class="sync-step-num">3</div>
       <div class="sync-step-text">
-        Cola aqui em baixo. A chave fica guardada <strong>só no teu browser</strong> — nunca aparece no código do GitHub.
+        Cola abaixo <strong>uma chave por linha</strong>. O sistema roda automaticamente quando uma atinge o limite!
       </div>
     </div>
 
-    <div class="sync-url-field">
-      <input type="password" id="groqKeyInput" placeholder="gsk_..." style="letter-spacing:1px;">
-      <button class="btn btn-primary" onclick="saveGroqKey()">Guardar</button>
+    <div style="margin-bottom:8px;">
+      <textarea id="groqKeyInput" rows="4" placeholder="gsk_...
+gsk_... (2ª chave)
+gsk_... (3ª chave)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;outline:none;resize:vertical;letter-spacing:0.5px;line-height:1.6;"></textarea>
     </div>
+    <button class="btn btn-primary" onclick="saveGroqKey()" style="width:100%;">💾 Guardar chaves</button>
     <div id="groqKeyStatus" style="margin-top:10px;font-size:12px;color:var(--moss-l);"></div>
 
     <div style="margin-top:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
       <button class="btn btn-secondary" onclick="closeGroqModal()" style="font-size:12px;">Fechar</button>
-      <button onclick="clearGroqKey()" style="background:none;border:none;font-size:11px;color:var(--muted);cursor:pointer;font-family:'JetBrains Mono',monospace;">🗑 Remover chave</button>
+      <button onclick="clearGroqKey()" style="background:none;border:none;font-size:11px;color:var(--muted);cursor:pointer;font-family:'JetBrains Mono',monospace;">🗑 Remover todas as chaves</button>
     </div>
   </div>
 </div>
@@ -3868,101 +3915,327 @@ function calcWCTip() {
 
 
 // ═══════════════════════════════════════════════════════════════════
-// AI HELPER (OpenRouter & Groq)
+// AI HELPER — MULTI-PROVIDER KEY ROTATION SYSTEM
+// OpenRouter → Hugging Face → Google Gemini → Groq (fallback chain)
 // ═══════════════════════════════════════════════════════════════════
 
-const DEFAULT_OPENROUTER_KEY = '';
-function getAiProvider() { return localStorage.getItem('dvAiProvider') || 'openrouter'; }
-function getOpenRouterKey() { return localStorage.getItem('dvOpenRouterKey') || DEFAULT_OPENROUTER_KEY; }
-function getOpenRouterModel() { return localStorage.getItem('dvOpenRouterModel') || 'nvidia/nemotron-3.5-lightning:free'; }
+// ── Chaves default embutidas (utilizador pode adicionar mais via Settings) ──
+const DEFAULT_OPENROUTER_KEY  = '';
+const DEFAULT_HF_KEY          = '';
+const DEFAULT_GEMINI_KEY      = '';
+const GROQ_MODEL              = 'llama-3.3-70b-versatile';
+const HF_MODEL                = 'meta-llama/Llama-3.1-8B-Instruct';
+const GEMINI_MODEL            = 'gemini-2.0-flash';
 
-const GROQ_MODEL = 'llama-3.3-70b-versatile';
-function getGroqKey() { return localStorage.getItem('dvGroqKey') || ''; }
-function setGroqKey(k) { localStorage.setItem('dvGroqKey', k.trim()); }
+// ── Helpers round-robin persistente ───────────────────────────────────────
+function _getIdx(storageKey) {
+  return parseInt(localStorage.getItem(storageKey) || '0', 10);
+}
+function _nextIdx(storageKey, len) {
+  const next = (_getIdx(storageKey) + 1) % len;
+  localStorage.setItem(storageKey, String(next));
+  return next;
+}
+
+// ── OpenRouter ─────────────────────────────────────────────────────────────
+function getOpenRouterKeys() {
+  try {
+    const stored = JSON.parse(localStorage.getItem('dvOpenRouterKeys') || '[]');
+    if (Array.isArray(stored) && stored.length > 0) return stored;
+  } catch(e) {}
+  const single = localStorage.getItem('dvOpenRouterKey');
+  return [single || DEFAULT_OPENROUTER_KEY];
+}
+function setOpenRouterKeys(arr) {
+  localStorage.setItem('dvOpenRouterKeys', JSON.stringify(arr));
+  if (arr.length > 0) localStorage.setItem('dvOpenRouterKey', arr[0]);
+}
+function getOpenRouterKey() {
+  const keys = getOpenRouterKeys();
+  const idx = _getIdx('dvOpenRouterKeyIdx') % keys.length;
+  return keys[idx];
+}
+function getOpenRouterModel() { return localStorage.getItem('dvOpenRouterModel') || 'nvidia/nemotron-3.5-lightning:free'; }
+function getAiProvider() { return localStorage.getItem('dvAiProvider') || 'auto'; }
+
+// ── Groq ───────────────────────────────────────────────────────────────────
+function getGroqKeys() {
+  try {
+    const stored = JSON.parse(localStorage.getItem('dvGroqKeys') || '[]');
+    if (Array.isArray(stored) && stored.length > 0) return stored;
+  } catch(e) {}
+  const single = localStorage.getItem('dvGroqKey');
+  return single ? [single] : [];
+}
+function setGroqKeys(arr) {
+  localStorage.setItem('dvGroqKeys', JSON.stringify(arr));
+  if (arr.length > 0) localStorage.setItem('dvGroqKey', arr[0]);
+}
+function getGroqKey() {
+  const keys = getGroqKeys();
+  if (keys.length === 0) return '';
+  const idx = _getIdx('dvGroqKeyIdx') % keys.length;
+  return keys[idx];
+}
+function setGroqKey(k) {
+  const keys = getGroqKeys();
+  const trimmed = k.trim();
+  if (!keys.includes(trimmed)) keys.push(trimmed);
+  setGroqKeys(keys);
+}
 Object.defineProperty(window, 'GROQ_KEY', { get: getGroqKey });
 
+// ── Hugging Face ─────────────────────────────────────────────────────────────
+function getHFKeys() {
+  try {
+    const stored = JSON.parse(localStorage.getItem('dvHFKeys') || '[]');
+    if (Array.isArray(stored) && stored.length > 0) return stored;
+  } catch(e) {}
+  const single = localStorage.getItem('dvHFKey');
+  return [single || DEFAULT_HF_KEY];
+}
+function setHFKeys(arr) {
+  localStorage.setItem('dvHFKeys', JSON.stringify(arr));
+  if (arr.length > 0) localStorage.setItem('dvHFKey', arr[0]);
+}
+function getHFKey() {
+  const keys = getHFKeys();
+  const idx = _getIdx('dvHFKeyIdx') % keys.length;
+  return keys[idx];
+}
+
+// ── Google Gemini ───────────────────────────────────────────────────────────
+function getGeminiKeys() {
+  try {
+    const stored = JSON.parse(localStorage.getItem('dvGeminiKeys') || '[]');
+    if (Array.isArray(stored) && stored.length > 0) return stored;
+  } catch(e) {}
+  const single = localStorage.getItem('dvGeminiKey');
+  return [single || DEFAULT_GEMINI_KEY];
+}
+function setGeminiKeys(arr) {
+  localStorage.setItem('dvGeminiKeys', JSON.stringify(arr));
+  if (arr.length > 0) localStorage.setItem('dvGeminiKey', arr[0]);
+}
+function getGeminiKey() {
+  const keys = getGeminiKeys();
+  const idx = _getIdx('dvGeminiKeyIdx') % keys.length;
+  return keys[idx];
+}
+
+// ── CHAMADAS DE API COM ROTAÇÃO ─────────────────────────────────────────────
+
 async function callOpenRouter(systemPrompt, userPrompt, maxTokens) {
-  const key = getOpenRouterKey();
-  if (!key) throw new Error('Chave OpenRouter não configurada. Vai a ⚙️ Configurações → IA para adicionar a tua chave.');
-
+  const keys = getOpenRouterKeys();
+  if (!keys.length) throw new Error('Sem chaves OpenRouter.');
   const model = getOpenRouterModel();
-  const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + key,
-      'HTTP-Referer': window.location.origin || 'https://github.com',
-      'X-Title': 'Diário de Vida'
-    },
-    body: JSON.stringify({
-      model: model,
-      max_tokens: maxTokens || 800,
-      temperature: 0.3,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user',   content: userPrompt   }
-      ]
-    })
-  });
-
-  if (!response.ok) {
-    const err = await response.text();
-    let msg = 'OpenRouter HTTP ' + response.status;
-    try { const j = JSON.parse(err); msg = j.error?.message || msg; } catch(e2) {}
-    if (response.status === 401) msg = 'Chave OpenRouter inválida. Vai a ⚙️ Configurações → IA e verifica a chave.';
-    if (response.status === 429) msg = 'Limite OpenRouter atingido. Espera 1 minuto e tenta novamente.';
-    throw new Error(msg);
+  let lastErr;
+  const startIdx = _getIdx('dvOpenRouterKeyIdx') % keys.length;
+  for (let attempt = 0; attempt < keys.length; attempt++) {
+    const idx = (startIdx + attempt) % keys.length;
+    const key = keys[idx];
+    try {
+      const response = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + key,
+          'HTTP-Referer': window.location.origin || 'https://github.com',
+          'X-Title': 'Diário de Vida'
+        },
+        body: JSON.stringify({
+          model, max_tokens: maxTokens || 800, temperature: 0.3,
+          messages: [{ role:'system', content:systemPrompt }, { role:'user', content:userPrompt }]
+        })
+      });
+      if (response.ok) {
+        localStorage.setItem('dvOpenRouterKeyIdx', String((idx + 1) % keys.length));
+        const data = await response.json();
+        const text = data.choices?.[0]?.message?.content;
+        if (!text) throw new Error('Resposta vazia da IA');
+        return text;
+      }
+      const errText = await response.text();
+      let msg = 'OpenRouter HTTP ' + response.status;
+      try { const j = JSON.parse(errText); msg = j.error?.message || msg; } catch(e2) {}
+      if (response.status === 401) msg = `OR chave #${idx+1} inválida`;
+      if (response.status === 429) msg = `OR chave #${idx+1} limite atingido`;
+      if (response.status !== 401 && response.status !== 429) throw new Error(msg);
+      lastErr = new Error(msg);
+      console.warn('[AI Rotation] OpenRouter:', msg);
+    } catch(fetchErr) {
+      if (['429','401','inválida','limite','próxima'].some(s => fetchErr.message.includes(s))) {
+        lastErr = fetchErr; continue;
+      }
+      throw fetchErr;
+    }
   }
+  throw lastErr || new Error('Todas as chaves OpenRouter falharam.');
+}
 
-  const data = await response.json();
-  const text = data.choices?.[0]?.message?.content;
-  if (!text) throw new Error('Resposta vazia da IA');
-  return text;
+async function callHuggingFace(systemPrompt, userPrompt, maxTokens) {
+  const keys = getHFKeys();
+  if (!keys.length) throw new Error('Sem chaves Hugging Face.');
+  let lastErr;
+  const startIdx = _getIdx('dvHFKeyIdx') % keys.length;
+  for (let attempt = 0; attempt < keys.length; attempt++) {
+    const idx = (startIdx + attempt) % keys.length;
+    const key = keys[idx];
+    try {
+      const response = await fetch(`https://router.huggingface.co/v1/chat/completions`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + key
+        },
+        body: JSON.stringify({
+          model: HF_MODEL,
+          max_tokens: maxTokens || 800,
+          temperature: 0.3,
+          messages: [{ role:'system', content:systemPrompt }, { role:'user', content:userPrompt }]
+        })
+      });
+      if (response.ok) {
+        localStorage.setItem('dvHFKeyIdx', String((idx + 1) % keys.length));
+        const data = await response.json();
+        const text = data.choices?.[0]?.message?.content;
+        if (!text) throw new Error('Resposta vazia HF');
+        return text;
+      }
+      const errText = await response.text();
+      let msg = 'HuggingFace HTTP ' + response.status;
+      try { const j = JSON.parse(errText); msg = j.error?.message || msg; } catch(e2) {}
+      if (response.status === 401 || response.status === 403) msg = `HF chave #${idx+1} inválida`;
+      if (response.status === 429) msg = `HF chave #${idx+1} limite atingido`;
+      if (![401,403,429].includes(response.status)) throw new Error(msg);
+      lastErr = new Error(msg);
+      console.warn('[AI Rotation] HuggingFace:', msg);
+    } catch(fetchErr) {
+      if (['429','401','403','inválida','limite'].some(s => fetchErr.message.includes(s))) {
+        lastErr = fetchErr; continue;
+      }
+      throw fetchErr;
+    }
+  }
+  throw lastErr || new Error('Todas as chaves Hugging Face falharam.');
+}
+
+async function callGeminiDirect(systemPrompt, userPrompt, maxTokens) {
+  const keys = getGeminiKeys();
+  if (!keys.length) throw new Error('Sem chaves Gemini.');
+  let lastErr;
+  const startIdx = _getIdx('dvGeminiKeyIdx') % keys.length;
+  for (let attempt = 0; attempt < keys.length; attempt++) {
+    const idx = (startIdx + attempt) % keys.length;
+    const key = keys[idx];
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent?key=${key}`;
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: systemPrompt }] },
+          contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
+          generationConfig: { maxOutputTokens: maxTokens || 800, temperature: 0.3 }
+        })
+      });
+      if (response.ok) {
+        localStorage.setItem('dvGeminiKeyIdx', String((idx + 1) % keys.length));
+        const data = await response.json();
+        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        if (!text) throw new Error('Resposta vazia Gemini');
+        return text;
+      }
+      const errText = await response.text();
+      let msg = 'Gemini HTTP ' + response.status;
+      try { const j = JSON.parse(errText); msg = j.error?.message || msg; } catch(e2) {}
+      if (response.status === 400) msg = `Gemini chave #${idx+1} inválida ou quota esgotada`;
+      if (response.status === 403) msg = `Gemini chave #${idx+1} sem permissão`;
+      if (response.status === 429) msg = `Gemini chave #${idx+1} limite atingido`;
+      if (![400,403,429].includes(response.status)) throw new Error(msg);
+      lastErr = new Error(msg);
+      console.warn('[AI Rotation] Gemini:', msg);
+    } catch(fetchErr) {
+      if (['429','403','400','inválida','limite','quota'].some(s => fetchErr.message.includes(s))) {
+        lastErr = fetchErr; continue;
+      }
+      throw fetchErr;
+    }
+  }
+  throw lastErr || new Error('Todas as chaves Gemini falharam.');
 }
 
 async function callGroqDirect(systemPrompt, userPrompt, maxTokens) {
-  const key = getGroqKey();
-  if (!key) throw new Error('Chave Groq não configurada. Vai a ⚙️ Configurações → IA e adiciona a tua chave.');
-
-  const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': 'Bearer ' + key,
-    },
-    body: JSON.stringify({
-      model: GROQ_MODEL,
-      max_tokens: maxTokens || 800,
-      temperature: 0.4,
-      messages: [
-        { role: 'system', content: systemPrompt },
-        { role: 'user',   content: userPrompt   }
-      ]
-    })
-  });
-
-  if (!response.ok) {
-    const err = await response.text();
-    let msg = 'Groq HTTP ' + response.status;
-    try { const j = JSON.parse(err); msg = j.error?.message || msg; } catch(e2) {}
-    if (response.status === 401) msg = 'Chave Groq inválida. Vai a ⚙️ Configurações → IA e cola a chave novamente.';
-    if (response.status === 429) msg = 'Limite atingido. Espera 1 min e tenta novamente.';
-    throw new Error(msg);
+  const keys = getGroqKeys();
+  if (!keys.length) throw new Error('Sem chaves Groq.');
+  let lastErr;
+  const startIdx = _getIdx('dvGroqKeyIdx') % keys.length;
+  for (let attempt = 0; attempt < keys.length; attempt++) {
+    const idx = (startIdx + attempt) % keys.length;
+    const key = keys[idx];
+    try {
+      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + key },
+        body: JSON.stringify({
+          model: GROQ_MODEL, max_tokens: maxTokens || 800, temperature: 0.4,
+          messages: [{ role:'system', content:systemPrompt }, { role:'user', content:userPrompt }]
+        })
+      });
+      if (response.ok) {
+        localStorage.setItem('dvGroqKeyIdx', String((idx + 1) % keys.length));
+        const data = await response.json();
+        if (data.error) throw new Error(data.error.message);
+        const text = data.choices?.[0]?.message?.content;
+        if (!text) throw new Error('Resposta vazia Groq');
+        return text;
+      }
+      const errText = await response.text();
+      let msg = 'Groq HTTP ' + response.status;
+      try { const j = JSON.parse(errText); msg = j.error?.message || msg; } catch(e2) {}
+      if (response.status === 401) msg = `Groq chave #${idx+1} inválida`;
+      if (response.status === 429) msg = `Groq chave #${idx+1} limite atingido`;
+      if (response.status !== 401 && response.status !== 429) throw new Error(msg);
+      lastErr = new Error(msg);
+      console.warn('[AI Rotation] Groq:', msg);
+    } catch(fetchErr) {
+      if (['429','401','inválida','limite'].some(s => fetchErr.message.includes(s))) {
+        lastErr = fetchErr; continue;
+      }
+      throw fetchErr;
+    }
   }
-
-  const data = await response.json();
-  if (data.error) throw new Error(data.error.message);
-  const text = data.choices?.[0]?.message?.content;
-  if (!text) throw new Error('Resposta vazia');
-  return text;
+  throw lastErr || new Error('Todas as chaves Groq falharam.');
 }
 
+// ── Dispatcher principal — cadeia de fallback automática ────────────────────
 async function callGemini(systemPrompt, userPrompt, maxTokens) {
   const provider = getAiProvider();
-  if (provider === 'groq' || (!getOpenRouterKey() && getGroqKey())) {
-    return await callGroqDirect(systemPrompt, userPrompt, maxTokens);
+
+  // Modo manual: usa apenas o provider selecionado
+  if (provider === 'openrouter') return await callOpenRouter(systemPrompt, userPrompt, maxTokens);
+  if (provider === 'huggingface') return await callHuggingFace(systemPrompt, userPrompt, maxTokens);
+  if (provider === 'gemini')      return await callGeminiDirect(systemPrompt, userPrompt, maxTokens);
+  if (provider === 'groq')        return await callGroqDirect(systemPrompt, userPrompt, maxTokens);
+
+  // Modo 'auto': tenta todos em cadeia
+  const chain = [
+    { name: 'OpenRouter',    fn: () => callOpenRouter(systemPrompt, userPrompt, maxTokens) },
+    { name: 'HuggingFace',  fn: () => callHuggingFace(systemPrompt, userPrompt, maxTokens) },
+    { name: 'Gemini',       fn: () => callGeminiDirect(systemPrompt, userPrompt, maxTokens) },
+    { name: 'Groq',         fn: () => callGroqDirect(systemPrompt, userPrompt, maxTokens) },
+  ];
+  let lastErr;
+  for (const { name, fn } of chain) {
+    try {
+      const result = await fn();
+      return result;
+    } catch(e) {
+      console.warn(`[AI Auto] ${name} falhou:`, e.message);
+      lastErr = e;
+    }
   }
-  return await callOpenRouter(systemPrompt, userPrompt, maxTokens);
+  throw lastErr || new Error('Todos os providers de IA falharam. Verifica as chaves em ⚙️ Configurações → IA.');
 }
 
 // Compatibilidade — getGroqKey já definida acima
@@ -6656,26 +6929,38 @@ function closeGroqModal() {
 }
 
 function saveGroqKey() {
-  const input = document.getElementById('groqKeyInput');
-  const val = input.value.trim();
-  if (!val || val.includes('•')) {
-    document.getElementById('groqKeyStatus').textContent = 'Cola a tua chave completa';
+  const textarea = document.getElementById('groqKeyInput');
+  const rawKeys = (textarea?.value || '').split('\n')
+    .map(k => k.trim())
+    .filter(k => k.startsWith('gsk_') && k.length > 10);
+
+  const invalid = (textarea?.value || '').split('\n')
+    .map(k => k.trim())
+    .filter(k => k.length > 3 && !k.startsWith('gsk_'));
+
+  if (invalid.length > 0) {
+    document.getElementById('groqKeyStatus').textContent = '⚠ Chaves inválidas: devem começar com gsk_';
     return;
   }
-  if (!val.startsWith('gsk_')) {
-    document.getElementById('groqKeyStatus').textContent = '⚠ A chave Groq começa com gsk_';
+  if (rawKeys.length === 0) {
+    document.getElementById('groqKeyStatus').textContent = 'Cola pelo menos uma chave (gsk_...)';
     return;
   }
-  setGroqKey(val);
-  document.getElementById('groqKeyStatus').textContent = '✓ Chave guardada no browser!';
-  document.getElementById('groqConfigBtn').textContent = '✓ IA configurada';
-  setTimeout(closeGroqModal, 1500);
+  setGroqKeys(rawKeys);
+  localStorage.setItem('dvGroqKeyIdx', '0');
+  const n = rawKeys.length;
+  document.getElementById('groqKeyStatus').textContent = `✓ ${n} chave${n>1?'s':''} guardada${n>1?'s':''}! Rotação automática ativa.`;
+  document.getElementById('groqConfigBtn').textContent = `✓ IA (${n} chave${n>1?'s':''})`;
+  setTimeout(closeGroqModal, 1800);
 }
 
 function clearGroqKey() {
+  if (!confirm('Remover todas as chaves Groq?')) return;
   localStorage.removeItem('dvGroqKey');
-  document.getElementById('groqKeyInput').value = '';
-  document.getElementById('groqKeyStatus').textContent = 'Chave removida';
+  localStorage.removeItem('dvGroqKeys');
+  localStorage.removeItem('dvGroqKeyIdx');
+  if (document.getElementById('groqKeyInput')) document.getElementById('groqKeyInput').value = '';
+  document.getElementById('groqKeyStatus').textContent = 'Chaves removidas';
   document.getElementById('groqConfigBtn').textContent = '⚙️ Configurar IA';
 }
 
@@ -7706,9 +7991,20 @@ function initSettingsPage() {
   if (providerSel) providerSel.value = provider;
   changeAiProvider();
 
-  const orKeyInput = document.getElementById('openrouterKeySettingsInput');
-  const orKey = getOpenRouterKey();
-  if (orKeyInput && orKey) orKeyInput.value = orKey.slice(0, 10) + '•••••••••••••••••';
+  const orKeysTextarea = document.getElementById('openrouterKeysSettingsInput');
+  const orKeysBadge = document.getElementById('openrouterKeysBadge');
+  const orKeys = getOpenRouterKeys();
+  // Só mostra chaves se não for a default (evitar expor em texto claro)
+  const isDefault = orKeys.length === 1 && orKeys[0] === DEFAULT_OPENROUTER_KEY;
+  if (orKeysTextarea && !isDefault && orKeys.length > 0) {
+    orKeysTextarea.value = orKeys.join('\n');
+  }
+  if (orKeysBadge && orKeys.length > 0) {
+    const n = orKeys.length;
+    orKeysBadge.textContent = isDefault
+      ? '🔑 1 chave default configurada'
+      : `🔑 ${n} chave${n>1?'s':''} configurada${n>1?'s':''}`;
+  }
 
   const orModel = getOpenRouterModel();
   const modelSel = document.getElementById('openrouterModelSelect');
@@ -7726,10 +8022,37 @@ function initSettingsPage() {
     }
   }
 
-  // Groq key
-  const groqInput = document.getElementById('groqKeySettingsInput');
-  const key = getGroqKey();
-  if (groqInput && key) groqInput.value = key.slice(0,8) + '•••••••••••••••••';
+  // Groq keys
+  const groqTextarea = document.getElementById('groqKeysSettingsInput');
+  const groqBadge = document.getElementById('groqKeysBadge');
+  const groqKeys = getGroqKeys();
+  if (groqTextarea && groqKeys.length > 0) groqTextarea.value = groqKeys.join('\n');
+  if (groqBadge && groqKeys.length > 0) {
+    const n = groqKeys.length;
+    groqBadge.textContent = `🔑 ${n} chave${n>1?'s':''} configurada${n>1?'s':''}`;
+  }
+
+  // HF keys
+  const hfTextarea = document.getElementById('hfKeysSettingsInput');
+  const hfBadge = document.getElementById('hfKeysBadge');
+  const hfKeys = getHFKeys();
+  const hfIsDefault = hfKeys.length === 1 && hfKeys[0] === DEFAULT_HF_KEY;
+  if (hfTextarea && !hfIsDefault && hfKeys.length > 0) hfTextarea.value = hfKeys.join('\n');
+  if (hfBadge) {
+    const n = hfKeys.length;
+    hfBadge.textContent = hfIsDefault ? '🔑 1 chave default configurada' : `🔑 ${n} chave${n>1?'s':''} configurada${n>1?'s':''}`;
+  }
+
+  // Gemini keys
+  const geminiTextarea = document.getElementById('geminiKeysSettingsInput');
+  const geminiBadge = document.getElementById('geminiKeysBadge');
+  const geminiKeys = getGeminiKeys();
+  const geminiIsDefault = geminiKeys.length === 1 && geminiKeys[0] === DEFAULT_GEMINI_KEY;
+  if (geminiTextarea && !geminiIsDefault && geminiKeys.length > 0) geminiTextarea.value = geminiKeys.join('\n');
+  if (geminiBadge) {
+    const n = geminiKeys.length;
+    geminiBadge.textContent = geminiIsDefault ? '🔑 1 chave default configurada' : `🔑 ${n} chave${n>1?'s':''} configurada${n>1?'s':''}`;
+  }
 
   // Reminders
   const prefs = JSON.parse(localStorage.getItem('dvReminders') || '{}');
@@ -7745,17 +8068,22 @@ function initSettingsPage() {
 
 function changeAiProvider() {
   const sel = document.getElementById('aiProviderSelect');
-  const val = sel ? sel.value : 'openrouter';
+  const val = sel ? sel.value : 'auto';
   localStorage.setItem('dvAiProvider', val);
-  const orBox = document.getElementById('openrouterSettingsBox');
-  const groqBox = document.getElementById('groqSettingsBox');
-  if (val === 'openrouter') {
-    if (orBox) orBox.style.display = 'block';
-    if (groqBox) groqBox.style.display = 'none';
-  } else {
-    if (orBox) orBox.style.display = 'none';
-    if (groqBox) groqBox.style.display = 'block';
-  }
+  const orBox     = document.getElementById('openrouterSettingsBox');
+  const groqBox   = document.getElementById('groqSettingsBox');
+  const hfBox     = document.getElementById('hfSettingsBox');
+  const geminiBox = document.getElementById('geminiSettingsBox');
+  // Esconde todos primeiro
+  [orBox, groqBox, hfBox, geminiBox].forEach(b => { if (b) b.style.display = 'none'; });
+  // Mostra o box correto
+  if (val === 'auto') {
+    // Em modo auto, mostra todos para o utilizador poder gerir as chaves de cada um
+    [orBox, groqBox, hfBox, geminiBox].forEach(b => { if (b) b.style.display = 'block'; });
+  } else if (val === 'openrouter' && orBox)   orBox.style.display = 'block';
+  else if (val === 'groq' && groqBox)         groqBox.style.display = 'block';
+  else if (val === 'huggingface' && hfBox)    hfBox.style.display = 'block';
+  else if (val === 'gemini' && geminiBox)     geminiBox.style.display = 'block';
 }
 
 function handleModelSelectChange() {
@@ -7771,14 +8099,20 @@ function handleModelSelectChange() {
 }
 
 function saveSettingsOpenRouter() {
-  const keyInput = document.getElementById('openrouterKeySettingsInput');
+  const keysTextarea = document.getElementById('openrouterKeysSettingsInput');
   const modelSel = document.getElementById('openrouterModelSelect');
   const customInput = document.getElementById('customModelInput');
   const status = document.getElementById('openrouterSettingsStatus');
+  const badge = document.getElementById('openrouterKeysBadge');
 
-  const keyVal = (keyInput?.value || '').trim();
-  if (keyVal && !keyVal.includes('•')) {
-    localStorage.setItem('dvOpenRouterKey', keyVal);
+  // Processa múltiplas chaves (uma por linha)
+  const rawKeys = (keysTextarea?.value || '').split('\n')
+    .map(k => k.trim())
+    .filter(k => k.length > 10 && !k.startsWith('#'));
+
+  if (rawKeys.length > 0) {
+    setOpenRouterKeys(rawKeys);
+    localStorage.setItem('dvOpenRouterKeyIdx', '0'); // reset rotation
   }
 
   let chosenModel = modelSel?.value || 'meta-llama/llama-3.3-70b-instruct:free';
@@ -7787,20 +8121,28 @@ function saveSettingsOpenRouter() {
   }
   localStorage.setItem('dvOpenRouterModel', chosenModel);
 
+  const n = rawKeys.length || getOpenRouterKeys().length;
+  if (badge) badge.textContent = n > 0 ? `🔑 ${n} chave${n>1?'s':''} configurada${n>1?'s':''}` : '';
   if (status) {
-    status.textContent = '✓ Configurações do OpenRouter guardadas com sucesso!';
+    status.textContent = rawKeys.length > 0
+      ? `✓ ${rawKeys.length} chave${rawKeys.length>1?'s':''} OpenRouter guardada${rawKeys.length>1?'s':''}! Rotação automática ativa.`
+      : '✓ Modelo guardado!';
     status.style.color = 'var(--sage-l)';
   }
 }
 
 function clearSettingsOpenRouterKey() {
-  if (!confirm('Remover a chave do OpenRouter?')) return;
+  if (!confirm('Remover todas as chaves OpenRouter?')) return;
   localStorage.removeItem('dvOpenRouterKey');
-  const keyInput = document.getElementById('openrouterKeySettingsInput');
+  localStorage.removeItem('dvOpenRouterKeys');
+  localStorage.removeItem('dvOpenRouterKeyIdx');
+  const keysTextarea = document.getElementById('openrouterKeysSettingsInput');
   const status = document.getElementById('openrouterSettingsStatus');
-  if (keyInput) keyInput.value = '';
+  const badge = document.getElementById('openrouterKeysBadge');
+  if (keysTextarea) keysTextarea.value = '';
+  if (badge) badge.textContent = '';
   if (status) {
-    status.textContent = 'Chave OpenRouter removida';
+    status.textContent = 'Chaves OpenRouter removidas';
     status.style.color = 'var(--muted)';
   }
 }
@@ -7832,28 +8174,113 @@ function clearSheetsUrl() {
 }
 
 function saveSettingsGroqKey() {
-  const input = document.getElementById('groqKeySettingsInput');
+  const textarea = document.getElementById('groqKeysSettingsInput');
   const status = document.getElementById('groqSettingsStatus');
-  const val = (input?.value || '').trim();
-  if (!val || val.includes('•')) {
-    if (status) { status.textContent = '⚠ Cola a chave completa'; status.style.color = '#f87171'; }
+  const badge = document.getElementById('groqKeysBadge');
+
+  const rawKeys = (textarea?.value || '').split('\n')
+    .map(k => k.trim())
+    .filter(k => k.startsWith('gsk_') && k.length > 10);
+
+  const invalid = (textarea?.value || '').split('\n')
+    .map(k => k.trim())
+    .filter(k => k.length > 3 && !k.startsWith('gsk_'));
+
+  if (invalid.length > 0) {
+    if (status) { status.textContent = `⚠ ${invalid.length} linha(s) inválida(s): as chaves Groq começam com gsk_`; status.style.color = '#f87171'; }
     return;
   }
-  if (!val.startsWith('gsk_')) {
-    if (status) { status.textContent = '⚠ A chave Groq começa com gsk_'; status.style.color = '#f87171'; }
+  if (rawKeys.length === 0) {
+    if (status) { status.textContent = '⚠ Cola pelo menos uma chave Groq (gsk_...)'; status.style.color = '#f87171'; }
     return;
   }
-  setGroqKey(val);
-  if (status) { status.textContent = '✓ Chave guardada no browser!'; status.style.color = 'var(--moss-l)'; }
-  if (input) input.value = val.slice(0,8) + '•••••••••••••••••';
+  setGroqKeys(rawKeys);
+  localStorage.setItem('dvGroqKeyIdx', '0'); // reset rotation
+  const n = rawKeys.length;
+  if (badge) badge.textContent = `🔑 ${n} chave${n>1?'s':''} configurada${n>1?'s':''}`;
+  if (status) { status.textContent = `✓ ${n} chave${n>1?'s':''} Groq guardada${n>1?'s':''}! Rotação automática ativa.`; status.style.color = 'var(--moss-l)'; }
 }
 
 function clearSettingsGroqKey() {
+  if (!confirm('Remover todas as chaves Groq?')) return;
   localStorage.removeItem('dvGroqKey');
-  const input = document.getElementById('groqKeySettingsInput');
+  localStorage.removeItem('dvGroqKeys');
+  localStorage.removeItem('dvGroqKeyIdx');
+  const textarea = document.getElementById('groqKeysSettingsInput');
   const status = document.getElementById('groqSettingsStatus');
-  if (input) input.value = '';
-  if (status) { status.textContent = 'Chave removida'; status.style.color = 'var(--muted)'; }
+  const badge = document.getElementById('groqKeysBadge');
+  if (textarea) textarea.value = '';
+  if (badge) badge.textContent = '';
+  if (status) { status.textContent = 'Chaves removidas'; status.style.color = 'var(--muted)'; }
+}
+
+function saveSettingsHFKey() {
+  const textarea = document.getElementById('hfKeysSettingsInput');
+  const status = document.getElementById('hfSettingsStatus');
+  const badge = document.getElementById('hfKeysBadge');
+  const rawKeys = (textarea?.value || '').split('\n')
+    .map(k => k.trim())
+    .filter(k => k.startsWith('hf_') && k.length > 10);
+  const invalid = (textarea?.value || '').split('\n')
+    .map(k => k.trim())
+    .filter(k => k.length > 3 && !k.startsWith('hf_'));
+  if (invalid.length > 0) {
+    if (status) { status.textContent = `⚠ ${invalid.length} chave(s) inválida(s): tokens HF começam com hf_`; status.style.color = '#f87171'; }
+    return;
+  }
+  if (rawKeys.length === 0) {
+    if (status) { status.textContent = '⚠ Cola pelo menos uma chave HF (hf_...)'; status.style.color = '#f87171'; }
+    return;
+  }
+  setHFKeys(rawKeys);
+  localStorage.setItem('dvHFKeyIdx', '0');
+  const n = rawKeys.length;
+  if (badge) badge.textContent = `🔑 ${n} chave${n>1?'s':''} configurada${n>1?'s':''}`;
+  if (status) { status.textContent = `✓ ${n} chave${n>1?'s':''} HF guardada${n>1?'s':''}! Rotação automática ativa.`; status.style.color = 'var(--moss-l)'; }
+}
+
+function clearSettingsHFKey() {
+  if (!confirm('Remover todas as chaves Hugging Face?')) return;
+  localStorage.removeItem('dvHFKey');
+  localStorage.removeItem('dvHFKeys');
+  localStorage.removeItem('dvHFKeyIdx');
+  const textarea = document.getElementById('hfKeysSettingsInput');
+  const status = document.getElementById('hfSettingsStatus');
+  const badge = document.getElementById('hfKeysBadge');
+  if (textarea) textarea.value = '';
+  if (badge) badge.textContent = '';
+  if (status) { status.textContent = 'Chaves removidas'; status.style.color = 'var(--muted)'; }
+}
+
+function saveSettingsGeminiKey() {
+  const textarea = document.getElementById('geminiKeysSettingsInput');
+  const status = document.getElementById('geminiSettingsStatus');
+  const badge = document.getElementById('geminiKeysBadge');
+  const rawKeys = (textarea?.value || '').split('\n')
+    .map(k => k.trim())
+    .filter(k => k.length > 10);
+  if (rawKeys.length === 0) {
+    if (status) { status.textContent = '⚠ Cola pelo menos uma chave Gemini'; status.style.color = '#f87171'; }
+    return;
+  }
+  setGeminiKeys(rawKeys);
+  localStorage.setItem('dvGeminiKeyIdx', '0');
+  const n = rawKeys.length;
+  if (badge) badge.textContent = `🔑 ${n} chave${n>1?'s':''} configurada${n>1?'s':''}`;
+  if (status) { status.textContent = `✓ ${n} chave${n>1?'s':''} Gemini guardada${n>1?'s':''}! Rotação automática ativa.`; status.style.color = 'var(--moss-l)'; }
+}
+
+function clearSettingsGeminiKey() {
+  if (!confirm('Remover todas as chaves Gemini?')) return;
+  localStorage.removeItem('dvGeminiKey');
+  localStorage.removeItem('dvGeminiKeys');
+  localStorage.removeItem('dvGeminiKeyIdx');
+  const textarea = document.getElementById('geminiKeysSettingsInput');
+  const status = document.getElementById('geminiSettingsStatus');
+  const badge = document.getElementById('geminiKeysBadge');
+  if (textarea) textarea.value = '';
+  if (badge) badge.textContent = '';
+  if (status) { status.textContent = 'Chaves removidas'; status.style.color = 'var(--muted)'; }
 }
 
 async function saveSettingsReminders() {
