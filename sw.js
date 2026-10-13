@@ -3,10 +3,13 @@
 // Funcionalidades: cache offline + notificações push
 // ═══════════════════════════════════════════════════════════════════
 
-const CACHE_NAME = 'diario-v1';
+const CACHE_NAME = 'diario-v2';
 const ASSETS = [
-  '/diario-de-vida/',
-  '/diario-de-vida/index.html',
+  './',
+  './index.html',
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png'
 ];
 
 // ── Instalar: cache dos assets principais
@@ -29,15 +32,18 @@ self.addEventListener('activate', e => {
 
 // ── Fetch: serve do cache se offline
 self.addEventListener('fetch', e => {
-  // Só para assets do próprio site
-  if (!e.request.url.includes('diario-de-vida')) return;
+  // Apenas pedidos GET locais
+  if (e.request.method !== 'GET') return;
+  const url = new URL(e.request.url);
+  if (url.origin !== self.location.origin) return;
 
   e.respondWith(
     fetch(e.request)
       .then(response => {
-        // Atualiza cache com resposta nova
-        const clone = response.clone();
-        caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone));
+        if (response && response.status === 200) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then(cache => cache.put(e.request, clone));
+        }
         return response;
       })
       .catch(() => caches.match(e.request))

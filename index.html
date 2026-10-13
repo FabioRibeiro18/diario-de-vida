@@ -1530,13 +1530,69 @@ canvas { display:block; width:100% !important; max-width:100%; }
 ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 3px; }
 ::-webkit-scrollbar-thumb:hover { background: var(--muted); }
 
+/* ── MOBILE MENU & BACKDROP ── */
+.mobile-menu-btn {
+  display: none;
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 18px;
+  cursor: pointer;
+  padding: 5px 9px;
+  margin-right: 12px;
+  border-radius: 6px;
+  line-height: 1;
+}
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: 48;
+}
+.sidebar-backdrop.active { display: block; }
+
 /* ── RESPONSIVE ── */
-@media (max-width: 900px) {
-  .sidebar { width: 180px; }
-  .main-content { margin-left: 180px; padding: 72px 24px 60px; }
-  .top-header { left: 180px; padding: 0 24px; }
+@media (max-width: 900px) and (min-width: 769px) {
+  .sidebar { width: 190px; }
+  .main-content { margin-left: 190px; padding: 72px 20px 60px; max-width: calc(100vw - 190px); }
+  .top-header { left: 190px; padding: 0 20px; }
   .stat-grid { grid-template-columns: repeat(2, 1fr); }
   .grid-4 { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 768px) {
+  .mobile-menu-btn { display: inline-flex; align-items: center; justify-content: center; }
+  .top-header { left: 0; padding: 0 14px; height: 50px; }
+  .sidebar {
+    width: 270px;
+    transform: translateX(-100%);
+    transition: transform 0.26s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 55;
+    box-shadow: 6px 0 24px rgba(0,0,0,0.7);
+  }
+  .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+  .main-content {
+    margin-left: 0;
+    max-width: 100vw;
+    padding: 64px 14px 70px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .stat-grid { grid-template-columns: 1fr; }
+  .grid-4 { grid-template-columns: 1fr; }
+  .grid-2 { grid-template-columns: 1fr; }
+  .grid-3 { grid-template-columns: 1fr; }
+  .section-header { margin-bottom: 18px; }
+  .section-title { font-size: 24px; }
+  .card { padding: 14px; }
+  .flow-item { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .flow-item-action { align-self: flex-end; }
+  .btn { padding: 9px 14px; font-size: 12px; }
 }
 </style>
 </head>
@@ -1632,7 +1688,7 @@ canvas { display:block; width:100% !important; max-width:100%; }
 <div class="app-shell">
 
 <!-- ══ SIDEBAR ══ -->
-<aside class="sidebar">
+<aside class="sidebar" id="appSidebar">
   <div style="padding:14px 18px 10px;border-bottom:1px solid rgba(255,255,255,0.07);">
     <div style="font-family:'Source Serif 4',serif;font-size:18px;font-weight:300;color:var(--text);line-height:1.2;">Diário de Vida</div>
     <div style="display:flex;align-items:center;justify-content:space-between;margin-top:6px;">
@@ -1727,9 +1783,11 @@ canvas { display:block; width:100% !important; max-width:100%; }
     </button>
   </div>
 </aside>
+<div id="sidebarBackdrop" class="sidebar-backdrop" onclick="toggleMobileMenu(false)"></div>
 
 <!-- ══ MAIN CONTENT ══ -->
 <div class="top-header">
+  <button id="mobileMenuBtn" class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Abrir Menu">☰</button>
   <div class="top-header-quote" id="topQuote"></div>
   <div class="top-header-author" id="topAuthor"></div>
 </div>
@@ -2865,14 +2923,39 @@ canvas { display:block; width:100% !important; max-width:100%; }
     </div>
     <button class="btn btn-primary" onclick="saveSettingsReminders()" style="width:100%;">💾 Guardar lembretes</button>
     <div id="remSettingsStatus" style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--moss-l);"></div>
+  <div class="card">
+    <div class="card-title">🔒 Segurança & Palavra-passe</div>
+    <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Altera a tua palavra-passe de acesso. O hash é guardado com segurança no teu dispositivo.</p>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:14px;">
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;">Palavra-passe atual</div>
+        <input type="password" id="currentPwdSettings" placeholder="••••••••" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;">
+      </div>
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;">Nova palavra-passe</div>
+        <input type="password" id="newPwdSettings" placeholder="mínimo 4 caracteres" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;">
+      </div>
+      <div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;">Confirmar nova</div>
+        <input type="password" id="confirmPwdSettings" placeholder="repetir nova palavra-passe" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;">
+      </div>
+    </div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
+      <button class="btn btn-primary" onclick="changePassword()" style="font-size:11px;">💾 Alterar palavra-passe</button>
+      <button onclick="resetPassword()" style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:6px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);cursor:pointer;">↺ Repor pré-definida</button>
+    </div>
+    <div id="pwdSettingsStatus" style="margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:11px;"></div>
   </div>
   <div class="card">
     <div class="card-title">🗄️ Dados & Privacidade</div>
     <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">Todos os dados ficam guardados localmente no teu browser.</p>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+    <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
       <button class="btn btn-secondary" onclick="exportData()" style="font-size:11px;">⬇ Exportar JSON</button>
+      <button class="btn btn-secondary" onclick="document.getElementById('importFileInput').click()" style="font-size:11px;">⬆ Importar JSON</button>
+      <input type="file" id="importFileInput" accept=".json" style="display:none;" onchange="importData(event)">
       <button onclick="clearAllData()" style="background:transparent;border:1px solid rgba(248,113,113,0.3);border-radius:6px;padding:6px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:#f87171;cursor:pointer;">🗑 Apagar todos os dados</button>
     </div>
+    <div id="importStatusMsg" style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:11px;"></div>
   </div>
 </div>
 
@@ -3032,7 +3115,8 @@ function localDateStr(d) {
 setInterval(() => {
   const nowDate = localDateStr();
   if (nowDate !== TODAY) {
-    // Dia mudou — recarregar página para começar dia novo limpo
+    // Dia mudou — guardar dados atuais antes de recarregar
+    try { if (typeof saveData === 'function') saveData(); } catch(e) {}
     window.location.reload();
   }
 }, 60 * 1000); // verifica a cada minuto
@@ -3359,14 +3443,34 @@ function renderOverviewHabits() {
 // NAV
 // ═══════════════════════════════════════════════════════════════════
 
+function toggleMobileMenu(force) {
+  const sb = document.getElementById('appSidebar');
+  const bd = document.getElementById('sidebarBackdrop');
+  if (!sb) return;
+  const isOpen = sb.classList.contains('mobile-open');
+  const nextState = (typeof force === 'boolean') ? force : !isOpen;
+  if (nextState) {
+    sb.classList.add('mobile-open');
+    if (bd) bd.classList.add('active');
+  } else {
+    sb.classList.remove('mobile-open');
+    if (bd) bd.classList.remove('active');
+  }
+}
+
 function showSection(id, el) {
+  if (window.innerWidth <= 768) {
+    toggleMobileMenu(false);
+  }
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.getElementById('section-' + id).classList.add('active');
+  const target = document.getElementById('section-' + id);
+  if (target) target.classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   if (el) el.classList.add('active');
   if (id === 'overview') updateOverview();
   if (id === 'stats') { setTimeout(renderAllCharts, 60); updateGoalCounter(); }
   if (id === 'exercise') renderHobbies();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -3702,17 +3806,30 @@ function extractJSON(text) {
   throw new Error('Nao foi possivel extrair JSON da resposta');
 }
 
-// ── CÁLCULO AUTOMÁTICO DE CALORIAS COM IA ──
+// ── CÁLCULO AUTOMÁTICO DE CALORIAS COM IA (COM CACHE LOCAL) ──
 let foodSearchTimeout = null;
 let foodResults = [];
 
 async function calcCaloriesAI(foodName) {
+  const normKey = (foodName || '').trim().toLowerCase();
+  const cacheKey = 'dv_food_cache';
+  let cache = {};
+  try { cache = JSON.parse(localStorage.getItem(cacheKey) || '{}'); } catch(e) {}
+  if (normKey && cache[normKey]) {
+    return cache[normKey];
+  }
+
   const text = await callGemini(
     'Nutricionista. Responde APENAS em JSON sem markdown nem texto extra: {"calorias":0,"calorias_alto":0,"proteina":0,"carbo":0,"gordura":0}. "calorias" = estimativa média, "calorias_alto" = estimativa conservadora pelo valor mais alto possível. Para a quantidade descrita ou porção normal se não indicada.',
     'Alimento: ' + foodName,
     200
   );
-  return extractJSON(text);
+  const result = extractJSON(text);
+  if (result && normKey && typeof result.calorias === 'number') {
+    cache[normKey] = result;
+    try { localStorage.setItem(cacheKey, JSON.stringify(cache)); } catch(e) {}
+  }
+  return result;
 }
 
 async function searchFoodSheets(query) {
@@ -6397,6 +6514,11 @@ if (getGroqKey()) {
 // Password is stored as a SHA-256 hash in localStorage — never plaintext
 const AUTH_KEY = 'dvAuthHash';
 const SESSION_KEY = 'dvSession';
+const FIXED_HASH = 'df5d9527c178963afb034ac6250903cae0d066858191287761a9e10438005225';
+
+function getActiveAuthHash() {
+  return localStorage.getItem(AUTH_KEY) || FIXED_HASH;
+}
 
 async function sha256(text) {
   const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
@@ -6421,8 +6543,9 @@ async function checkPassword() {
   if (!pwd) { shake(input); return; }
 
   const hash = await sha256(pwd);
+  const activeHash = getActiveAuthHash();
 
-  if (hash === FIXED_HASH) {
+  if (hash === activeHash) {
     localStorage.setItem(SESSION_KEY, Date.now().toString());
     errEl.textContent = '';
     showApp();
@@ -6432,6 +6555,46 @@ async function checkPassword() {
     input.value = '';
     shake(input);
   }
+}
+
+async function changePassword() {
+  const cur = (document.getElementById('currentPwdSettings')?.value || '').trim();
+  const next = (document.getElementById('newPwdSettings')?.value || '').trim();
+  const conf = (document.getElementById('confirmPwdSettings')?.value || '').trim();
+  const st = document.getElementById('pwdSettingsStatus');
+  if (!st) return;
+
+  if (!cur || !next || !conf) {
+    st.innerHTML = '<span style="color:var(--rose);">Preenche todos os campos.</span>';
+    return;
+  }
+  const curHash = await sha256(cur);
+  const activeHash = getActiveAuthHash();
+  if (curHash !== activeHash) {
+    st.innerHTML = '<span style="color:var(--rose);">Palavra-passe atual incorreta.</span>';
+    return;
+  }
+  if (next.length < 4) {
+    st.innerHTML = '<span style="color:var(--rose);">A nova palavra-passe deve ter pelo menos 4 caracteres.</span>';
+    return;
+  }
+  if (next !== conf) {
+    st.innerHTML = '<span style="color:var(--rose);">As novas palavras-passe não coincidem.</span>';
+    return;
+  }
+  const nextHash = await sha256(next);
+  localStorage.setItem(AUTH_KEY, nextHash);
+  if (document.getElementById('currentPwdSettings')) document.getElementById('currentPwdSettings').value = '';
+  if (document.getElementById('newPwdSettings')) document.getElementById('newPwdSettings').value = '';
+  if (document.getElementById('confirmPwdSettings')) document.getElementById('confirmPwdSettings').value = '';
+  st.innerHTML = '<span style="color:var(--sage-l);">✓ Palavra-passe alterada com sucesso!</span>';
+}
+
+function resetPassword() {
+  const st = document.getElementById('pwdSettingsStatus');
+  if (!confirm('Desejas repor a palavra-passe original pré-definida?')) return;
+  localStorage.removeItem(AUTH_KEY);
+  if (st) st.innerHTML = '<span style="color:var(--sage-l);">✓ Palavra-passe reposta para a predefinição original.</span>';
 }
 
 function shake(el) {
@@ -6462,8 +6625,6 @@ function logout() {
 }
 
 // Check if already authenticated in this session (last 12 hours)
-// Fixed password — same on every device, no setup needed
-const FIXED_HASH = 'df5d9527c178963afb034ac6250903cae0d066858191287761a9e10438005225';
 
 function initAuth() {
   const session = localStorage.getItem(SESSION_KEY);
@@ -7287,6 +7448,59 @@ function exportData() {
   a.href = URL.createObjectURL(blob);
   a.download = 'diario-de-vida-' + localDateStr() + '.json';
   a.click();
+}
+
+function importData(event) {
+  const file = event.target.files && event.target.files[0];
+  const st = document.getElementById('importStatusMsg');
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      const incomingDays = (parsed && typeof parsed === 'object' && parsed.days) ? parsed.days : parsed;
+      if (!incomingDays || typeof incomingDays !== 'object') {
+        throw new Error('Ficheiro JSON não tem formato reconhecido.');
+      }
+
+      const validKeys = Object.keys(incomingDays).filter(k => /^\d{4}-\d{2}-\d{2}$/.test(k));
+      if (!validKeys.length) {
+        throw new Error('Nenhum dia válido (formato AAAA-MM-DD) encontrado no ficheiro.');
+      }
+
+      const doMerge = confirm(`Foram encontrados ${validKeys.length} dias no ficheiro de backup.\n\nClica em "OK" para JUNTAR aos teus dados existentes.\nClica em "Cancelar" para cancelar a importação.`);
+      if (!doMerge) {
+        event.target.value = '';
+        return;
+      }
+
+      let count = 0;
+      validKeys.forEach(k => {
+        DB[k] = incomingDays[k];
+        count++;
+      });
+
+      localStorage.setItem(DB_KEY, JSON.stringify(DB));
+      if (st) st.innerHTML = '<span style="color:var(--sage-l);">✓ ' + count + ' dias importados com sucesso! A recarregar...</span>';
+      
+      const bar = document.getElementById('savedBar');
+      if (bar) {
+        bar.textContent = '✓ ' + count + ' dias importados com sucesso';
+        bar.classList.add('show');
+      }
+
+      setTimeout(() => {
+        location.reload();
+      }, 1200);
+    } catch(err) {
+      console.error('Erro na importação:', err);
+      if (st) st.innerHTML = '<span style="color:var(--rose);">Erro ao importar: ' + err.message + '</span>';
+      alert('Erro ao importar backup: ' + err.message);
+    }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
 }
 
 function clearAllData() {
