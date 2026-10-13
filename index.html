@@ -3923,9 +3923,9 @@ function calcWCTip() {
 const DEFAULT_OPENROUTER_KEY  = '';
 const DEFAULT_HF_KEY          = '';
 const DEFAULT_GEMINI_KEY      = '';
-const GROQ_MODEL              = '';
-const HF_MODEL                = '';
-const GEMINI_MODEL            = '';
+const GROQ_MODEL              = 'llama-3.3-70b-versatile';
+const HF_MODEL                = 'meta-llama/Llama-3.1-8B-Instruct';
+const GEMINI_MODEL            = 'gemini-2.0-flash';
 
 // ── Helpers round-robin persistente ───────────────────────────────────────
 function _getIdx(storageKey) {
@@ -6977,10 +6977,10 @@ if (getGroqKey()) {
 
 const SUPABASE_URL = 'https://nocafjkyiaigxttwdkei.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_JemTyDpY6iPhrpSAemaQDg_ws94_aBm';
-let supabase = null;
+let supabaseClient = null;
 try {
   if (window.supabase && typeof window.supabase.createClient === 'function') {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   }
 } catch(e) {
   console.error('Erro ao inicializar cliente Supabase:', e);
@@ -7036,7 +7036,7 @@ async function submitAuthForm() {
     return;
   }
 
-  if (!supabase) {
+  if (!supabaseClient) {
     if (errEl) errEl.textContent = 'Supabase indisponível. Podes aceder pelo modo local abaixo.';
     return;
   }
@@ -7056,7 +7056,7 @@ async function submitAuthForm() {
         throw new Error('As palavras-passe não coincidem.');
       }
 
-      const { data, error } = await supabase.auth.signUp({
+      const { data, error } = await supabaseClient.auth.signUp({
         email,
         password
       });
@@ -7070,13 +7070,13 @@ async function submitAuthForm() {
           errEl.style.color = 'var(--sage-l)';
           errEl.textContent = '✓ Conta criada com sucesso! A iniciar sessão...';
         }
-        const { data: logData, error: logErr } = await supabase.auth.signInWithPassword({ email, password });
+        const { data: logData, error: logErr } = await supabaseClient.auth.signInWithPassword({ email, password });
         if (!logErr && logData.user) {
           onUserAuthenticated(logData.user);
         }
       }
     } else {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
         email,
         password
       });
@@ -7129,8 +7129,8 @@ function showApp(user) {
 }
 
 async function logout() {
-  if (supabase) {
-    try { await supabase.auth.signOut(); } catch(e) {}
+  if (supabaseClient) {
+    try { await supabaseClient.auth.signOut(); } catch(e) {}
   }
   localStorage.removeItem('dvGuestMode');
   document.getElementById('appContent').style.display = 'none';
@@ -7145,12 +7145,12 @@ async function logout() {
 
 // ── SINCRONIZAÇÃO DA BASE DE DADOS COM SUPABASE ──
 async function loadFromSupabase() {
-  if (!supabase) return;
+  if (!supabaseClient) return;
   try {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session || !session.user) return;
 
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('diario_registos')
       .select('data, dados')
       .order('data', { ascending: true });
@@ -7176,12 +7176,12 @@ async function loadFromSupabase() {
 }
 
 async function saveToSupabase(date, snap) {
-  if (!supabase) return;
+  if (!supabaseClient) return;
   try {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session || !session.user) return;
 
-    const { error } = await supabase
+    const { error } = await supabaseClient
       .from('diario_registos')
       .upsert({
         user_id: session.user.id,
@@ -7243,9 +7243,9 @@ function resetPassword() {
 }
 
 async function initAuth() {
-  if (supabase) {
+  if (supabaseClient) {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabaseClient.auth.getSession();
       if (session && session.user) {
         onUserAuthenticated(session.user);
         return;
