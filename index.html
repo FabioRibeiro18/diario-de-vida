@@ -2997,9 +2997,9 @@ canvas { display:block; width:100% !important; max-width:100%; }
       <div style="margin-bottom:14px;">
         <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Modelo de IA</div>
         <select id="openrouterModelSelect" onchange="handleModelSelectChange()" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;">
-          <option value="meta-llama/llama-3.3-70b-instruct:free">Llama 3.3 70B (Gratuito - Recomendado)</option>
-          <option value="google/gemini-2.0-flash-exp:free">Google Gemini 2.0 Flash (Gratuito)</option>
-          <option value="deepseek/deepseek-r1:free">DeepSeek R1 (Gratuito)</option>
+          <option value="nvidia/nemotron-3.5-lightning:free">NVIDIA Nemotron 3.5 Lightning (Gratuito - Rápido)</option>
+          <option value="google/gemma-4-31b-it:free">Google Gemma 4 31B (Gratuito)</option>
+          <option value="meta-llama/llama-3.3-70b-instruct:free">Llama 3.3 70B (Gratuito)</option>
           <option value="openai/gpt-4o-mini">OpenAI GPT-4o Mini</option>
           <option value="anthropic/claude-3.5-haiku">Anthropic Claude 3.5 Haiku</option>
           <option value="custom">Outro modelo personalizado...</option>
@@ -3871,9 +3871,10 @@ function calcWCTip() {
 // AI HELPER (OpenRouter & Groq)
 // ═══════════════════════════════════════════════════════════════════
 
+const DEFAULT_OPENROUTER_KEY = '';
 function getAiProvider() { return localStorage.getItem('dvAiProvider') || 'openrouter'; }
-function getOpenRouterKey() { return localStorage.getItem('dvOpenRouterKey') || ''; }
-function getOpenRouterModel() { return localStorage.getItem('dvOpenRouterModel') || 'meta-llama/llama-3.3-70b-instruct:free'; }
+function getOpenRouterKey() { return localStorage.getItem('dvOpenRouterKey') || DEFAULT_OPENROUTER_KEY; }
+function getOpenRouterModel() { return localStorage.getItem('dvOpenRouterModel') || 'nvidia/nemotron-3.5-lightning:free'; }
 
 const GROQ_MODEL = 'llama-3.3-70b-versatile';
 function getGroqKey() { return localStorage.getItem('dvGroqKey') || ''; }
