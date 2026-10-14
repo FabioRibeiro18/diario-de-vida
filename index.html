@@ -2708,6 +2708,15 @@ AQ... (2ª chave)" style="width:100%;background:var(--surface);border:1px solid 
     </div>
     <div id="importStatusMsg" style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:11px;"></div>
   </div>
+
+  <div class="card">
+    <div class="card-title">versão da app</div>
+    <div style="font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:12px;">
+      Versão instalada: <span id="appVersionLabel" style="font-family:'JetBrains Mono',monospace;color:var(--text2);"></span><br>
+      Se uma alteração nova não aparecer, limpa a cache da app. Os teus registos não são apagados.
+    </div>
+    <button class="btn btn-secondary" onclick="forceUpdateApp()">🔄 Atualizar app (limpar cache)</button>
+  </div>
 </div>
 
 </main>
@@ -6726,6 +6735,29 @@ async function loadSheetsUrlFromCloud() {
   } catch(e) {
     console.error('Erro ao carregar o link do Sheets da conta:', e);
   }
+}
+
+// ── VERSÃO DA APP E ATUALIZAÇÃO FORÇADA (limpa a cache do service worker; não apaga registos) ──
+var APP_VERSION = '2026-10-14.4';
+(function() {
+  const el = document.getElementById('appVersionLabel');
+  if (el) el.textContent = APP_VERSION;
+})();
+
+async function forceUpdateApp() {
+  try {
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(r => r.unregister()));
+    }
+    if (window.caches) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    }
+  } catch(e) {
+    console.error('Erro ao limpar a cache:', e);
+  }
+  location.reload();
 }
 
 // ── PASSADEIRA: registar o treino de qualquer dia ──
