@@ -1784,14 +1784,6 @@ canvas { display:block; width:100% !important; max-width:100%; }
   </div>
 
   <div style="padding:10px 18px;border-bottom:1px solid rgba(255,255,255,0.07);">
-    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
-      <span style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">💧 água</span>
-      <div id="sidebarDrops" style="display:flex;gap:2px;flex-wrap:wrap;justify-content:flex-end;max-width:120px;"></div>
-    </div>
-    <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);" id="nextAlertTime"></div>
-  </div>
-
-  <div style="padding:10px 18px;border-bottom:1px solid rgba(255,255,255,0.07);">
     <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">🔥 calorias</div>
     <div style="display:grid;grid-template-columns:1fr auto;gap:2px 8px;align-items:center;">
       <span style="font-family:'JetBrains Mono',monospace;font-size:8px;color:rgba(255,255,255,0.35);">consumidas</span>
@@ -1818,15 +1810,9 @@ canvas { display:block; width:100% !important; max-width:100%; }
     <div class="nav-item" onclick="showSection('meals',this)">
       <span class="nav-icon">🍽️</span> Refeições
     </div>
-    <div class="nav-item" onclick="showSection('water',this)">
-      <span class="nav-icon">💧</span> Hidratação
-    </div>
 
     <div class="nav-item" onclick="showSection('work',this)">
       <span class="nav-icon">💼</span> Trabalho
-    </div>
-    <div class="nav-item" onclick="showSection('journal',this)">
-      <span class="nav-icon">📓</span> Diário Pessoal
     </div>
     <div class="nav-item" onclick="showSection('treadmill',this)">
       <span class="nav-icon">🏃</span> Passadeira
@@ -1879,6 +1865,7 @@ canvas { display:block; width:100% !important; max-width:100%; }
     <div class="section-sub">visão geral · <span id="todayFull"></span></div>
   </div>
 
+  <div class="avatar-missing" style="display:none;margin-bottom:14px;padding:12px 14px;border:1px solid var(--border2);border-radius:10px;font-size:12px;color:var(--text2);line-height:1.6;">⚠️ Não foi possível carregar o avatar. Confirma que a pasta «avatar» (com avatar-chooser.js, companion-scene.js e a pasta assets) está no GitHub, ao lado do index.html.</div>
   <companion-scene id="avatarSceneOverview" name="Mika" level="1" hearts="0" xp="0" gender="woman" weight="80"></companion-scene>
 
   <!-- ▸ DAILY FLOW -->
@@ -1905,7 +1892,6 @@ canvas { display:block; width:100% !important; max-width:100%; }
     <div class="stat-tile"><div class="stat-tile-icon">🌙</div><div class="stat-tile-val" id="ov-sleep">—</div><div class="stat-tile-name">horas sono</div></div>
     <div class="stat-tile"><div class="stat-tile-icon">⚖️</div><div class="stat-tile-val" id="ov-weight">—</div><div class="stat-tile-name">peso kg</div></div>
     <div class="stat-tile"><div class="stat-tile-icon">🍽️</div><div class="stat-tile-val" id="ov-cal">—</div><div class="stat-tile-name">kcal</div></div>
-    <div class="stat-tile"><div class="stat-tile-icon">💧</div><div class="stat-tile-val" id="ov-water">—</div><div class="stat-tile-name">copos água</div></div>
     <div class="stat-tile"><div class="stat-tile-icon">💼</div><div class="stat-tile-val" id="ov-work">—</div><div class="stat-tile-name">h. trabalho</div></div>
   </div>
 
@@ -2138,60 +2124,6 @@ canvas { display:block; width:100% !important; max-width:100%; }
   </div>
 </div>
 
-<!-- ▸ WATER -->
-<div class="section" id="section-water">
-  <div class="section-header">
-    <div class="section-title">Hidratação <em>& Água</em></div>
-    <div class="section-sub">bebe bem, vive melhor</div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">objetivo diário</div>
-    <div class="water-goal-display">
-      <span class="water-big" id="waterCount">0</span>
-      <span class="water-unit">/ <span id="waterGoalNum">8</span> copos</span>
-      <span id="waterTag" style="margin-left:10px;" class="tag"></span>
-    </div>
-
-    <div class="water-drops-grid" id="waterDropsMain"></div>
-
-    <div class="progress-row">
-      <div class="progress-label">
-        <span>progresso</span>
-        <strong id="waterMl">0 ml</strong>
-      </div>
-      <div class="progress-track">
-        <div class="progress-fill" id="waterProgressBar" style="width:0%;background:var(--sky)"></div>
-      </div>
-    </div>
-
-    <div class="water-alert-settings">
-      <div class="field" style="flex:1;min-width:140px;">
-        <label>Alerta a cada (min)</label>
-        <select id="waterAlertInterval" onchange="setupWaterAlerts()">
-          <option value="30">30 minutos</option>
-          <option value="60" selected>1 hora</option>
-          <option value="90">90 minutos</option>
-          <option value="120">2 horas</option>
-          <option value="0">Desligado</option>
-        </select>
-      </div>
-      <div class="field" style="flex:1;min-width:140px;">
-        <label>Meta diária (copos)</label>
-        <input type="number" id="waterGoalInput" value="8" min="4" max="15" onchange="updateWaterGoal()">
-      </div>
-      <div style="padding-top:20px;">
-        <button class="btn btn-secondary" onclick="addWater()">+ Adicionar copo</button>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">dica de hidratação</div>
-    <p style="font-size:13px;color:var(--text2);font-style:italic;line-height:1.7;" id="waterTip"></p>
-  </div>
-</div>
-
 <!-- ▸ WORK -->
 <div class="section" id="section-work">
   <div class="section-header">
@@ -2376,100 +2308,33 @@ canvas { display:block; width:100% !important; max-width:100%; }
 
 </div>
 
-<!-- ▸ JOURNAL -->
-<div class="section" id="section-journal">
-  <div class="section-header">
-    <div class="section-title">Diário <em>Pessoal</em></div>
-    <div class="section-sub">como me senti hoje</div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">humor geral</div>
-    <div class="mood-selector" id="moodSelector">
-      <div class="mood-option" onclick="selectMood('😢','Muito mal')" data-mood="😢">😢<span>Muito mal</span></div>
-      <div class="mood-option" onclick="selectMood('😕','Mal')" data-mood="😕">😕<span>Mal</span></div>
-      <div class="mood-option" onclick="selectMood('😐','Neutro')" data-mood="😐">😐<span>Neutro</span></div>
-      <div class="mood-option" onclick="selectMood('🙂','Bem')" data-mood="🙂">🙂<span>Bem</span></div>
-      <div class="mood-option" onclick="selectMood('😄','Muito bem')" data-mood="😄">😄<span>Muito bem</span></div>
-      <div class="mood-option" onclick="selectMood('🤩','Excelente')" data-mood="🤩">🤩<span>Excelente</span></div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">sensações & emoções</div>
-    <div class="grid-3" style="margin-bottom:16px;">
-      <div class="field"><label>Nível de energia (1-10)</label>
-        <input type="range" id="energyLevel" min="1" max="10" value="5" oninput="document.getElementById('energyVal').textContent=this.value">
-        <div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:4px;"><span>sem energia</span><span id="energyVal">5</span><span>muita energia</span></div>
-      </div>
-      <div class="field"><label>Nível de ansiedade (1-10)</label>
-        <input type="range" id="anxietyLevel" min="1" max="10" value="3" oninput="document.getElementById('anxietyVal').textContent=this.value">
-        <div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:4px;"><span>calmo/a</span><span id="anxietyVal">3</span><span>muito ansioso/a</span></div>
-      </div>
-      <div class="field"><label>Stress (1-10)</label>
-        <input type="range" id="stressLevel" min="1" max="10" value="3" oninput="document.getElementById('stressVal').textContent=this.value">
-        <div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:4px;"><span>relaxado/a</span><span id="stressVal">3</span><span>muito stress</span></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">reflexão do dia</div>
-    <textarea class="journal-textarea" id="journalEntry" placeholder="Como foi o teu dia? O que sentiste? O que correu bem ou mal? É só para ti..."></textarea>
-    <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
-      <div class="field" style="flex:1;min-width:180px;"><label>Melhor momento do dia</label><input type="text" id="bestMoment" placeholder="ex: o almoço com a família..."></div>
-      <div class="field" style="flex:1;min-width:180px;"><label>Gratidão — agradeço por</label><input type="text" id="gratitude" placeholder="ex: ter saúde, sol lá fora..."></div>
-    </div>
-  </div>
-
-  <div class="ai-panel">
-    <div class="ai-panel-label">reflexão com ia · claude</div>
-    <button class="btn btn-primary" onclick="getJournalInsight()">🧠 Analisar o meu estado emocional</button>
-    <div class="ai-response" id="journalResponse"></div>
-  </div>
-
-  <!-- INTIMATE — subtle, private section -->
-  <div class="intimate-section">
-    <div class="lock-header" onclick="toggleIntimate()">
-      <span class="lock-icon">🔒</span>
-      <h3>Registo íntimo</h3>
-      <span class="lock-reveal" id="lockLabel">tocar para revelar</span>
-    </div>
-    <div class="intimate-content" id="intimateContent">
-      <div class="grid-2" style="margin-bottom:12px;">
-        <div class="counter-block">
-          <div class="counter-emoji" style="font-size:20px;">❤️</div>
-          <div class="counter-val" id="cnt-intimacy">0</div>
-          <div class="counter-name">intimidade</div>
-          <div class="counter-btns">
-            <button class="counter-btn" onclick="changeCounter('intimacy',-1)">−</button>
-            <button class="counter-btn" onclick="changeCounter('intimacy',1)">+</button>
-          </div>
-        </div>
-        <div class="field">
-          <label>Notas (privado)</label>
-          <textarea id="intimacyNotes" rows="4" style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius-s);padding:10px 13px;font-family:'Lora',serif;font-style:italic;font-size:13px;color:var(--text);outline:none;width:100%;resize:vertical;" placeholder="Notas privadas..."></textarea>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- ▸ PASSADEIRA -->
 <div class="section" id="section-treadmill">
   <div class="section-header">
     <div class="section-title">Treino na <em>Passadeira</em></div>
-    <div class="section-sub">registo de hoje</div>
+    <div class="section-sub">regista o treino de hoje ou de um dia anterior</div>
   </div>
 
   <div class="card">
-    <div class="card-title">sessão de hoje</div>
-    <div class="grid-3">
-      <div class="field"><label>Tempo (min)</label><input type="number" id="treadmillTime" min="0" step="1" placeholder="ex: 30"></div>
-      <div class="field"><label>Distância (km)</label><input type="number" id="treadmillDistance" min="0" step="0.01" placeholder="ex: 3.5"></div>
-      <div class="field"><label>Inclinação (%)</label><input type="number" id="treadmillIncline" min="0" step="0.5" placeholder="ex: 5"></div>
+    <div class="card-title">sessão</div>
+    <div class="field" style="max-width:240px;margin-bottom:14px;">
+      <label>Dia do treino</label>
+      <input type="date" id="tmDate" onchange="loadTreadmillDay()">
     </div>
-    <button class="btn btn-primary" onclick="saveData()" style="width:100%;margin-top:14px;">💾 Guardar registo</button>
+    <div class="grid-3">
+      <div class="field"><label>Tempo (min)</label><input type="number" id="tmTime" min="0" step="1" placeholder="ex: 30"></div>
+      <div class="field"><label>Distância (km)</label><input type="number" id="tmDist" min="0" step="0.01" placeholder="ex: 3.5"></div>
+      <div class="field"><label>Inclinação (%)</label><input type="number" id="tmIncl" min="0" step="0.5" placeholder="ex: 5"></div>
+    </div>
+    <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
+      <button class="btn btn-primary" onclick="saveTreadmill()" style="flex:1 1 200px;">💾 Guardar treino</button>
+      <button class="btn btn-secondary" onclick="saveTreadmill(true)" style="flex:0 0 auto;">Limpar este dia</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">treinos registados</div>
+    <div id="tmHistory"></div>
   </div>
 </div>
 
@@ -2480,6 +2345,7 @@ canvas { display:block; width:100% !important; max-width:100%; }
     <div class="section-sub">o avatar muda de aspeto com o teu último peso registado</div>
   </div>
 
+  <div class="avatar-missing" style="display:none;margin-bottom:14px;padding:12px 14px;border:1px solid var(--border2);border-radius:10px;font-size:12px;color:var(--text2);line-height:1.6;">⚠️ Não foi possível carregar o avatar. Confirma que a pasta «avatar» (com avatar-chooser.js, companion-scene.js e a pasta assets) está no GitHub, ao lado do index.html.</div>
   <companion-scene id="avatarSceneEdit" name="Mika" level="1" hearts="0" xp="0" gender="woman" weight="80"></companion-scene>
 
   <div class="card">
@@ -2971,16 +2837,6 @@ gsk_... (3ª chave)" style="width:100%;background:var(--surface);border:1px soli
   </div>
 </div>
 
-<!-- Water Toast Alert -->
-<div class="water-toast" id="waterToast">
-  <div class="water-toast-icon">💧</div>
-  <div class="water-toast-text">
-    <h4>Hora de beber água!</h4>
-    <p>Já bebeste <span id="toastWaterCount">0</span> copos hoje.</p>
-  </div>
-  <button class="water-toast-close" onclick="closeWaterToast()">×</button>
-</div>
-
 <!-- Saved indicator -->
 <div class="saved-bar" id="savedBar">✓ Dados guardados</div>
 
@@ -2988,7 +2844,7 @@ gsk_... (3ª chave)" style="width:100%;background:var(--surface);border:1px soli
 // ── Funcionalidades removidas (90 Dias, Hábitos, Hobbys, Casa de Banho, Tempo de Ecrã) ──
 // O código antigo ainda consulta estes elementos; devolve um elemento vazio (fora da página)
 // para não dar erro. Os dados antigos continuam guardados nos registos, mas já não aparecem.
-const _REMOVED_UI = {"bathroomNotes": "textarea", "card-habits-chart": "div", "chart-habits": "canvas", "cnt-banho": "div", "cnt-defecar": "div", "cnt-pausas": "div", "cnt-urinar": "div", "dailyRoutine": "div", "exDoneCount": "div", "exDuration": "input", "exIntensity": "select", "exName": "input", "exerciseList": "div", "habitResponse": "div", "habitTipBtn": "button", "habitsList": "div", "hobbyGrid": "div", "n90-active-screen": "div", "n90-ai-status": "div", "n90-daily-checks": "div", "n90-day-num": "div", "n90-end-label": "div", "n90-gen-btn": "button", "n90-phase-card": "div", "n90-phase-desc": "div", "n90-phase-icon": "div", "n90-phase-label": "div", "n90-phase-name": "div", "n90-progress-bar": "div", "n90-roadmap": "div", "n90-start-label": "div", "n90-start-screen": "div", "n90-subtitle": "div", "n90-week-content": "div", "n90-week-num": "div", "ov-ex": "div", "ov-hobby": "div", "ov-wc": "div", "overviewHabits": "div", "quickExercises": "div", "routineDoneCount": "div", "routineTag": "div", "routineTotalCount": "div", "screenEnd": "input", "screenStart": "input", "screenTag": "div", "screenTotal": "div", "section-bathroom": "div", "section-exercise": "div", "section-habits": "div", "section-noventa": "div", "section-screen": "div", "stats-habits-summary": "div", "wcTip": "div"};
+const _REMOVED_UI = {"anxietyLevel": "input", "anxietyVal": "div", "bathroomNotes": "textarea", "bestMoment": "input", "card-habits-chart": "div", "chart-habits": "canvas", "cnt-banho": "div", "cnt-defecar": "div", "cnt-intimacy": "div", "cnt-pausas": "div", "cnt-urinar": "div", "dailyRoutine": "div", "energyLevel": "input", "energyVal": "div", "exDoneCount": "div", "exDuration": "input", "exIntensity": "select", "exName": "input", "exerciseList": "div", "gratitude": "input", "habitResponse": "div", "habitTipBtn": "button", "habitsList": "div", "hobbyGrid": "div", "intimacyNotes": "textarea", "intimateContent": "div", "journalEntry": "textarea", "journalResponse": "div", "lockLabel": "div", "moodSelector": "div", "n90-active-screen": "div", "n90-ai-status": "div", "n90-daily-checks": "div", "n90-day-num": "div", "n90-end-label": "div", "n90-gen-btn": "button", "n90-phase-card": "div", "n90-phase-desc": "div", "n90-phase-icon": "div", "n90-phase-label": "div", "n90-phase-name": "div", "n90-progress-bar": "div", "n90-roadmap": "div", "n90-start-label": "div", "n90-start-screen": "div", "n90-subtitle": "div", "n90-week-content": "div", "n90-week-num": "div", "nextAlertTime": "div", "ov-ex": "div", "ov-hobby": "div", "ov-water": "div", "ov-wc": "div", "overviewHabits": "div", "quickExercises": "div", "routineDoneCount": "div", "routineTag": "div", "routineTotalCount": "div", "screenEnd": "input", "screenStart": "input", "screenTag": "div", "screenTotal": "div", "section-bathroom": "div", "section-exercise": "div", "section-habits": "div", "section-journal": "div", "section-noventa": "div", "section-screen": "div", "section-water": "div", "sidebarDrops": "div", "stats-habits-summary": "div", "stats-mood-summary": "div", "stats-sleep-summary": "div", "stats-water-summary": "div", "stressLevel": "input", "stressVal": "div", "toastWaterCount": "div", "waterAlertInterval": "select", "waterCount": "div", "waterDropsMain": "div", "waterGoalInput": "input", "waterGoalNum": "div", "waterMl": "div", "waterProgressBar": "div", "waterTag": "div", "waterTip": "div", "waterToast": "div", "wcTip": "div"};
 const _getElById = document.getElementById.bind(document);
 document.getElementById = function(id) {
   return _getElById(id) || (id in _REMOVED_UI ? document.createElement(_REMOVED_UI[id]) : null);
@@ -3428,7 +3284,6 @@ function restoreFields() {
   set('energyLevel', d.energyLevel || 5); set('anxietyLevel', d.anxietyLevel || 3); set('stressLevel', d.stressLevel || 3);
   set('intimacyNotes', d.intimacyNotes);
   set('waterGoalInput', waterGoal);
-  set('treadmillTime', d.treadmillTime || ''); set('treadmillDistance', d.treadmillDistance || ''); set('treadmillIncline', d.treadmillIncline || '');
   if(d.energyLevel) document.getElementById('energyVal').textContent = d.energyLevel;
   if(d.anxietyLevel) document.getElementById('anxietyVal').textContent = d.anxietyLevel;
   if(d.stressLevel) document.getElementById('stressVal').textContent = d.stressLevel;
@@ -3594,13 +3449,6 @@ function showWaterToast() {
 
 function closeWaterToast() { document.getElementById('waterToast').classList.remove('show'); }
 
-// Request notification permission
-if('Notification' in window && Notification.permission === 'default') {
-  setTimeout(() => Notification.requestPermission(), 3000);
-}
-
-// Start alert on load
-setTimeout(setupWaterAlerts, 1000);
 
 // ═══════════════════════════════════════════════════════════════════
 // COUNTERS
@@ -4868,15 +4716,8 @@ async function generateDaySummary() {
   const summary = {
     sono:sleepH, peso:document.getElementById('weight').value||'não registado',
     calorias:(()=>{let t=0;Object.values(meals).forEach(s=>s.forEach(m=>t+=m.cal||0));return t})()+' kcal',
-    agua:waterCount+'/'+waterGoal+' copos',
     exercicios:exercises.map(e=>e.name+' '+e.duration+'min').join(', ')||'nenhum',
-    wc:`urinou ${counters.urinar||0}x`,
-    habitos:HABITS.filter(h=>habitsDone[h.id]).map(h=>h.name).join(', ')||'nenhum',
-    humor:selectedMood||'não registado',
-    energia:document.getElementById('energyLevel').value+'/10',
-    stress:document.getElementById('stressLevel').value+'/10',
     trabalho:document.getElementById('workStart').value||'não registado',
-    diario:document.getElementById('journalEntry').value.substring(0,200)||'(sem entrada)',
   };
   try {
     const text = await callGemini(
@@ -5118,9 +4959,9 @@ function saveData() {
     intimacyNotes:document.getElementById('intimacyNotes').value,
     selectedMood,
     hobbies: hobbies.map(h=>({...h,tracking:false,start:null})),
-    treadmillTime:document.getElementById('treadmillTime').value,
-    treadmillDistance:document.getElementById('treadmillDistance').value,
-    treadmillIncline:document.getElementById('treadmillIncline').value,
+    treadmillTime:(DB[TODAY]||{}).treadmillTime||'',
+    treadmillDistance:(DB[TODAY]||{}).treadmillDistance||'',
+    treadmillIncline:(DB[TODAY]||{}).treadmillIncline||'',
     savedAt: new Date().toISOString(),
   };
   DB[TODAY] = snap;
@@ -5582,11 +5423,7 @@ function calcDayScore(d) {
   if(d.bedtime) score++;
   if(d.weight) score++;
   if(d.meals && d.meals.length) score += Math.min(d.meals.length, 2);
-  if(d.waterCount) score += Math.min(d.waterCount, 2);
   if(d.exercises && d.exercises.length) score++;
-  if(d.journalEntry) score++;
-  if(d.selectedMood) score++;
-  if(d.habitsDone && Object.values(d.habitsDone).some(Boolean)) score++;
   return score;
 }
 
@@ -5630,12 +5467,10 @@ function renderKPIs(days) {
   const sleepArr  = days.map(d => { const dd=getDayData(d); if(!dd.bedtime||!dd.waketime)return null; let[bh,bm]=dd.bedtime.split(':').map(Number),[wh,wm]=dd.waketime.split(':').map(Number); let bM=bh*60+bm,wM=wh*60+wm;if(wM<bM)wM+=24*60;return+((wM-bM)/60).toFixed(1); });
   const weightArr = days.map(d => { const dd=getDayData(d); return dd.weight?+dd.weight:null; });
   const calArr    = days.map(d => { const dd=getDayData(d); if(!dd.meals) return null; const mv=typeof dd.meals==='object'&&!Array.isArray(dd.meals)?Object.values(dd.meals).flat():dd.meals; const t=mv.reduce((s,m)=>s+(m.cal||0),0); return t||null; });
-  const waterArr  = days.map(d => { const dd=getDayData(d); return dd.waterCount||null; });
 
   const avgSleep  = avg(sleepArr);
   const avgWeight = avg(weightArr);
   const avgCal    = avg(calArr);
-  const avgWater  = avg(waterArr);
   const sleepTrend = trend(sleepArr);
   const weightTrend = trend(weightArr);
 
@@ -5660,11 +5495,6 @@ function renderKPIs(days) {
       <div class="stat-kpi-val">${avgCal!==null?Math.round(avgCal):'—'}<span style="font-size:14px;color:var(--muted)">kcal</span></div>
       <div class="stat-kpi-sub">por dia</div>
     </div>
-    <div class="stat-kpi">
-      <div class="stat-kpi-label">💧 Água média</div>
-      <div class="stat-kpi-val">${avgWater!==null?avgWater.toFixed(1):'—'}<span style="font-size:14px;color:var(--muted)">copos</span></div>
-      <div class="stat-kpi-sub">por dia</div>
-    </div>
   `;
 }
 
@@ -5678,11 +5508,6 @@ function renderAllCharts() {
   const sleepData  = days.map(d => { const dd=getDayData(d); if(!dd.bedtime||!dd.waketime)return null; let[bh,bm]=dd.bedtime.split(':').map(Number),[wh,wm]=dd.waketime.split(':').map(Number); let bM=bh*60+bm,wM=wh*60+wm;if(wM<bM)wM+=24*60;return+((wM-bM)/60).toFixed(1); });
   const weightData = days.map(d => { const dd=getDayData(d); return dd.weight?+dd.weight:null; });
   const calData    = days.map(d => { const dd=getDayData(d); if(!dd.meals) return null; const mv=typeof dd.meals==='object'&&!Array.isArray(dd.meals)?Object.values(dd.meals).flat():dd.meals; const t=mv.reduce((s,m)=>s+(m.cal||0),0); return t||null; });
-  const waterData  = days.map(d => { const dd=getDayData(d); return dd.waterCount||null; });
-  const moodMap = {'😢':1,'😕':2,'😐':3,'🙂':4,'😄':5,'🤩':6};
-  const moodData   = days.map(d => { const dd=getDayData(d); return dd.selectedMood??(null); });
-  const energyData = days.map(d => { const dd=getDayData(d); return dd.energyLevel?+dd.energyLevel:null; });
-  const stressData = days.map(d => { const dd=getDayData(d); return dd.stressLevel?+dd.stressLevel:null; });
 
   // Weight goal
   const weightGoalVal = parseFloat(document.getElementById('weightGoal')?.value) || null;
@@ -5723,19 +5548,6 @@ function renderAllCharts() {
     makeSummaryItem('máximo', calData.filter(Boolean).length?Math.round(Math.max(...calData.filter(Boolean))):null,'kcal') +
     makeSummaryItem('dias registados', calData.filter(Boolean).length);
 
-  const avgWater = avg(waterData);
-  const daysWaterGoal = waterData.filter(v=>v&&v>=waterGoal).length;
-  document.getElementById('stats-water-summary').innerHTML =
-    makeSummaryItem('média', avgWater!==null?avgWater.toFixed(1):null,'copos') +
-    makeSummaryItem('dias com meta', daysWaterGoal) +
-    makeSummaryItem('melhor dia', waterData.filter(Boolean).length?Math.max(...waterData.filter(Boolean)):null,'copos');
-
-  const avgMoodN = avg(moodData.map(m=>moodMap[m]||null));
-  const moodLabels = {1:'😢',2:'😕',3:'😐',4:'🙂',5:'😄',6:'🤩'};
-  document.getElementById('stats-mood-summary').innerHTML =
-    makeSummaryItem('humor médio', avgMoodN?moodLabels[Math.round(avgMoodN)]:'—') +
-    makeSummaryItem('energia média', avg(energyData)!==null?avg(energyData).toFixed(1):null,'/10') +
-    makeSummaryItem('stress médio', avg(stressData)!==null?avg(stressData).toFixed(1):null,'/10');
 
 }
 
@@ -5801,22 +5613,6 @@ const FLOW_STEPS = [
     }
   },
   {
-    id: 'water', icon: '💧', label: 'Água',
-    section: 'water',
-    check: () => {
-      const c = waterCount;
-      if (c >= waterGoal) return 'done';
-      if (c > 0) return 'partial';
-      return null;
-    },
-    detail: () => {
-      return [
-        waterCount + ' de ' + waterGoal + ' copos',
-        waterCount >= waterGoal ? 'Meta atingida! 🎉' : 'Faltam ' + (waterGoal - waterCount) + ' copos'
-      ];
-    }
-  },
-  {
     id: 'work', icon: '💼', label: 'Trabalho',
     section: 'work',
     check: () => {
@@ -5836,27 +5632,6 @@ const FLOW_STEPS = [
       return lines;
     }
   },
-  {
-    id: 'journal', icon: '📝', label: 'Diário',
-    section: 'journal',
-    check: () => {
-      const entry = document.getElementById('journalEntry').value;
-      const mood = selectedMood;
-      if (entry && entry.length > 20 && mood) return 'done';
-      if (entry || mood) return 'partial';
-      return null;
-    },
-    detail: () => {
-      const mood = selectedMood;
-      const energy = document.getElementById('energyLevel').value;
-      const entry = document.getElementById('journalEntry').value;
-      const lines = [];
-      if (mood) lines.push('Humor: ' + mood);
-      if (energy) lines.push('Energia: ' + energy + '/10');
-      if (entry) lines.push('"' + entry.substring(0,60) + (entry.length>60?'...':'"'));
-      return lines.length ? lines : ['Ainda não registado'];
-    }
-  }
 ];
 
 let activeFlowStep = null;
@@ -6953,6 +6728,83 @@ async function loadSheetsUrlFromCloud() {
   }
 }
 
+// ── PASSADEIRA: registar o treino de qualquer dia ──
+function initTreadmill() {
+  const d = document.getElementById('tmDate');
+  if (!d) return;
+  d.max = TODAY;
+  if (!d.value) d.value = TODAY;
+  loadTreadmillDay();
+}
+
+function loadTreadmillDay() {
+  const date = document.getElementById('tmDate').value || TODAY;
+  const day = DB[date] || {};
+  document.getElementById('tmTime').value = day.treadmillTime || '';
+  document.getElementById('tmDist').value = day.treadmillDistance || '';
+  document.getElementById('tmIncl').value = day.treadmillIncline || '';
+  renderTreadmillHistory();
+}
+
+function saveTreadmill(clear) {
+  const date = (document.getElementById('tmDate').value || '').trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date > TODAY) {
+    alert('Escolhe um dia válido (não pode ser no futuro).');
+    return;
+  }
+  const time = clear ? '' : document.getElementById('tmTime').value;
+  const dist = clear ? '' : document.getElementById('tmDist').value;
+  const incl = clear ? '' : document.getElementById('tmIncl').value;
+  if (!clear && !time && !dist && !incl) { alert('Preenche pelo menos um campo.'); return; }
+
+  const snap = Object.assign({}, DB[date] || {});
+  snap.treadmillTime = time; snap.treadmillDistance = dist; snap.treadmillIncline = incl;
+  if (!snap.savedAt) snap.savedAt = new Date().toISOString();
+  DB[date] = snap;
+  if (date === TODAY && typeof DAY === 'object' && DAY) {
+    DAY.treadmillTime = time; DAY.treadmillDistance = dist; DAY.treadmillIncline = incl;
+  }
+  try {
+    localStorage.setItem(DB_KEY, JSON.stringify(DB));
+  } catch(e) {
+    const keys = Object.keys(DB).sort();
+    if (keys.length > 90) delete DB[keys[0]];
+    try { localStorage.setItem(DB_KEY, JSON.stringify(DB)); } catch(e2) {}
+  }
+  if (typeof saveToSupabase === 'function') saveToSupabase(date, snap);
+  if (typeof sheetsUrl !== 'undefined' && sheetsUrl) setTimeout(syncAllData, 600);
+
+  const bar = document.getElementById('savedBar');
+  if (bar) { bar.classList.add('show'); setTimeout(() => bar.classList.remove('show'), 2500); }
+  updateAvatarScenes();
+  renderTreadmillHistory();
+}
+
+function pickTreadmillDay(date) {
+  document.getElementById('tmDate').value = date;
+  loadTreadmillDay();
+}
+
+function renderTreadmillHistory() {
+  const box = document.getElementById('tmHistory');
+  if (!box) return;
+  const rows = Object.keys(DB)
+    .filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d) && DB[d] && (parseFloat(DB[d].treadmillDistance) > 0 || parseFloat(DB[d].treadmillTime) > 0))
+    .sort().reverse().slice(0, 14);
+  if (!rows.length) {
+    box.innerHTML = '<div style="color:var(--muted);font-size:13px;">Ainda não há treinos registados.</div>';
+    return;
+  }
+  const fmt = v => { const n = parseFloat(v); return n > 0 ? n : '—'; };
+  box.innerHTML = rows.map(d => {
+    const x = DB[d]; const p = d.split('-');
+    return '<div onclick="pickTreadmillDay(\'' + d + '\')" style="display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer;font-size:13px;">' +
+      '<span>' + p[2] + '/' + p[1] + '/' + p[0] + '</span>' +
+      '<span style="color:var(--text2);">' + fmt(x.treadmillTime) + ' min · ' + fmt(x.treadmillDistance) + ' km · ' + fmt(x.treadmillIncline) + '%</span>' +
+      '</div>';
+  }).join('');
+}
+
 // ── AVATAR (género e nome guardados na conta; peso = último peso registado) ──
 var avatarPrefs = (function() {
   try { return JSON.parse(localStorage.getItem('dvAvatar')) || {}; } catch(e) { return {}; }
@@ -7036,6 +6888,12 @@ function saveAvatarName(btn) {
     saveAvatarPrefs();
   });
 })();
+
+setTimeout(() => {
+  if (typeof customElements === 'undefined' || !customElements.get('companion-scene') || !customElements.get('avatar-chooser')) {
+    document.querySelectorAll('.avatar-missing').forEach(e => { e.style.display = 'block'; });
+  }
+}, 4000);
 
 async function saveAvatarToCloud() {
   if (!supabaseClient) return;
@@ -7386,8 +7244,6 @@ function renderTrends() {
   const metrics = [
     {key:'sleep', label:'Sono', unit:'h', icon:'🌙', invertGood:false},
     {key:'weight', label:'Peso', unit:'kg', icon:'⚖️', invertGood:true},
-    {key:'water', label:'Água', unit:'copos', icon:'💧', invertGood:false},
-    {key:'habits', label:'Hábitos', unit:'', icon:'🌱', invertGood:false},
   ];
   el.innerHTML = metrics.map(m => {
     const curr = calcWeekAvg(m.key, 0);
@@ -7417,13 +7273,10 @@ const ACHIEVEMENTS = [
   {id:'first_save',    icon:'🌱', title:'Primeiro registo',  desc:'Guardaste o teu primeiro dia',               check:()=>Object.keys(DB).length>=1},
   {id:'week_streak',   icon:'🔥', title:'7 dias seguidos',   desc:'Registaste 7 dias consecutivos',             check:()=>checkStreak(7)},
   {id:'month_streak',  icon:'💎', title:'30 dias seguidos',  desc:'Registaste 30 dias consecutivos',            check:()=>checkStreak(30)},
-  {id:'water_week',    icon:'💧', title:'Hidratado',         desc:'8+ copos de água durante 7 dias',            check:()=>countDaysWhere(d=>d.waterCount>=8,7)>=7},
   {id:'sleep_week',    icon:'🌙', title:'Dorminhoco',        desc:'7+ horas de sono durante 5 dias',            check:()=>countDaysWhere(d=>getSleepH(d)>=7,7)>=5},
-  {id:'exercise_10',   icon:'💪', title:'Em movimento',      desc:'Exercício em 10 dias',                       check:()=>countDaysWhere(d=>d.habitsDone&&Object.values(d.habitsDone).some(Boolean),30)>=10},
   {id:'weight_loss_1', icon:'⚖️', title:'Primeiro kg',      desc:'Perdeste 1kg desde o início',                check:()=>checkWeightLoss(1)},
   {id:'weight_loss_5', icon:'🏆', title:'5kg perdidos',      desc:'Perdeste 5kg desde o início',                check:()=>checkWeightLoss(5)},
-  {id:'diary_10',      icon:'📝', title:'Escritor',          desc:'Escreveste no diário 10 vezes',              check:()=>countDaysWhere(d=>d.journalEntry&&d.journalEntry.length>20,90)>=10},
-  {id:'perfect_day',   icon:'⭐', title:'Dia perfeito',      desc:'Sono, água, exercício e diário num dia',     check:()=>countDaysWhere(d=>getSleepH(d)>=7&&(d.waterCount||0)>=8&&d.journalEntry&&Object.values(d.habitsDone||{}).some(Boolean),30)>=1},
+  {id:'perfect_day',   icon:'⭐', title:'Dia perfeito',      desc:'7+ horas de sono e treino de passadeira no mesmo dia', check:()=>countDaysWhere(d=>getSleepH(d)>=7&&parseFloat(d.treadmillDistance)>0,30)>=1},
 ];
 
 function checkStreak(days) {
@@ -7513,7 +7366,7 @@ async function generateWeeklySummary(force) {
     let cal=0;
     if(day.meals){const mv=typeof day.meals==='object'&&!Array.isArray(day.meals)?Object.values(day.meals).flat():day.meals;cal=mv.reduce((s,m)=>s+(parseInt(m.cal)||0),0);}
     const ex=QUICK_EXERCISES.filter(e=>day.habitsDone&&day.habitsDone[e.id]).length;
-    stats.push(`${key}: sono=${getSleepH(day).toFixed(1)}h, peso=${day.weight||'?'}kg, agua=${day.waterCount||0} copos, cal=${cal}kcal, exercicios=${ex}, humor=${day.selectedMood||'?'}, energia=${day.energyLevel||'?'}/10`);
+    stats.push(`${key}: sono=${getSleepH(day).toFixed(1)}h, peso=${day.weight||'?'}kg, cal=${cal}kcal, passadeira=${day.treadmillDistance||0}km`);
   }
   if (!stats.length) { el.innerHTML='<span style="color:var(--muted);">Sem dados suficientes.</span>'; if(btn) btn.disabled=false; return; }
 
@@ -8378,6 +8231,7 @@ function clearAllData() {
     if (id === 'last5') renderLast5Days();
     if (id === 'work')     { initWorkDatePicker(); renderWorkCalendar(); }
     if (id === 'noventa')   renderN90();
+    if (id === 'treadmill')   initTreadmill();
     if (id === 'competition') renderCompetition();
     if (id === 'compadmin')   renderCompAdmin();
   };
