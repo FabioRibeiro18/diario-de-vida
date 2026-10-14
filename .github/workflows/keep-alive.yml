@@ -1,0 +1,19 @@
+# Mantém o projeto Supabase gratuito ativo (os projetos grátis adormecem após 7 dias sem pedidos).
+# Guarda este ficheiro no repositório em:  .github/workflows/keep-alive.yml
+name: Manter o Supabase ativo
+
+on:
+  schedule:
+    - cron: '17 6 */3 * *'   # de 3 em 3 dias, às 06:17 UTC
+  workflow_dispatch:          # permite correr à mão no separador Actions
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Pedido simples à base de dados
+        run: |
+          curl -fsS -X POST "https://nocafjkyiaigxttwdkei.supabase.co/rest/v1/rpc/ping" \
+            -H "apikey: sb_publishable_JemTyDpY6iPhrpSAemaQDg_ws94_aBm" \
+            -H "Content-Type: application/json" \
+            -d '{}'
