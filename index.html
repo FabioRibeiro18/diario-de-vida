@@ -14,6 +14,12 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Source+Serif+4:ital,wght@0,300;0,400;1,300&family=JetBrains+Mono:wght@300;400&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script type="module" src="avatar/avatar-chooser.js"></script>
+<script type="module" src="avatar/companion-scene.js"></script>
+<style>
+companion-scene { --scene-wall:#1b2535; --scene-floor:#2a2d3a; --scene-card:var(--card); --scene-text:var(--text); --scene-primary:var(--moss-d); width:100%; max-width:560px; margin-bottom:16px; }
+avatar-chooser { --avatar-bg:var(--card); --avatar-surface:var(--surface); --avatar-text:var(--text); --avatar-primary:var(--moss); --avatar-border:var(--border); width:100%; max-width:440px; }
+</style>
 <style>
 /* ── DESIGN SYSTEM: Verde Musgo & Bege Natural ── */
 :root {
@@ -1825,6 +1831,9 @@ canvas { display:block; width:100% !important; max-width:100%; }
     <div class="nav-item" onclick="showSection('treadmill',this)">
       <span class="nav-icon">🏃</span> Passadeira
     </div>
+    <div class="nav-item" onclick="showSection('avatar',this)">
+      <span class="nav-icon">🧑</span> Avatar
+    </div>
     <div class="nav-item" id="navCompeticao" style="display:none" onclick="showSection('competition',this)">
       <span class="nav-icon">🏆</span> Competição
     </div>
@@ -1869,6 +1878,8 @@ canvas { display:block; width:100% !important; max-width:100%; }
     <div class="section-title">Resumo do <em>teu dia</em></div>
     <div class="section-sub">visão geral · <span id="todayFull"></span></div>
   </div>
+
+  <companion-scene id="avatarSceneOverview" name="Mika" level="1" hearts="0" xp="0" gender="woman" weight="80"></companion-scene>
 
   <!-- ▸ DAILY FLOW -->
   <div class="flow-progress">
@@ -2459,6 +2470,29 @@ canvas { display:block; width:100% !important; max-width:100%; }
       <div class="field"><label>Inclinação (%)</label><input type="number" id="treadmillIncline" min="0" step="0.5" placeholder="ex: 5"></div>
     </div>
     <button class="btn btn-primary" onclick="saveData()" style="width:100%;margin-top:14px;">💾 Guardar registo</button>
+  </div>
+</div>
+
+<!-- ▸ AVATAR -->
+<div class="section" id="section-avatar">
+  <div class="section-header">
+    <div class="section-title">O meu <em>Avatar</em></div>
+    <div class="section-sub">o avatar muda de aspeto com o teu último peso registado</div>
+  </div>
+
+  <companion-scene id="avatarSceneEdit" name="Mika" level="1" hearts="0" xp="0" gender="woman" weight="80"></companion-scene>
+
+  <div class="card">
+    <div class="card-title">personalizar</div>
+    <div class="field">
+      <label>Nome do companheiro</label>
+      <input type="text" id="avatarName" maxlength="20" placeholder="ex: Mika">
+    </div>
+    <avatar-chooser id="avatarChooser" gender="woman" weight="80" style="margin-top:14px;"></avatar-chooser>
+    <div style="margin-top:12px;font-size:12px;color:var(--muted);line-height:1.6;">
+      Nível: sobe a cada 7 dias com registo guardado · Corações: dias com registo nos últimos 7 dias (máx. 5) · O peso usado é o mais recente que registaste (entre 60 e 110 kg).
+    </div>
+    <button class="btn btn-primary" onclick="saveAvatarName(this)" style="width:100%;margin-top:14px;">Guardar nome</button>
   </div>
 </div>
 
@@ -5107,6 +5141,7 @@ function saveData() {
   setTimeout(() => bar.classList.remove('show'), 2500);
   // Atualizar resumo a partir do snap guardado (funciona mesmo noutras secções)
   updateOverviewFromSnap(snap);
+  updateAvatarScenes();
   updateSidebarCals();
   // Sync to Sheets if configured (não sincronizar durante reload para evitar loop)
   if(!_reloading && typeof sheetsUrl !== 'undefined' && sheetsUrl) setTimeout(syncAllData, 600);
@@ -5902,6 +5937,7 @@ const _origUpdateOverview = _updateOverviewBase;
 function updateOverview() {
   _origUpdateOverview();
   renderDailyFlow();
+  if (typeof updateAvatarScenes === 'function') updateAvatarScenes();
 }
 
 
@@ -6751,6 +6787,7 @@ async function onUserAuthenticated(user) {
   if (lastUser && user && user.id && lastUser !== user.id) {
     localStorage.removeItem(DB_KEY);
     localStorage.removeItem(SHEETS_URL_KEY);
+    localStorage.removeItem('dvAvatar');
     localStorage.setItem('dvLastUserId', user.id);
     location.reload();
     return;
@@ -6759,6 +6796,7 @@ async function onUserAuthenticated(user) {
   showApp(user);
   await loadFromSupabase();
   await loadSheetsUrlFromCloud();
+  await loadAvatarFromCloud();
   await initCompetition();
 }
 
@@ -6789,6 +6827,7 @@ async function logout() {
     // Os dados da conta estão no Supabase: limpa a cópia local para não ficar no dispositivo
     localStorage.removeItem(DB_KEY);
     localStorage.removeItem(SHEETS_URL_KEY);
+    localStorage.removeItem('dvAvatar');
     localStorage.removeItem('dvLastUserId');
     location.reload();
     return;
@@ -6911,6 +6950,132 @@ async function loadSheetsUrlFromCloud() {
     }
   } catch(e) {
     console.error('Erro ao carregar o link do Sheets da conta:', e);
+  }
+}
+
+// ── AVATAR (género e nome guardados na conta; peso = último peso registado) ──
+var avatarPrefs = (function() {
+  try { return JSON.parse(localStorage.getItem('dvAvatar')) || {}; } catch(e) { return {}; }
+})();
+
+function avatarLatestWeight() {
+  const days = Object.keys(DB).sort().reverse();
+  for (const d of days) {
+    const w = parseFloat(DB[d] && DB[d].weight);
+    if (w > 0) return w;
+  }
+  const el = document.getElementById('weight');
+  const cur = el ? parseFloat(el.value) : NaN;
+  return cur > 0 ? cur : null;
+}
+
+function avatarStats() {
+  const days = Object.keys(DB).filter(d => DB[d] && DB[d].savedAt);
+  const lim = new Date(); lim.setDate(lim.getDate() - 6);
+  const limStr = lim.getFullYear() + '-' + String(lim.getMonth() + 1).padStart(2, '0') + '-' + String(lim.getDate()).padStart(2, '0');
+  return {
+    level: 1 + Math.floor(days.length / 7),
+    xp: (days.length % 7) / 7,
+    hearts: Math.min(5, days.filter(d => d >= limStr).length)
+  };
+}
+
+function avatarMessage() {
+  const t = DB[TODAY];
+  if (!t || !t.savedAt) return 'Já registaste o dia de hoje? 💪';
+  const km = parseFloat(t.treadmillDistance);
+  if (km > 0) return 'Passadeira de hoje: ' + km + ' km. Excelente! 🏃';
+  return 'Registo de hoje guardado. Boa!';
+}
+
+function updateAvatarScenes() {
+  try {
+    const prefs = avatarPrefs || {};
+    const st = avatarStats();
+    const w = avatarLatestWeight();
+    const weight = Math.round(Math.min(110, Math.max(60, w || 80)));
+    const gender = prefs.genero === 'man' ? 'man' : 'woman';
+    const name = (prefs.nome || 'Mika').slice(0, 20);
+    ['avatarSceneOverview', 'avatarSceneEdit'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.setAttribute('gender', gender);
+      el.setAttribute('weight', String(weight));
+      el.setAttribute('name', name);
+      el.setAttribute('level', String(st.level));
+      el.setAttribute('hearts', String(st.hearts));
+      el.setAttribute('xp', st.xp.toFixed(2));
+      el.setAttribute('message', avatarMessage());
+    });
+    const ch = document.getElementById('avatarChooser');
+    if (ch) { ch.setAttribute('gender', gender); ch.setAttribute('weight', String(weight)); }
+    const ni = document.getElementById('avatarName');
+    if (ni && document.activeElement !== ni) ni.value = prefs.nome || '';
+  } catch(e) {
+    console.error('Erro ao atualizar o avatar:', e);
+  }
+}
+
+function saveAvatarPrefs() {
+  try { localStorage.setItem('dvAvatar', JSON.stringify(avatarPrefs)); } catch(e) {}
+  saveAvatarToCloud();
+  updateAvatarScenes();
+}
+
+function saveAvatarName(btn) {
+  const ni = document.getElementById('avatarName');
+  avatarPrefs.nome = ((ni && ni.value) || '').trim().slice(0, 20);
+  saveAvatarPrefs();
+  if (btn) { const old = btn.textContent; btn.textContent = '✓ Guardado'; setTimeout(() => { btn.textContent = old; }, 1800); }
+}
+
+(function() {
+  const ch = document.getElementById('avatarChooser');
+  if (ch) ch.addEventListener('avatar-change', e => {
+    avatarPrefs.genero = e.detail.gender === 'man' ? 'man' : 'woman';
+    saveAvatarPrefs();
+  });
+})();
+
+async function saveAvatarToCloud() {
+  if (!supabaseClient) return;
+  try {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session || !session.user) return;
+    const { error } = await supabaseClient
+      .from('diario_perfil')
+      .upsert({
+        user_id: session.user.id,
+        avatar_genero: avatarPrefs.genero || null,
+        avatar_nome: avatarPrefs.nome || null,
+        atualizado_em: new Date().toISOString()
+      }, { onConflict: 'user_id' });
+    if (error) console.error('Supabase avatar error:', error);
+  } catch(e) {
+    console.error('Erro ao guardar o avatar na conta:', e);
+  }
+}
+
+async function loadAvatarFromCloud() {
+  if (!supabaseClient) return;
+  try {
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session || !session.user) return;
+    const { data, error } = await supabaseClient
+      .from('diario_perfil')
+      .select('avatar_genero, avatar_nome')
+      .eq('user_id', session.user.id)
+      .maybeSingle();
+    if (error) { console.error('Supabase avatar load error:', error); return; }
+    if (data && (data.avatar_genero || data.avatar_nome)) {
+      avatarPrefs = { genero: data.avatar_genero || avatarPrefs.genero, nome: data.avatar_nome || avatarPrefs.nome };
+      try { localStorage.setItem('dvAvatar', JSON.stringify(avatarPrefs)); } catch(e) {}
+    } else if (avatarPrefs.genero || avatarPrefs.nome) {
+      saveAvatarToCloud();
+    }
+    updateAvatarScenes();
+  } catch(e) {
+    console.error('Erro ao carregar o avatar da conta:', e);
   }
 }
 
