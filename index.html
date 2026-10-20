@@ -19,6 +19,41 @@
 <style>
 companion-scene { --scene-wall:#1b2535; --scene-floor:#2a2d3a; --scene-card:var(--card); --scene-text:var(--text); --scene-primary:var(--moss-d); width:100%; max-width:560px; margin-bottom:16px; }
 avatar-chooser { --avatar-bg:var(--card); --avatar-surface:var(--surface); --avatar-text:var(--text); --avatar-primary:var(--moss); --avatar-border:var(--border); width:100%; max-width:440px; }
+.mini-tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.mini-tile{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 8px;text-align:center}
+.mini-val{font-family:'JetBrains Mono',monospace;font-size:20px;color:var(--text)}
+.mini-lbl{font-size:10px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-top:4px;line-height:1.4}
+.tm-days{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.tm-chip{padding:7px 14px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-size:12px;cursor:pointer;transition:all .15s;font-family:inherit}
+.tm-chip:hover{border-color:var(--moss)}
+.tm-chip.active{background:var(--moss-d);color:#fff;border-color:var(--moss-d)}
+.tm-stage{position:relative;height:130px;margin:4px 0 18px;border-radius:14px;background:linear-gradient(180deg,var(--surface),var(--card));border:1px solid var(--border);overflow:hidden}
+.tm-incl-label{position:absolute;right:12px;top:10px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)}
+.tm-belt-wrap{position:absolute;left:10%;right:10%;bottom:26px;height:14px;transform-origin:left bottom;transform:rotate(calc(var(--tm-angle,0deg) * -1));transition:transform .35s ease}
+.tm-belt{width:100%;height:100%;border-radius:7px;background:repeating-linear-gradient(90deg,#3b4252 0 18px,#2e3440 18px 36px);animation:tmBelt var(--tm-dur,1s) linear infinite;animation-play-state:var(--tm-play,paused)}
+.tm-runner{position:absolute;left:50%;bottom:100%;font-size:34px;line-height:1;animation:tmBounce var(--tm-bounce,.7s) ease-in-out infinite;animation-play-state:var(--tm-play,paused)}
+@keyframes tmBelt{from{background-position:0 0}to{background-position:-36px 0}}
+@keyframes tmBounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-6px)}}
+.tm-controls{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.tm-ctrl label{display:block;font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.tm-step{display:flex;align-items:center;gap:6px}
+.tm-step button{flex:0 0 40px;height:40px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:20px;cursor:pointer;line-height:1}
+.tm-step button:active{transform:scale(.94)}
+.tm-step input{min-width:0;text-align:center;font-size:18px;font-family:'JetBrains Mono',monospace}
+.tm-quick{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+.tm-quick .tm-chip{padding:4px 10px;font-size:11px}
+.tm-record{margin-top:14px;padding:10px 14px;border-radius:12px;background:rgba(217,164,65,.14);border:1px solid #d9a441;color:var(--text);font-size:13px;text-align:center;animation:tmPop .5s ease}
+@keyframes tmPop{0%{transform:scale(.8);opacity:0}60%{transform:scale(1.05)}100%{transform:scale(1);opacity:1}}
+.tm-bars{display:flex;align-items:flex-end;gap:8px;height:120px;margin-top:16px}
+.tm-bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;cursor:pointer;height:100%;background:none;border:none;color:var(--muted);font-size:10px;padding:0;font-family:inherit}
+.tm-bar i{display:block;width:100%;border-radius:6px 6px 2px 2px;background:var(--moss);min-height:3px;transition:height .3s}
+.tm-bar:hover i{background:var(--moss-l)}
+.tm-bar.sel i{background:var(--moss-l);box-shadow:0 0 0 2px var(--moss-d)}
+.tm-bar.sel{color:var(--text)}
+.pf-bar{height:10px;border-radius:6px;background:var(--surface);border:1px solid var(--border);overflow:hidden;margin-top:14px}
+.pf-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--moss),var(--moss-l));transition:width .4s}
+@media (prefers-reduced-motion: reduce){.tm-belt,.tm-runner,.tm-record{animation:none}.tm-belt-wrap,.pf-bar i,.tm-bar i{transition:none}}
+@media (max-width:560px){.tm-controls{grid-template-columns:1fr}}
 </style>
 <style>
 /* ── DESIGN SYSTEM: Verde Musgo & Bege Natural ── */
@@ -1820,6 +1855,9 @@ canvas { display:block; width:100% !important; max-width:100%; }
     <div class="nav-item" onclick="showSection('treadmill',this)">
       <span class="nav-icon">🏃</span> Passadeira
     </div>
+    <div class="nav-item" onclick="showSection('profile',this)">
+      <span class="nav-icon">👤</span> Perfil
+    </div>
     <div class="nav-item" onclick="showSection('avatar',this)">
       <span class="nav-icon">🧑</span> Avatar
     </div>
@@ -2319,25 +2357,125 @@ canvas { display:block; width:100% !important; max-width:100%; }
   </div>
 
   <div class="card">
-    <div class="card-title">sessão</div>
-    <div class="field" style="max-width:240px;margin-bottom:14px;">
-      <label>Dia do treino</label>
-      <input type="date" id="tmDate" onchange="loadTreadmillDay()">
+    <div class="tm-days">
+      <button type="button" class="tm-chip" id="tmChip0" onclick="tmSetDay(tmDateOffset(0))">Hoje</button>
+      <button type="button" class="tm-chip" id="tmChip1" onclick="tmSetDay(tmDateOffset(1))">Ontem</button>
+      <button type="button" class="tm-chip" id="tmChip2" onclick="tmSetDay(tmDateOffset(2))">Anteontem</button>
+      <input type="date" id="tmDate" onchange="loadTreadmillDay()" aria-label="Dia do treino" style="margin-left:auto;max-width:170px;">
     </div>
-    <div class="grid-3">
-      <div class="field"><label>Tempo (min)</label><input type="number" id="tmTime" min="0" step="1" placeholder="ex: 30"></div>
-      <div class="field"><label>Distância (km)</label><input type="number" id="tmDist" min="0" step="0.01" placeholder="ex: 3.5"></div>
-      <div class="field"><label>Inclinação (%)</label><input type="number" id="tmIncl" min="0" step="0.5" placeholder="ex: 5"></div>
+
+    <div class="tm-stage" id="tmStage" aria-hidden="true">
+      <div class="tm-incl-label" id="tmInclLabel">inclinação 0%</div>
+      <div class="tm-belt-wrap"><div class="tm-runner">🏃</div><div class="tm-belt"></div></div>
     </div>
-    <div style="display:flex;gap:8px;margin-top:14px;flex-wrap:wrap;">
+
+    <div class="tm-controls">
+      <div class="tm-ctrl">
+        <label for="tmTime">Tempo (min)</label>
+        <div class="tm-step">
+          <button type="button" onclick="tmStep('tmTime',-5,0,600,0)" aria-label="menos 5 minutos">−</button>
+          <input type="number" id="tmTime" min="0" step="1" placeholder="0" oninput="tmUpdateLive()">
+          <button type="button" onclick="tmStep('tmTime',5,0,600,0)" aria-label="mais 5 minutos">+</button>
+        </div>
+        <div class="tm-quick">
+          <button type="button" class="tm-chip" onclick="tmChip('tmTime',15)">15</button>
+          <button type="button" class="tm-chip" onclick="tmChip('tmTime',20)">20</button>
+          <button type="button" class="tm-chip" onclick="tmChip('tmTime',30)">30</button>
+          <button type="button" class="tm-chip" onclick="tmChip('tmTime',45)">45</button>
+          <button type="button" class="tm-chip" onclick="tmChip('tmTime',60)">60</button>
+        </div>
+      </div>
+      <div class="tm-ctrl">
+        <label for="tmDist">Distância (km)</label>
+        <div class="tm-step">
+          <button type="button" onclick="tmStep('tmDist',-0.5,0,100,2)" aria-label="menos 0,5 quilómetros">−</button>
+          <input type="number" id="tmDist" min="0" step="0.01" placeholder="0" oninput="tmUpdateLive()">
+          <button type="button" onclick="tmStep('tmDist',0.5,0,100,2)" aria-label="mais 0,5 quilómetros">+</button>
+        </div>
+        <div class="tm-quick">
+          <button type="button" class="tm-chip" onclick="tmChip('tmDist',2)">2</button>
+          <button type="button" class="tm-chip" onclick="tmChip('tmDist',3)">3</button>
+          <button type="button" class="tm-chip" onclick="tmChip('tmDist',5)">5</button>
+          <button type="button" class="tm-chip" onclick="tmChip('tmDist',8)">8</button>
+          <button type="button" class="tm-chip" onclick="tmChip('tmDist',10)">10</button>
+        </div>
+      </div>
+      <div class="tm-ctrl">
+        <label for="tmIncl">Inclinação (%)</label>
+        <div class="tm-step">
+          <button type="button" onclick="tmStep('tmIncl',-0.5,0,30,1)" aria-label="menos 0,5 por cento">−</button>
+          <input type="number" id="tmIncl" min="0" step="0.5" placeholder="0" oninput="tmUpdateLive()">
+          <button type="button" onclick="tmStep('tmIncl',0.5,0,30,1)" aria-label="mais 0,5 por cento">+</button>
+        </div>
+        <div class="tm-quick">
+          <button type="button" class="tm-chip" onclick="tmChip('tmIncl',0)">0</button>
+          <button type="button" class="tm-chip" onclick="tmChip('tmIncl',2)">2</button>
+          <button type="button" class="tm-chip" onclick="tmChip('tmIncl',4)">4</button>
+          <button type="button" class="tm-chip" onclick="tmChip('tmIncl',6)">6</button>
+          <button type="button" class="tm-chip" onclick="tmChip('tmIncl',8)">8</button>
+          <button type="button" class="tm-chip" onclick="tmChip('tmIncl',10)">10</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="mini-tiles" style="margin-top:18px;">
+      <div class="mini-tile"><div class="mini-val" id="tmSpeed">—</div><div class="mini-lbl">km/h (média)</div></div>
+      <div class="mini-tile"><div class="mini-val" id="tmPace">—</div><div class="mini-lbl">min por km</div></div>
+      <div class="mini-tile"><div class="mini-val" id="tmKcal">—</div><div class="mini-lbl">kcal (estimativa)</div></div>
+    </div>
+    <div class="tm-record" id="tmRecord" style="display:none;"></div>
+
+    <div style="display:flex;gap:8px;margin-top:16px;flex-wrap:wrap;">
       <button class="btn btn-primary" onclick="saveTreadmill()" style="flex:1 1 200px;">💾 Guardar treino</button>
       <button class="btn btn-secondary" onclick="saveTreadmill(true)" style="flex:0 0 auto;">Limpar este dia</button>
     </div>
   </div>
 
   <div class="card">
+    <div class="card-title">últimos 7 dias</div>
+    <div class="mini-tiles">
+      <div class="mini-tile"><div class="mini-val" id="tmWeekKm">0</div><div class="mini-lbl">km</div></div>
+      <div class="mini-tile"><div class="mini-val" id="tmWeekSessions">0</div><div class="mini-lbl">treinos</div></div>
+      <div class="mini-tile"><div class="mini-val" id="tmWeekMin">0</div><div class="mini-lbl">minutos</div></div>
+    </div>
+    <div class="tm-bars" id="tmBars"></div>
+    <div style="font-size:11px;color:var(--muted);margin-top:8px;">Toca numa barra para abrir esse dia.</div>
+  </div>
+
+  <div class="card">
     <div class="card-title">treinos registados</div>
     <div id="tmHistory"></div>
+  </div>
+</div>
+
+<!-- ▸ PERFIL -->
+<div class="section" id="section-profile">
+  <div class="section-header">
+    <div class="section-title">O meu <em>Perfil</em></div>
+    <div class="section-sub">as tuas medidas e o teu objetivo</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">medidas</div>
+    <div class="grid-3">
+      <div class="field"><label>Altura (cm)</label><input type="number" id="pfHeight" min="100" max="250" step="1" placeholder="ex: 170" oninput="pfCalc()"></div>
+      <div class="field"><label>Peso atual (kg)</label><input type="number" id="pfWeight" min="30" max="300" step="0.1" placeholder="ex: 82.5" oninput="pfCalc()"></div>
+      <div class="field"><label>Peso objetivo (kg)</label><input type="number" id="pfGoal" min="30" max="300" step="0.1" placeholder="ex: 75" oninput="pfCalc()"></div>
+    </div>
+    <div id="pfWeightHint" style="font-size:12px;color:var(--muted);margin-top:10px;line-height:1.6;"></div>
+    <button class="btn btn-primary" onclick="savePerfil(this)" style="width:100%;margin-top:14px;">💾 Guardar perfil</button>
+    <div id="pfSaveMsg" style="margin-top:8px;font-size:12px;color:var(--muted);min-height:16px;"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">ponto de situação</div>
+    <div class="mini-tiles">
+      <div class="mini-tile"><div class="mini-val" id="pfBmi">—</div><div class="mini-lbl">IMC</div></div>
+      <div class="mini-tile"><div class="mini-val" id="pfLeft">—</div><div class="mini-lbl">para o objetivo</div></div>
+      <div class="mini-tile"><div class="mini-val" id="pfProgress">—</div><div class="mini-lbl">do caminho</div></div>
+    </div>
+    <div class="pf-bar"><i id="pfBar"></i></div>
+    <div id="pfBmiNote" style="font-size:11px;color:var(--muted);margin-top:10px;line-height:1.6;"></div>
   </div>
 </div>
 
@@ -3212,12 +3350,12 @@ function _wf(id) {
   return isToday ? document.getElementById(id).value : ((DB[TODAY] || {})[id] || '');
 }
 // Preferências (lembretes, IA, conquistas) → guardadas também na conta
-var _CFG_MAP = { dvReminders: 'reminders', dvAiProvider: 'aiProvider', dvOpenRouterModel: 'openrouterModel', dvAchievements: 'achievements' };
+var _CFG_MAP = { dvReminders: 'reminders', dvAiProvider: 'aiProvider', dvOpenRouterModel: 'openrouterModel', dvAchievements: 'achievements', dvPerfil: 'perfil' };
 function cfgSave(localKey, str) {
   try { localStorage.setItem(localKey, str); } catch (e) {}
   var ck = _CFG_MAP[localKey]; if (!ck) return Promise.resolve('local');
   var val = str;
-  if (ck === 'reminders' || ck === 'achievements') { try { val = JSON.parse(str); } catch (e) { val = str; } }
+  if (ck === 'reminders' || ck === 'achievements' || ck === 'perfil') { try { val = JSON.parse(str); } catch (e) { val = str; } }
   var patch = {}; patch[ck] = val;
   return SyncManager.saveConfig(patch);
 }
@@ -3235,9 +3373,10 @@ async function loadConfigFromCloud() {
         try { localStorage.setItem(lk, typeof cfg[ck] === 'string' ? cfg[ck] : JSON.stringify(cfg[ck])); } catch (e) {}
       } else {
         var lv = localStorage.getItem(lk);
-        if (lv != null) { try { push[ck] = (ck === 'reminders' || ck === 'achievements') ? JSON.parse(lv) : lv; } catch (e) {} }
+        if (lv != null) { try { push[ck] = (ck === 'reminders' || ck === 'achievements' || ck === 'perfil') ? JSON.parse(lv) : lv; } catch (e) {} }
       }
     });
+    try { applyPerfilToForm(); } catch (e) {}
     if (Object.keys(push).length) SyncManager.saveConfig(push);
   } catch (e) { console.error('Erro ao carregar preferências da conta:', e); }
 }
@@ -6947,7 +7086,7 @@ async function onUserAuthenticated(user) {
   const lastUser = localStorage.getItem('dvLastUserId');
   if (lastUser && user && user.id && lastUser !== user.id) {
     ['dvLifeDiary_v3', 'dvSheetsUrl', 'dvAvatar', 'dvSyncQueue', 'dvSyncMeta', 'diarioVida',
-     'dvReminders', 'dvAiProvider', 'dvOpenRouterModel', 'dvAchievements'].forEach(k => localStorage.removeItem(k));
+     'dvReminders', 'dvAiProvider', 'dvOpenRouterModel', 'dvAchievements', 'dvPerfil'].forEach(k => localStorage.removeItem(k));
     localStorage.setItem('dvLastUserId', user.id);
     location.reload();
     return;
@@ -6973,6 +7112,7 @@ function showApp(user) {
 
   SyncManager.setGuest(!(user && user.id));
   restoreFields();
+  try { applyPerfilToForm(); } catch (e) {}
   renderDailyFlow();
   setTimeout(force24hInputs, 200);
 }
@@ -7004,7 +7144,7 @@ async function logout() {
   if (hadSession) {
     // Tudo confirmado na nuvem: limpa a cópia local para não ficar no dispositivo
     ['dvLifeDiary_v3', 'dvSheetsUrl', 'dvAvatar', 'dvSyncQueue', 'dvSyncMeta', 'diarioVida', 'dvLastUserId',
-     'dvReminders', 'dvAiProvider', 'dvOpenRouterModel', 'dvAchievements'].forEach(k => localStorage.removeItem(k));
+     'dvReminders', 'dvAiProvider', 'dvOpenRouterModel', 'dvAchievements', 'dvPerfil'].forEach(k => localStorage.removeItem(k));
     location.reload();
     return;
   }
@@ -7116,7 +7256,7 @@ async function loadSheetsUrlFromCloud() {
 }
 
 // ── VERSÃO DA APP E ATUALIZAÇÃO FORÇADA (limpa a cache do service worker; não apaga registos) ──
-var APP_VERSION = '2026-10-18.1';
+var APP_VERSION = '2026-10-18.2';
 (function() {
   const el = document.getElementById('appVersionLabel');
   if (el) el.textContent = APP_VERSION;
@@ -7138,7 +7278,90 @@ async function forceUpdateApp() {
   location.reload();
 }
 
-// ── PASSADEIRA: registar o treino de qualquer dia ──
+// ── PASSADEIRA: registar o treino de qualquer dia (interativo) ──
+function tmNum(id) {
+  const el = document.getElementById(id);
+  const v = el ? parseFloat(el.value) : NaN;
+  return isNaN(v) ? 0 : v;
+}
+function tmDateOffset(n) {
+  const p = TODAY.split('-').map(Number);
+  const d = new Date(p[0], p[1] - 1, p[2] - n);
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function tmSetDay(date) {
+  document.getElementById('tmDate').value = date;
+  loadTreadmillDay();
+}
+function tmUpdateChips() {
+  const cur = document.getElementById('tmDate').value;
+  for (let i = 0; i < 3; i++) {
+    const c = document.getElementById('tmChip' + i);
+    if (c && c.classList) c.classList.toggle('active', cur === tmDateOffset(i));
+  }
+}
+function tmStep(id, delta, min, max, dec) {
+  const el = document.getElementById(id);
+  let v = parseFloat(el.value); if (isNaN(v)) v = 0;
+  const f = Math.pow(10, dec);
+  v = Math.min(max, Math.max(min, Math.round((v + delta) * f) / f));
+  el.value = v;
+  tmUpdateLive();
+}
+function tmChip(id, v) {
+  document.getElementById(id).value = v;
+  tmUpdateLive();
+}
+// Estimativa de energia (equações ACSM, acima do repouso): indicativa, não é uma medição
+function tmKcal(t, d, inc) {
+  const lw = latestWeightEntry(); const W = lw ? lw.w : 0;
+  if (!(W > 0 && t > 0 && d > 0)) return 0;
+  const kmh = d / (t / 60), s = kmh * 1000 / 60, g = inc / 100;
+  const vo2 = kmh < 7 ? (0.1 * s + 1.8 * s * g) : (0.2 * s + 0.9 * s * g);
+  return vo2 * W / 1000 * 5 * t;
+}
+function tmUpdateLive() {
+  const t = tmNum('tmTime'), d = tmNum('tmDist'), inc = tmNum('tmIncl');
+  const speed = (t > 0 && d > 0) ? d / (t / 60) : 0;
+  const txt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  txt('tmSpeed', speed ? speed.toFixed(1) : '—');
+  if (speed) {
+    const pace = 60 / speed; let pm = Math.floor(pace), ps = Math.round((pace - pm) * 60);
+    if (ps === 60) { pm++; ps = 0; }
+    txt('tmPace', pm + ':' + String(ps).padStart(2, '0'));
+  } else txt('tmPace', '—');
+  const k = tmKcal(t, d, inc);
+  txt('tmKcal', k ? Math.round(k) : '—');
+  txt('tmInclLabel', 'inclinação ' + (inc || 0) + '%');
+  const st = document.getElementById('tmStage');
+  if (st && st.style && typeof st.style.setProperty === 'function') {
+    st.style.setProperty('--tm-angle', Math.min(inc * 1.6, 30) + 'deg');
+    st.style.setProperty('--tm-dur', (speed ? Math.max(0.12, 3.6 / speed) : 1).toFixed(2) + 's');
+    st.style.setProperty('--tm-bounce', (speed ? Math.max(0.25, 4.2 / speed) : 0.7).toFixed(2) + 's');
+    st.style.setProperty('--tm-play', speed ? 'running' : 'paused');
+  }
+}
+function tmRenderWeek() {
+  const bars = document.getElementById('tmBars'); if (!bars) return;
+  const sel = document.getElementById('tmDate').value || TODAY;
+  const days = [];
+  for (let i = 6; i >= 0; i--) days.push(tmDateOffset(i));
+  const km = days.map(d => parseFloat((DB[d] || {}).treadmillDistance) || 0);
+  const mins = days.map(d => parseFloat((DB[d] || {}).treadmillTime) || 0);
+  const sessions = days.filter((d, i) => km[i] > 0 || mins[i] > 0).length;
+  const txt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  txt('tmWeekKm', (Math.round(km.reduce((a, b) => a + b, 0) * 10) / 10).toString());
+  txt('tmWeekSessions', String(sessions));
+  txt('tmWeekMin', String(Math.round(mins.reduce((a, b) => a + b, 0))));
+  const max = Math.max.apply(null, km.concat([0.1]));
+  bars.innerHTML = days.map((d, i) => {
+    const p = d.split('-').map(Number);
+    const wd = new Date(p[0], p[1] - 1, p[2]).toLocaleDateString('pt-PT', { weekday: 'short' }).replace('.', '').slice(0, 3);
+    const h = km[i] > 0 ? Math.max(6, Math.round(km[i] / max * 80)) : 3;
+    return '<button type="button" class="tm-bar' + (d === sel ? ' sel' : '') + '" onclick="tmSetDay(\'' + d + '\')" title="' + p[2] + '/' + p[1] + ' · ' + km[i] + ' km">' +
+           '<span>' + (km[i] > 0 ? km[i] : '') + '</span><i style="height:' + h + 'px"></i><span>' + wd + '</span></button>';
+  }).join('');
+}
 function initTreadmill() {
   const d = document.getElementById('tmDate');
   if (!d) return;
@@ -7146,14 +7369,21 @@ function initTreadmill() {
   if (!d.value) d.value = TODAY;
   loadTreadmillDay();
 }
-
 function loadTreadmillDay() {
   const date = document.getElementById('tmDate').value || TODAY;
   const day = DB[date] || {};
   document.getElementById('tmTime').value = day.treadmillTime || '';
   document.getElementById('tmDist').value = day.treadmillDistance || '';
   document.getElementById('tmIncl').value = day.treadmillIncline || '';
+  const rec = document.getElementById('tmRecord'); if (rec) rec.style.display = 'none';
+  tmUpdateLive(); tmUpdateChips(); tmRenderWeek();
   renderTreadmillHistory();
+}
+function tmCelebrate(text) {
+  const el = document.getElementById('tmRecord'); if (!el) return;
+  el.textContent = text; el.style.display = 'block';
+  clearTimeout(tmCelebrate._t);
+  tmCelebrate._t = setTimeout(() => { el.style.display = 'none'; }, 8000);
 }
 
 function saveTreadmill(clear) {
@@ -7167,6 +7397,9 @@ function saveTreadmill(clear) {
   const incl = clear ? '' : document.getElementById('tmIncl').value;
   if (!clear && !time && !dist && !incl) { alert('Preenche pelo menos um campo.'); return; }
 
+  // recorde pessoal de distância (antes de gravar)
+  const prevBest = Object.keys(DB).filter(d => d !== date).reduce((m, d) => Math.max(m, parseFloat((DB[d] || {}).treadmillDistance) || 0), 0);
+
   const snap = Object.assign({}, DB[date] || {});
   snap.treadmillTime = time; snap.treadmillDistance = dist; snap.treadmillIncline = incl;
   if (!snap.savedAt) snap.savedAt = new Date().toISOString();
@@ -7178,21 +7411,26 @@ function saveTreadmill(clear) {
     localStorage.setItem(DB_KEY, JSON.stringify(DB));
   } catch(e) {
     const keys = Object.keys(DB).sort();
-    if (keys.length > 90) delete DB[keys[0]];
+    const old = keys.find(d => d !== date && !SyncManager.isPending(d));
+    if (keys.length > 90 && old) delete DB[old];
     try { localStorage.setItem(DB_KEY, JSON.stringify(DB)); } catch(e2) {}
   }
   const syncP = SyncManager.saveDay(date);
   showSavedBar('⏳ A guardar…');
-  syncP.then(showSaveResult);
+  syncP.then(r => {
+    showSaveResult(r);
+    const km = parseFloat(dist) || 0;
+    if (!clear && (r === 'cloud' || r === 'local') && km > 0 && km > prevBest && prevBest > 0) {
+      tmCelebrate('🏆 Novo recorde de distância: ' + km + ' km!');
+    }
+  });
   if (typeof sheetsUrl !== 'undefined' && sheetsUrl) setTimeout(syncAllData, 600);
   updateAvatarScenes();
+  tmUpdateLive(); tmRenderWeek();
   renderTreadmillHistory();
 }
 
-function pickTreadmillDay(date) {
-  document.getElementById('tmDate').value = date;
-  loadTreadmillDay();
-}
+function pickTreadmillDay(date) { tmSetDay(date); }
 
 function renderTreadmillHistory() {
   const box = document.getElementById('tmHistory');
@@ -7207,11 +7445,111 @@ function renderTreadmillHistory() {
   const fmt = v => { const n = parseFloat(v); return n > 0 ? n : '—'; };
   box.innerHTML = rows.map(d => {
     const x = DB[d]; const p = d.split('-');
+    const t = parseFloat(x.treadmillTime), k = parseFloat(x.treadmillDistance);
+    const sp = (t > 0 && k > 0) ? ' · ' + (k / (t / 60)).toFixed(1) + ' km/h' : '';
     return '<div onclick="pickTreadmillDay(\'' + d + '\')" style="display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-bottom:1px solid var(--border);cursor:pointer;font-size:13px;">' +
       '<span>' + p[2] + '/' + p[1] + '/' + p[0] + '</span>' +
-      '<span style="color:var(--text2);">' + fmt(x.treadmillTime) + ' min · ' + fmt(x.treadmillDistance) + ' km · ' + fmt(x.treadmillIncline) + '%</span>' +
+      '<span style="color:var(--text2);">' + fmt(x.treadmillTime) + ' min · ' + fmt(x.treadmillDistance) + ' km · ' + fmt(x.treadmillIncline) + '%' + sp + '</span>' +
       '</div>';
   }).join('');
+}
+
+// ── PERFIL: altura, peso atual e peso objetivo (guardados na conta) ──
+function getPerfil() {
+  try { return JSON.parse(localStorage.getItem('dvPerfil')) || {}; } catch (e) { return {}; }
+}
+// Entrada de peso mais recente: o valor de hoje (se preenchido) ou o último dia registado
+function latestWeightEntry() {
+  const el = document.getElementById('weight');
+  const cur = el ? parseFloat(el.value) : NaN;
+  if (cur > 0) return { w: cur, d: TODAY };
+  const days = Object.keys(DB).filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d)).sort().reverse();
+  for (const d of days) { const w = parseFloat(DB[d] && DB[d].weight); if (w > 0) return { w: w, d: d }; }
+  return null;
+}
+function firstWeightEntry() {
+  const days = Object.keys(DB).filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d)).sort();
+  for (const d of days) { const w = parseFloat(DB[d] && DB[d].weight); if (w > 0) return w; }
+  return null;
+}
+// Os campos «altura» e «peso objetivo» da página Peso alimentam vários cálculos: o perfil da conta preenche-os se estiverem vazios
+function applyPerfilToForm() {
+  const p = getPerfil();
+  const h = document.getElementById('height'), g = document.getElementById('weightGoal');
+  if (h && !h.value && p.altura) h.value = p.altura;
+  if (g && !g.value && p.pesoObjetivo) g.value = p.pesoObjetivo;
+}
+function renderProfile() {
+  const p = getPerfil();
+  const hIn = document.getElementById('height').value, gIn = document.getElementById('weightGoal').value;
+  document.getElementById('pfHeight').value = hIn || p.altura || '';
+  document.getElementById('pfGoal').value = gIn || p.pesoObjetivo || '';
+  const lw = latestWeightEntry();
+  document.getElementById('pfWeight').value = lw ? lw.w : '';
+  const hint = document.getElementById('pfWeightHint');
+  if (hint) {
+    if (lw) { const q = lw.d.split('-'); hint.textContent = 'Último registo de peso: ' + q[2] + '/' + q[1] + '/' + q[0] + '. Se alterares o valor, fica registado como o peso de hoje.'; }
+    else hint.textContent = 'Ainda não registaste o teu peso. O valor que indicares fica registado como o peso de hoje.';
+  }
+  const msg = document.getElementById('pfSaveMsg'); if (msg) msg.textContent = '';
+  pfCalc();
+}
+function pfCalc() {
+  const h = parseFloat(document.getElementById('pfHeight').value);
+  const w = parseFloat(document.getElementById('pfWeight').value);
+  const g = parseFloat(document.getElementById('pfGoal').value);
+  const txt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  let note = '';
+  if (h > 0 && w > 0) {
+    const bmi = w / Math.pow(h / 100, 2);
+    txt('pfBmi', bmi.toFixed(1));
+    const cat = bmi < 18.5 ? 'abaixo do intervalo normal' : bmi < 25 ? 'dentro do intervalo normal' : bmi < 30 ? 'acima do intervalo normal' : 'bem acima do intervalo normal';
+    note = 'IMC ' + cat + ' (valor indicativo; não substitui a avaliação de um profissional de saúde).';
+  } else txt('pfBmi', '—');
+  if (w > 0 && g > 0) {
+    const diff = w - g;
+    txt('pfLeft', Math.abs(diff) < 0.05 ? '🎉' : (diff > 0 ? '−' : '+') + Math.abs(diff).toFixed(1) + ' kg');
+    const S = firstWeightEntry() || w;
+    let pr = S === g ? 1 : (S - w) / (S - g);
+    pr = Math.max(0, Math.min(1, pr));
+    txt('pfProgress', Math.round(pr * 100) + '%');
+    const bar = document.getElementById('pfBar'); if (bar && bar.style) bar.style.width = Math.round(pr * 100) + '%';
+  } else {
+    txt('pfLeft', '—'); txt('pfProgress', '—');
+    const bar = document.getElementById('pfBar'); if (bar && bar.style) bar.style.width = '0%';
+  }
+  txt('pfBmiNote', note);
+}
+function savePerfil(btn) {
+  const msg = document.getElementById('pfSaveMsg');
+  const hs = document.getElementById('pfHeight').value, ws = document.getElementById('pfWeight').value, gs = document.getElementById('pfGoal').value;
+  const h = parseFloat(hs), w = parseFloat(ws), g = parseFloat(gs);
+  const bad = [];
+  if (hs && !(h >= 100 && h <= 250)) bad.push('altura (100 a 250 cm)');
+  if (ws && !(w >= 30 && w <= 300)) bad.push('peso atual (30 a 300 kg)');
+  if (gs && !(g >= 30 && g <= 300)) bad.push('peso objetivo (30 a 300 kg)');
+  if (bad.length) { if (msg) msg.textContent = '⚠ Verifica: ' + bad.join(', ') + '.'; return; }
+
+  const perfil = { altura: h > 0 ? h : null, pesoObjetivo: g > 0 ? g : null };
+  // espelhar nos campos da página Peso (usados pelos cálculos) e no registo de hoje
+  document.getElementById('height').value = h > 0 ? h : '';
+  document.getElementById('weightGoal').value = g > 0 ? g : '';
+  const wi = document.getElementById('weight');
+  if (w > 0 && parseFloat(wi.value) !== w) {
+    wi.value = w;
+    const wt = document.getElementById('weightTime');
+    if (wt && !wt.value) { try { wt.value = getNowTime(); } catch (e) {} }
+  }
+  if (msg) msg.textContent = '⏳ a guardar…';
+  const p1 = cfgSave('dvPerfil', JSON.stringify(perfil));
+  const p2 = saveData();   // o registo de hoje leva altura, peso objetivo e peso
+  Promise.all([p1, p2]).then(rs => {
+    const bad2 = rs.find(x => x !== 'cloud' && x !== 'local' && x !== 'none');
+    const r = bad2 || (rs.includes('cloud') ? 'cloud' : 'local');
+    if (msg) msg.textContent = saveMsgText(r, '').replace('guardado', 'perfil guardado');
+    pfCalc(); updateAvatarScenes();
+    if (typeof calcBMI === 'function') { try { calcBMI(); } catch (e) {} }
+  });
 }
 
 // ── AVATAR (género e nome guardados na conta; peso = último peso registado) ──
@@ -8625,6 +8963,7 @@ function clearAllData() {
     if (id === 'work')     { initWorkDatePicker(); renderWorkCalendar(); }
     if (id === 'noventa')   renderN90();
     if (id === 'treadmill')   initTreadmill();
+    if (id === 'profile')     renderProfile();
     if (id === 'competition') renderCompetition();
     if (id === 'compadmin')   renderCompAdmin();
   };
