@@ -1004,6 +1004,8 @@ input[type="range"]::-webkit-slider-thumb {
 }
 
 .saved-bar.show { opacity: 1; transform: translateY(0); }
+.saved-bar.warn { border-color: #d9a441; }
+.saved-bar.err { border-color: var(--rose); }
 
 /* ── MI FITNESS INFO ── */
 .integration-card {
@@ -1782,6 +1784,7 @@ canvas { display:block; width:100% !important; max-width:100%; }
     </div>
     <button type="button" onclick="logout()" title="Terminar Sessão" style="background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:2px 4px;">🚪</button>
   </div>
+  <div id="syncBadge" onclick="SyncManager.retryNow()" title="Estado da sincronização" style="padding:6px 18px;border-bottom:1px solid rgba(255,255,255,0.07);font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);cursor:pointer;">☁ …</div>
 
   <div style="padding:10px 18px;border-bottom:1px solid rgba(255,255,255,0.07);">
     <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">🔥 calorias</div>
@@ -2858,6 +2861,387 @@ const _getElById = document.getElementById.bind(document);
 document.getElementById = function(id) {
   return _getElById(id) || (id in _REMOVED_UI ? document.createElement(_REMOVED_UI[id]) : null);
 };
+
+// ═══════════════════════════════════════════════════════════════════
+// SYNC MANAGER — o Supabase é a fonte de verdade; o browser é só cache.
+// Fila persistente + reenvio com espera crescente + deteção offline.
+// «Guardado» só aparece depois de o Supabase confirmar a gravação.
+// ═══════════════════════════════════════════════════════════════════
+var SyncManager = (function() {
+  var QUEUE_KEY = 'dvSyncQueue', META_KEY = 'dvSyncMeta';
+  var SKIP_KEYS = { savedAt: 1, _fromSheets: 1 };
+  var queue = load(QUEUE_KEY, []);
+  var meta = load(META_KEY, {});
+  if (!Array.isArray(queue)) queue = [];
+  if (!meta || typeof meta !== 'object' || Array.isArray(meta)) meta = {};
+  var waiters = {};
+  var running = false, drainPromise = null, tickTimer = null;
+  var offline = (typeof navigator !== 'undefined' && navigator.onLine === false);
+  var fatal = false, lastError = '', guest = false, lastUid = null, rpcMissing = false;
+  var listeners = [];
+  var pushAfterLoad = [];
+
+  try { localStorage.removeItem('diarioVida'); } catch (e) {}   // cópia antiga e sem uso
+
+  function load(k, d) {
+    try { var v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; }
+  }
+  function persist() {
+    try {
+      localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
+      localStorage.setItem(META_KEY, JSON.stringify(meta));
+    } catch (e) { console.error('SyncManager: não foi possível guardar a fila local', e); }
+  }
+  function hash(v) {
+    var s = JSON.stringify(v === undefined ? null : v), h = 5381;
+    for (var i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+    return (h >>> 0).toString(36) + ':' + s.length;
+  }
+  function client() { return (typeof supabaseClient !== 'undefined') ? supabaseClient : null; }
+  async function getUid() {
+    var sb = client(); if (!sb) return null;
+    try {
+      var r = await sb.auth.getSession();
+      var s = r && r.data && r.data.session;
+      lastUid = s && s.user ? s.user.id : null;
+      return lastUid;
+    } catch (e) { return null; }
+  }
+  function mine() { return queue.filter(function(j) { return !lastUid || j.uid === lastUid; }); }
+  function pendingCount() { return mine().length; }
+  function status() {
+    if (guest) return 'local';
+    if (running) return 'syncing';
+    if (!mine().length) return 'synced';
+    if (offline) return 'offline';
+    if (fatal) return 'error';
+    return 'pending';
+  }
+  function renderBadge(s) {
+    var el = document.getElementById('syncBadge'); if (!el) return;
+    var n = pendingCount();
+    var m = {
+      synced:  ['☁ Tudo guardado na nuvem', 'var(--sage-l)'],
+      syncing: ['⟳ A guardar…', 'var(--moss-l)'],
+      pending: ['⏳ ' + n + ' por enviar', '#d9a441'],
+      offline: ['📴 Sem ligação · ' + n + ' por enviar', '#d9a441'],
+      error:   ['⚠ Erro ao guardar · toca para repetir', 'var(--rose)'],
+      local:   ['💾 Só neste dispositivo', 'var(--muted)']
+    }[s] || ['', 'var(--muted)'];
+    el.textContent = m[0]; el.style.color = m[1];
+    el.title = lastError ? ('Último erro: ' + lastError) : 'Estado da sincronização';
+  }
+  function emit() {
+    var s = status();
+    listeners.forEach(function(f) { try { f(s); } catch (e) {} });
+    renderBadge(s);
+  }
+  function backoff(tries) {
+    var base = Math.min(300000, 1000 * Math.pow(2, Math.min(tries, 9)));
+    return base / 2 + Math.random() * base / 2;
+  }
+  function settle(id, state) {
+    var w = waiters[id]; if (!w) return;
+    delete waiters[id];
+    w.forEach(function(f) { try { f(state); } catch (e) {} });
+  }
+  function settleAll(state) { Object.keys(waiters).forEach(function(id) { settle(id, state); }); }
+  function fail(err) {
+    var msg = (err && (err.message || err.details)) || String(err);
+    var net = (typeof navigator !== 'undefined' && navigator.onLine === false) ||
+      /failed to fetch|networkerror|network request failed|load failed|timeout|fetch/i.test(msg);
+    lastError = msg;
+    if (net) { offline = true; return { ok: false, state: 'offline' }; }
+    offline = false; fatal = true;
+    return { ok: false, state: 'error' };
+  }
+  function isMissingFn(err) {
+    var m = (err && (err.message || '')) || '';
+    return !!err && (err.code === 'PGRST202' || err.code === '42883' || /could not find the function|does not exist/i.test(m));
+  }
+  function setMeta(date, obj, v) {
+    var m = { v: v || 0, h: {} };
+    Object.keys(obj || {}).forEach(function(k) { m.h[k] = hash(obj[k]); });
+    meta[date] = m;
+  }
+  function mergeRemote(date, remote, sent) {
+    var local = DB[date] || (DB[date] = {});
+    var m = meta[date] || (meta[date] = { v: 0, h: {} });
+    var changed = false;
+    Object.keys(remote || {}).forEach(function(k) {
+      if (sent && Object.prototype.hasOwnProperty.call(sent, k)) return;
+      var untouched = !(k in local) || m.h[k] === undefined || hash(local[k]) === m.h[k];
+      if (untouched && hash(local[k]) !== hash(remote[k])) { local[k] = remote[k]; changed = true; }
+      if (untouched) m.h[k] = hash(remote[k]);
+    });
+    if (changed) {
+      try { localStorage.setItem(DB_KEY, JSON.stringify(DB)); } catch (e) {}
+      if (date === TODAY && typeof reloadTodayFromDB === 'function') { try { reloadTodayFromDB(); } catch (e) {} }
+    }
+  }
+
+  async function execDay(sb, job, uid) {
+    var date = job.key;
+    var m0 = meta[date];
+    var baseV = m0 ? m0.v : null;
+    if (!rpcMissing) {
+      var r = await sb.rpc('merge_dia', { p_data: date, p_patch: job.patch, p_base_versao: baseV });
+      if (!r.error) {
+        var res = r.data || {};
+        var m = meta[date] || (meta[date] = { v: 0, h: {} });
+        m.v = (res.versao != null) ? res.versao : (m.v || 0) + 1;
+        Object.keys(job.patch).forEach(function(k) { if (job.hashes[k]) m.h[k] = job.hashes[k]; });
+        if (res.conflito && res.dados) mergeRemote(date, res.dados, job.patch);
+        return { ok: true };
+      }
+      if (isMissingFn(r.error)) { rpcMissing = true; console.warn('SyncManager: função merge_dia em falta no Supabase; a usar gravação completa (corre o supabase-setup.sql).'); }
+      else return fail(r.error);
+    }
+    // Compatibilidade: o SQL novo ainda não foi executado → grava o registo completo (comportamento antigo)
+    var snap = DB[date]; if (!snap) return { ok: true };
+    var u = await sb.from('diario_registos').upsert({ user_id: uid, data: date, dados: snap, atualizado_em: new Date().toISOString() }, { onConflict: 'user_id,data' });
+    if (u.error) return fail(u.error);
+    setMeta(date, snap, (meta[date] && meta[date].v) || 0);
+    return { ok: true };
+  }
+  async function execConfig(sb, job) {
+    var r = await sb.rpc('merge_config', { p_patch: job.patch });
+    if (!r.error) return { ok: true };
+    if (isMissingFn(r.error)) { console.warn('SyncManager: função merge_config em falta; preferências ficam só neste dispositivo.'); return { ok: true }; }
+    return fail(r.error);
+  }
+  async function execProfile(sb, job, uid) {
+    var row = Object.assign({ user_id: uid, atualizado_em: new Date().toISOString() }, job.patch);
+    var r = await sb.from('diario_perfil').upsert(row, { onConflict: 'user_id' });
+    if (r.error) return fail(r.error);
+    return { ok: true };
+  }
+  async function execute(job, uid) {
+    var sb = client();
+    try {
+      if (job.kind === 'day') return await execDay(sb, job, uid);
+      if (job.kind === 'config') return await execConfig(sb, job);
+      return await execProfile(sb, job, uid);
+    } catch (e) { return fail(e); }
+  }
+
+  function drain(force) {
+    if (drainPromise) return drainPromise;
+    drainPromise = (async function() {
+      try {
+        var sb = client(); if (!sb || !queue.length) return;
+        var uid = await getUid(); if (!uid) return;
+        if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+          offline = true; settleAll('offline'); return;
+        }
+        running = true; emit();
+        for (;;) {
+          var now = Date.now();
+          var job = queue.find(function(j) { return j.uid === uid && (force || j.nextAt <= now); });
+          if (!job) break;
+          job.inflight = true;
+          var res = await execute(job, uid);
+          job.inflight = false;
+          if (res.ok) {
+            queue = queue.filter(function(j) { return j !== job; });
+            offline = false; fatal = false; lastError = '';
+            persist(); settle(job.id, 'cloud');
+          } else {
+            job.tries = (job.tries || 0) + 1;
+            job.nextAt = Date.now() + backoff(job.tries);
+            persist(); settle(job.id, res.state);
+            break;   // mantém a ordem: pára no primeiro erro
+          }
+        }
+      } finally {
+        running = false; drainPromise = null; emit();
+      }
+    })();
+    return drainPromise;
+  }
+
+  function enqueue(kind, key, patch, hashes) {
+    return new Promise(function(resolve) {
+      getUid().then(function(uid) {
+        if (!uid) return resolve('local');
+        var job = queue.find(function(j) { return j.uid === uid && j.kind === kind && j.key === key && !j.inflight; });
+        if (job) { Object.assign(job.patch, patch); Object.assign(job.hashes, hashes || {}); job.nextAt = 0; }
+        else {
+          job = { id: Date.now().toString(36) + Math.random().toString(36).slice(2, 6), uid: uid, kind: kind, key: key,
+                  patch: Object.assign({}, patch), hashes: Object.assign({}, hashes || {}), tries: 0, nextAt: 0 };
+          queue.push(job);
+        }
+        (waiters[job.id] = waiters[job.id] || []).push(resolve);
+        persist(); emit();
+        drain(true);
+      });
+    });
+  }
+
+  async function saveDay(date) {
+    var snap = DB[date]; if (!snap) return 'none';
+    var uid = await getUid(); if (!uid) return 'local';
+    var m = meta[date], patch = {}, hashes = {}, any = false;
+    Object.keys(snap).forEach(function(k) {
+      if (SKIP_KEYS[k]) return;
+      var h = hash(snap[k]);
+      if (!m || m.h[k] !== h) { patch[k] = snap[k]; hashes[k] = h; any = true; }
+    });
+    if (!any) {
+      var existing = queue.find(function(j) { return j.kind === 'day' && j.key === date && j.uid === uid; });
+      if (!existing) return 'cloud';          // nada mudou desde a última confirmação
+      return new Promise(function(resolve) { (waiters[existing.id] = waiters[existing.id] || []).push(resolve); drain(true); });
+    }
+    if (snap.savedAt) patch.savedAt = snap.savedAt;
+    return enqueue('day', date, patch, hashes);
+  }
+  function saveConfig(patch) { return enqueue('config', 'config', patch, {}); }
+  function saveProfile(patch) { return enqueue('profile', 'profile', patch, {}); }
+
+  async function flushAll(timeoutMs) {
+    var t0 = Date.now();
+    await getUid();
+    while (pendingCount() > 0 && Date.now() - t0 < (timeoutMs || 15000)) {
+      await drain(true);
+      if (pendingCount() === 0) break;
+      if (offline) break;
+      await new Promise(function(r) { setTimeout(r, 800); });
+    }
+    return pendingCount() === 0;
+  }
+  async function recover() {
+    offline = (typeof navigator !== 'undefined' && navigator.onLine === false);
+    await getUid();
+    emit();
+    if (queue.length) await drain(true);
+  }
+
+  function adoptRemote(date, remote, versao) {
+    var local = DB[date];
+    var job = queue.find(function(j) { return j.kind === 'day' && j.key === date; });
+    var m = meta[date];
+    if (!local) { DB[date] = remote; setMeta(date, remote, versao); return; }
+    if (job) {   // há alterações locais por enviar: mantém-nas e importa só o resto
+      Object.keys(remote).forEach(function(k) { if (!(k in job.patch)) local[k] = remote[k]; });
+      if (!meta[date]) setMeta(date, remote, versao); else meta[date].v = versao || meta[date].v;
+      return;
+    }
+    if (!m) {    // dia local sem histórico de sincronização (versões antigas da app)
+      if (local.savedAt && remote.savedAt && local.savedAt > remote.savedAt) {
+        DB[date] = Object.assign({}, remote, local);
+        setMeta(date, remote, versao);
+        pushAfterLoad.push(date);
+      } else { DB[date] = remote; setMeta(date, remote, versao); }
+      return;
+    }
+    DB[date] = remote; setMeta(date, remote, versao);   // normal: a nuvem é a fonte de verdade
+  }
+  function isLocalOnly(d) {
+    return /^\d{4}-\d{2}-\d{2}$/.test(d) && DB[d] && typeof DB[d] === 'object' && !DB[d]._fromSheets &&
+           Object.keys(DB[d]).length > 0 && !meta[d];
+  }
+  function unsyncedLocalDays() { return Object.keys(DB).filter(isLocalOnly); }
+  async function reconcileLocal(remoteDates) {
+    var uid = await getUid(); if (!uid) return;
+    var only = unsyncedLocalDays().filter(function(d) { return !remoteDates.has(d); });
+    var list = pushAfterLoad.slice(); pushAfterLoad = [];
+    if (only.length && window._firstLoginOnDevice) {
+      var ok = confirm('Há ' + only.length + ' dia(s) guardado(s) só neste dispositivo.\n\nQueres juntá-los à tua conta?\n\nOK = juntar à conta · Cancelar = deixar só neste dispositivo');
+      if (!ok) only = [];
+    }
+    only.forEach(function(d) { if (list.indexOf(d) < 0) list.push(d); });
+    if (list.length) await Promise.all(list.map(function(d) { return saveDay(d); }));
+  }
+
+  if (typeof window !== 'undefined' && window.addEventListener) {
+    window.addEventListener('online', function() { offline = false; emit(); drain(true); });
+    window.addEventListener('offline', function() { offline = true; emit(); });
+  }
+  if (typeof document !== 'undefined' && document.addEventListener) {
+    document.addEventListener('visibilitychange', function() { if (!document.hidden && queue.length) drain(true); });
+  }
+  setInterval(function() { if (queue.length && !running) drain(false); }, 5000);
+
+  return {
+    saveDay: saveDay, saveConfig: saveConfig, saveProfile: saveProfile,
+    flushAll: flushAll, recover: recover, retryNow: function() { return drain(true); },
+    adoptRemote: adoptRemote, reconcileLocal: reconcileLocal, unsyncedLocalDays: unsyncedLocalDays,
+    setGuest: function(g) { guest = !!g; emit(); },
+    pendingCount: pendingCount, status: status, onChange: function(f) { listeners.push(f); },
+    isPending: function(date) { return queue.some(function(j) { return j.kind === 'day' && j.key === date; }); },
+    resetLocal: function() { queue = []; meta = {}; try { localStorage.removeItem(QUEUE_KEY); localStorage.removeItem(META_KEY); } catch (e) {} emit(); },
+    _debug: function() { return { queue: queue, meta: meta, rpcMissing: rpcMissing, offline: offline }; }
+  };
+})();
+
+// ── Mensagens de resultado: «guardado» só depois da confirmação do Supabase ──
+function showSavedBar(text, kind) {
+  var bar = document.getElementById('savedBar'); if (!bar) return;
+  bar.textContent = text;
+  bar.classList.remove('warn', 'err');
+  if (kind) bar.classList.add(kind);
+  bar.classList.add('show');
+  clearTimeout(showSavedBar._t);
+  showSavedBar._t = setTimeout(function() { bar.classList.remove('show'); }, kind ? 6000 : 2500);
+}
+function showSaveResult(state) {
+  var map = {
+    cloud:   ['✓ Guardado na nuvem', ''],
+    local:   ['✓ Guardado neste dispositivo (sem conta)', ''],
+    pending: ['⚠ Ainda não enviado para a nuvem — vou tentar de novo', 'warn'],
+    offline: ['📴 Sem ligação — guardado neste dispositivo, envio pendente', 'warn'],
+    error:   ['⚠ Erro ao guardar na nuvem — vou tentar de novo', 'err']
+  };
+  var m = map[state]; if (!m) return;
+  showSavedBar(m[0], m[1]);
+}
+function saveMsgText(state, stamp) {
+  var at = stamp ? ' às ' + stamp : '';
+  return ({
+    cloud:   '✓ guardado na nuvem' + at,
+    local:   '✓ guardado neste dispositivo' + at,
+    pending: '⚠ guardado neste dispositivo; envio pendente',
+    offline: '📴 sem ligação — guardado neste dispositivo; envio pendente',
+    error:   '⚠ erro ao guardar na nuvem; vou tentar de novo'
+  })[state] || ('✓ guardado' + at);
+}
+// Campos do Banco de horas: só lê o formulário se o dia em edição for hoje
+function _wf(id) {
+  var isToday = true;
+  try { isToday = (workEditDate === TODAY); } catch (e) {}
+  return isToday ? document.getElementById(id).value : ((DB[TODAY] || {})[id] || '');
+}
+// Preferências (lembretes, IA, conquistas) → guardadas também na conta
+var _CFG_MAP = { dvReminders: 'reminders', dvAiProvider: 'aiProvider', dvOpenRouterModel: 'openrouterModel', dvAchievements: 'achievements' };
+function cfgSave(localKey, str) {
+  try { localStorage.setItem(localKey, str); } catch (e) {}
+  var ck = _CFG_MAP[localKey]; if (!ck) return Promise.resolve('local');
+  var val = str;
+  if (ck === 'reminders' || ck === 'achievements') { try { val = JSON.parse(str); } catch (e) { val = str; } }
+  var patch = {}; patch[ck] = val;
+  return SyncManager.saveConfig(patch);
+}
+async function loadConfigFromCloud() {
+  if (!supabaseClient) return;
+  try {
+    var r = await supabaseClient.auth.getSession();
+    var s = r && r.data && r.data.session; if (!s || !s.user) return;
+    var q = await supabaseClient.from('diario_perfil').select('config').eq('user_id', s.user.id).maybeSingle();
+    if (q.error) { console.error('Supabase config load error:', q.error); return; }
+    var cfg = (q.data && q.data.config) || {}, push = {};
+    Object.keys(_CFG_MAP).forEach(function(lk) {
+      var ck = _CFG_MAP[lk];
+      if (cfg[ck] !== undefined && cfg[ck] !== null) {
+        try { localStorage.setItem(lk, typeof cfg[ck] === 'string' ? cfg[ck] : JSON.stringify(cfg[ck])); } catch (e) {}
+      } else {
+        var lv = localStorage.getItem(lk);
+        if (lv != null) { try { push[ck] = (ck === 'reminders' || ck === 'achievements') ? JSON.parse(lv) : lv; } catch (e) {} }
+      }
+    });
+    if (Object.keys(push).length) SyncManager.saveConfig(push);
+  } catch (e) { console.error('Erro ao carregar preferências da conta:', e); }
+}
+
 
 // ═══════════════════════════════════════════════════════════════════
 // STATE & PERSISTENCE
@@ -4884,11 +5268,7 @@ const SECTION_FIELDS = {
 };
 
 function saveSection(section) {
-  if (section === 'work') {
-    saveWorkDay();
-  } else {
-    saveData();
-  }
+  const syncP = (section === 'work') ? saveWorkDay() : saveData();
 
   const saveBtn = document.getElementById('saveBtn-' + section);
   const editBtn = document.getElementById('editBtn-' + section);
@@ -4908,7 +5288,9 @@ function saveSection(section) {
   if (editBtn) editBtn.style.display = 'flex';
   if (msg) {
     const now = new Date();
-    msg.textContent = '✓ guardado às ' + now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+    const stamp = now.getHours().toString().padStart(2,'0') + ':' + now.getMinutes().toString().padStart(2,'0');
+    msg.textContent = '⏳ a guardar…';
+    Promise.resolve(syncP).then(r => { msg.textContent = saveMsgText(r, stamp); });
   }
 }
 
@@ -4935,8 +5317,9 @@ function editSection(section) {
   if (first) first.focus();
 }
 
-function saveData() {
-  const snap = {
+function saveData(silent) {
+  // Atualização por campos: parte do registo existente e só altera o que a interface edita
+  const snap = Object.assign({}, DB[TODAY] || {}, {
     bedtime:document.getElementById('bedtime').value,
     waketime:document.getElementById('waketime').value,
     sleepQual:document.getElementById('sleepQual').value,
@@ -4948,57 +5331,47 @@ function saveData() {
     height:document.getElementById('height').value,
     weightDeadline:document.getElementById('weightDeadline').value,
     meals:JSON.parse(JSON.stringify(meals)), exercises, counters, waterCount, waterGoal, habitsDone,
-    bathroomNotes:document.getElementById('bathroomNotes').value,
-    workStart:document.getElementById('workStart').value,
-    workEnd:document.getElementById('workEnd').value,
-    lunchStart:document.getElementById('lunchStart').value,
-    lunchEnd:document.getElementById('lunchEnd').value,
+    workStart:_wf('workStart'),
+    workEnd:_wf('workEnd'),
+    lunchStart:_wf('lunchStart'),
+    lunchEnd:_wf('lunchEnd'),
     lunchBreak: 60,
-    workMood:document.getElementById('workMood').value,
-    workFocus:document.getElementById('workFocus').value,
-    workNotes:document.getElementById('workNotes').value,
-    screenStart:document.getElementById('screenStart').value,
-    screenEnd:document.getElementById('screenEnd').value,
-    journalEntry:document.getElementById('journalEntry').value,
-    bestMoment:document.getElementById('bestMoment').value,
-    gratitude:document.getElementById('gratitude').value,
-    energyLevel:document.getElementById('energyLevel').value,
-    anxietyLevel:document.getElementById('anxietyLevel').value,
-    stressLevel:document.getElementById('stressLevel').value,
-    intimacyNotes:document.getElementById('intimacyNotes').value,
+    workMood:_wf('workMood'),
+    workFocus:_wf('workFocus'),
+    workNotes:_wf('workNotes'),
     selectedMood,
     hobbies: hobbies.map(h=>({...h,tracking:false,start:null})),
     treadmillTime:(DB[TODAY]||{}).treadmillTime||'',
     treadmillDistance:(DB[TODAY]||{}).treadmillDistance||'',
     treadmillIncline:(DB[TODAY]||{}).treadmillIncline||'',
     savedAt: new Date().toISOString(),
-  };
+  });
   DB[TODAY] = snap;
   try {
     localStorage.setItem(DB_KEY, JSON.stringify(DB));
   } catch(e) {
     // If localStorage is full, remove oldest entries
     const keys = Object.keys(DB).sort();
-    if(keys.length > 90) delete DB[keys[0]];
-    localStorage.setItem(DB_KEY, JSON.stringify(DB));
+    const old = keys.find(d => d !== TODAY && !SyncManager.isPending(d));
+    if (keys.length > 90 && old) delete DB[old];
+    try { localStorage.setItem(DB_KEY, JSON.stringify(DB)); } catch(e2) { console.error('localStorage cheio', e2); }
   }
 
-  // Sincronizar em segundo plano com Supabase
-  if (typeof saveToSupabase === 'function') saveToSupabase(TODAY, snap);
-
-  const bar = document.getElementById('savedBar');
-  bar.classList.add('show');
-  setTimeout(() => bar.classList.remove('show'), 2500);
+  // Enviar para o Supabase (só as alterações) e mostrar «guardado» apenas depois da confirmação
+  const syncP = SyncManager.saveDay(TODAY);
+  if (!silent) showSavedBar('⏳ A guardar…');
+  syncP.then(r => { if (!silent || (r !== 'cloud' && r !== 'local' && r !== 'none')) showSaveResult(r); });
   // Atualizar resumo a partir do snap guardado (funciona mesmo noutras secções)
   updateOverviewFromSnap(snap);
   updateAvatarScenes();
   updateSidebarCals();
   // Sync to Sheets if configured (não sincronizar durante reload para evitar loop)
   if(!_reloading && typeof sheetsUrl !== 'undefined' && sheetsUrl) setTimeout(syncAllData, 600);
+  return syncP;
 }
 
-// Auto-save every 5 minutes
-setInterval(saveData, 5 * 60 * 1000);
+// Auto-save every 5 minutes (silencioso)
+setInterval(() => saveData(true), 5 * 60 * 1000);
 
 // ═══════════════════════════════════════════════════════════════════
 // KEYBOARD SHORTCUT
@@ -5846,12 +6219,16 @@ function saveWorkDay() {
   d.workFocus  = get('workFocus');
   d.workNotes  = get('workNotes');
   d.savedAt    = new Date().toISOString();
-  localStorage.setItem('diarioVida', JSON.stringify(DB));
+  try { localStorage.setItem(DB_KEY, JSON.stringify(DB)); } catch (e) {}
   renderWorkCalendar();
   renderOvertimeBank();
-  // Mostrar confirmação
+  // O Banco de horas também vai para o Supabase; «guardado» só depois da confirmação
+  const dayLabel = workEditDate === TODAY ? '' : workEditDate + ' ';
   const msg = document.getElementById('saveMsg-work');
-  if (msg) msg.textContent = '✓ ' + (workEditDate === TODAY ? 'guardado' : workEditDate + ' guardado');
+  const p = SyncManager.saveDay(workEditDate);
+  if (msg) msg.textContent = '⏳ a guardar…';
+  p.then(r => { if (msg) msg.textContent = dayLabel + saveMsgText(r, ''); });
+  return p;
 }
 
 function stampWorkEntry() {
@@ -6569,16 +6946,18 @@ async function onUserAuthenticated(user) {
   // Se entrou um utilizador diferente neste dispositivo, limpa os dados locais do anterior
   const lastUser = localStorage.getItem('dvLastUserId');
   if (lastUser && user && user.id && lastUser !== user.id) {
-    localStorage.removeItem(DB_KEY);
-    localStorage.removeItem(SHEETS_URL_KEY);
-    localStorage.removeItem('dvAvatar');
+    ['dvLifeDiary_v3', 'dvSheetsUrl', 'dvAvatar', 'dvSyncQueue', 'dvSyncMeta', 'diarioVida',
+     'dvReminders', 'dvAiProvider', 'dvOpenRouterModel', 'dvAchievements'].forEach(k => localStorage.removeItem(k));
     localStorage.setItem('dvLastUserId', user.id);
     location.reload();
     return;
   }
+  window._firstLoginOnDevice = !lastUser;
   if (user && user.id) localStorage.setItem('dvLastUserId', user.id);
   showApp(user);
+  await SyncManager.recover();          // envia primeiro o que ficou pendente
   await loadFromSupabase();
+  await loadConfigFromCloud();
   await loadSheetsUrlFromCloud();
   await loadAvatarFromCloud();
   await initCompetition();
@@ -6592,6 +6971,7 @@ function showApp(user) {
   const userLabel = document.getElementById('sidebarUserEmail');
   if (userLabel) userLabel.textContent = userEmail;
 
+  SyncManager.setGuest(!(user && user.id));
   restoreFields();
   renderDailyFlow();
   setTimeout(force24hInputs, 200);
@@ -6603,16 +6983,28 @@ async function logout() {
     try {
       const { data: { session } } = await supabaseClient.auth.getSession();
       hadSession = !!(session && session.user);
-      await supabaseClient.auth.signOut();
     } catch(e) {}
+  }
+  if (hadSession) {
+    // 1) enviar o que está pendente; 2) só sair se tudo foi confirmado
+    showSavedBar('⏳ A enviar alterações pendentes…');
+    const ok = await SyncManager.flushAll(20000);
+    if (!ok) {
+      const n = SyncManager.pendingCount();
+      showSaveResult('error');
+      alert('⚠ Não foi possível enviar ' + n + ' alteração(ões) para a nuvem.\n\nPor segurança não terminei a sessão e os dados continuam neste dispositivo. Verifica a ligação e tenta outra vez.');
+      if (confirm('Queres descarregar uma cópia de segurança (ficheiro JSON) dos teus dados?')) { try { exportData(); } catch(e) {} }
+      return;
+    }
+    const orphans = SyncManager.unsyncedLocalDays();
+    if (orphans.length && !confirm('Há ' + orphans.length + ' dia(s) que só existem neste dispositivo (não estão na nuvem). Se saíres, serão apagados daqui.\n\nSair mesmo assim?')) return;
+    try { await supabaseClient.auth.signOut(); } catch(e) {}
   }
   localStorage.removeItem('dvGuestMode');
   if (hadSession) {
-    // Os dados da conta estão no Supabase: limpa a cópia local para não ficar no dispositivo
-    localStorage.removeItem(DB_KEY);
-    localStorage.removeItem(SHEETS_URL_KEY);
-    localStorage.removeItem('dvAvatar');
-    localStorage.removeItem('dvLastUserId');
+    // Tudo confirmado na nuvem: limpa a cópia local para não ficar no dispositivo
+    ['dvLifeDiary_v3', 'dvSheetsUrl', 'dvAvatar', 'dvSyncQueue', 'dvSyncMeta', 'diarioVida', 'dvLastUserId',
+     'dvReminders', 'dvAiProvider', 'dvOpenRouterModel', 'dvAchievements'].forEach(k => localStorage.removeItem(k));
     location.reload();
     return;
   }
@@ -6633,26 +7025,26 @@ async function loadFromSupabase() {
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session || !session.user) return;
 
-    const { data, error } = await supabaseClient
-      .from('diario_registos')
-      .select('data, dados')
-      .order('data', { ascending: true });
-
-    if (error) {
-      console.error('Supabase load error:', error);
+    let res = await supabaseClient.from('diario_registos').select('data, dados, versao').order('data', { ascending: true });
+    if (res.error) {   // coluna «versao» ainda não existe (SQL novo por executar)
+      res = await supabaseClient.from('diario_registos').select('data, dados').order('data', { ascending: true });
+    }
+    if (res.error) {
+      console.error('Supabase load error:', res.error);
       return;
     }
 
-    if (data && data.length) {
-      data.forEach(row => {
-        if (row.data && row.dados) {
-          DB[row.data] = row.dados;
-        }
-      });
-      localStorage.setItem(DB_KEY, JSON.stringify(DB));
-      reloadTodayFromDB();
-      if (typeof renderStats === 'function') renderStats();
-    }
+    const remoteDates = new Set();
+    (res.data || []).forEach(row => {
+      if (row.data && row.dados) {
+        remoteDates.add(row.data);
+        SyncManager.adoptRemote(row.data, row.dados, row.versao);
+      }
+    });
+    try { localStorage.setItem(DB_KEY, JSON.stringify(DB)); } catch(e) {}
+    await SyncManager.reconcileLocal(remoteDates);
+    reloadTodayFromDB();
+    if (typeof renderStats === 'function') renderStats();
   } catch(e) {
     console.error('Erro ao sincronizar do Supabase:', e);
   }
@@ -6682,22 +7074,8 @@ async function saveToSupabase(date, snap) {
 }
 
 // ── LINK DO GOOGLE SHEETS GUARDADO NA CONTA (Supabase, tabela diario_perfil) ──
-async function saveSheetsUrlToCloud(url) {
-  if (!supabaseClient) return;
-  try {
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    if (!session || !session.user) return;
-    const { error } = await supabaseClient
-      .from('diario_perfil')
-      .upsert({
-        user_id: session.user.id,
-        sheets_url: url || null,
-        atualizado_em: new Date().toISOString()
-      }, { onConflict: 'user_id' });
-    if (error) console.error('Supabase perfil error:', error);
-  } catch(e) {
-    console.error('Erro ao guardar o link do Sheets na conta:', e);
-  }
+function saveSheetsUrlToCloud(url) {
+  return SyncManager.saveProfile({ sheets_url: url || null });
 }
 
 async function loadSheetsUrlFromCloud() {
@@ -6738,7 +7116,7 @@ async function loadSheetsUrlFromCloud() {
 }
 
 // ── VERSÃO DA APP E ATUALIZAÇÃO FORÇADA (limpa a cache do service worker; não apaga registos) ──
-var APP_VERSION = '2026-10-14.4';
+var APP_VERSION = '2026-10-18.1';
 (function() {
   const el = document.getElementById('appVersionLabel');
   if (el) el.textContent = APP_VERSION;
@@ -6803,11 +7181,10 @@ function saveTreadmill(clear) {
     if (keys.length > 90) delete DB[keys[0]];
     try { localStorage.setItem(DB_KEY, JSON.stringify(DB)); } catch(e2) {}
   }
-  if (typeof saveToSupabase === 'function') saveToSupabase(date, snap);
+  const syncP = SyncManager.saveDay(date);
+  showSavedBar('⏳ A guardar…');
+  syncP.then(showSaveResult);
   if (typeof sheetsUrl !== 'undefined' && sheetsUrl) setTimeout(syncAllData, 600);
-
-  const bar = document.getElementById('savedBar');
-  if (bar) { bar.classList.add('show'); setTimeout(() => bar.classList.remove('show'), 2500); }
   updateAvatarScenes();
   renderTreadmillHistory();
 }
@@ -6927,23 +7304,8 @@ setTimeout(() => {
   }
 }, 4000);
 
-async function saveAvatarToCloud() {
-  if (!supabaseClient) return;
-  try {
-    const { data: { session } } = await supabaseClient.auth.getSession();
-    if (!session || !session.user) return;
-    const { error } = await supabaseClient
-      .from('diario_perfil')
-      .upsert({
-        user_id: session.user.id,
-        avatar_genero: avatarPrefs.genero || null,
-        avatar_nome: avatarPrefs.nome || null,
-        atualizado_em: new Date().toISOString()
-      }, { onConflict: 'user_id' });
-    if (error) console.error('Supabase avatar error:', error);
-  } catch(e) {
-    console.error('Erro ao guardar o avatar na conta:', e);
-  }
+function saveAvatarToCloud() {
+  return SyncManager.saveProfile({ avatar_genero: avatarPrefs.genero || null, avatar_nome: avatarPrefs.nome || null });
 }
 
 async function loadAvatarFromCloud() {
@@ -7195,7 +7557,6 @@ function force24hInputs() {
   });
 }
 
-initAuth();
 
 
 // ═══════════════════════════════════════════════════════════════════
@@ -7351,7 +7712,7 @@ function checkAchievements() {
   const newUnlocks = [];
   ACHIEVEMENTS.forEach(a => { if (!unlocked.includes(a.id) && a.check()) { unlocked.push(a.id); newUnlocks.push(a); } });
   if (newUnlocks.length) {
-    localStorage.setItem('dvAchievements', JSON.stringify(unlocked));
+    cfgSave('dvAchievements', JSON.stringify(unlocked));
     newUnlocks.forEach(a => showAchievementToast(a));
   }
   renderAchievements();
@@ -7443,7 +7804,7 @@ async function saveReminders() {
     almoco: document.getElementById('remAlmoco').value,
     noite: document.getElementById('remNoite').value,
   };
-  localStorage.setItem('dvReminders', JSON.stringify(prefs));
+  cfgSave('dvReminders', JSON.stringify(prefs));
   closeRemindersModal();
   sendNotification('🔔 Lembretes ativados!', 'Vais receber lembretes diários.');
 }
@@ -7953,7 +8314,7 @@ function initSettingsPage() {
 function changeAiProvider() {
   const sel = document.getElementById('aiProviderSelect');
   const val = sel ? sel.value : 'auto';
-  localStorage.setItem('dvAiProvider', val);
+  cfgSave('dvAiProvider', val);
   const orBox     = document.getElementById('openrouterSettingsBox');
   const groqBox   = document.getElementById('groqSettingsBox');
   const hfBox     = document.getElementById('hfSettingsBox');
@@ -7978,7 +8339,7 @@ function handleModelSelectChange() {
     if (customBox) customBox.style.display = 'block';
   } else {
     if (customBox) customBox.style.display = 'none';
-    localStorage.setItem('dvOpenRouterModel', sel.value);
+    cfgSave('dvOpenRouterModel', sel.value);
   }
 }
 
@@ -8003,7 +8364,7 @@ function saveSettingsOpenRouter() {
   if (chosenModel === 'custom') {
     chosenModel = (customInput?.value || '').trim() || 'meta-llama/llama-3.3-70b-instruct:free';
   }
-  localStorage.setItem('dvOpenRouterModel', chosenModel);
+  cfgSave('dvOpenRouterModel', chosenModel);
 
   const n = rawKeys.length || getOpenRouterKeys().length;
   if (badge) badge.textContent = n > 0 ? `🔑 ${n} chave${n>1?'s':''} configurada${n>1?'s':''}` : '';
@@ -8178,9 +8539,12 @@ async function saveSettingsReminders() {
     almoco:  document.getElementById('remAlmocoSettings')?.value,
     noite:   document.getElementById('remNoiteSettings')?.value,
   };
-  localStorage.setItem('dvReminders', JSON.stringify(prefs));
+  const cfgP = cfgSave('dvReminders', JSON.stringify(prefs));
   const status = document.getElementById('remSettingsStatus');
-  if (status) status.textContent = '✓ Lembretes guardados!';
+  if (status) {
+    status.textContent = '⏳ a guardar…';
+    cfgP.then(r => { status.textContent = saveMsgText(r, '').replace('guardado', 'lembretes guardados'); });
+  }
   sendNotification('🔔 Lembretes ativados!', 'Vais receber lembretes diários.');
 }
 
@@ -8199,7 +8563,7 @@ function importData(event) {
   if (!file) return;
 
   const reader = new FileReader();
-  reader.onload = function(e) {
+  reader.onload = async function(e) {
     try {
       const parsed = JSON.parse(e.target.result);
       const incomingDays = (parsed && typeof parsed === 'object' && parsed.days) ? parsed.days : parsed;
@@ -8223,19 +8587,16 @@ function importData(event) {
         DB[k] = incomingDays[k];
         count++;
       });
-
       localStorage.setItem(DB_KEY, JSON.stringify(DB));
-      if (st) st.innerHTML = '<span style="color:var(--sage-l);">✓ ' + count + ' dias importados com sucesso! A recarregar...</span>';
-      
-      const bar = document.getElementById('savedBar');
-      if (bar) {
-        bar.textContent = '✓ ' + count + ' dias importados com sucesso';
-        bar.classList.add('show');
-      }
-
-      setTimeout(() => {
-        location.reload();
-      }, 1200);
+      if (st) st.innerHTML = '<span style="color:var(--moss-l);">⏳ ' + count + ' dias importados. A enviar para a nuvem…</span>';
+      const results = await Promise.all(validKeys.map(k => SyncManager.saveDay(k)));
+      const failed = results.filter(r => r !== 'cloud' && r !== 'local' && r !== 'none').length;
+      const msgTxt = failed
+        ? ('⚠ ' + count + ' dias importados neste dispositivo; ' + failed + ' ainda por enviar para a nuvem (vão ser enviados automaticamente).')
+        : ('✓ ' + count + ' dias importados e guardados' + (results.includes('cloud') ? ' na nuvem' : ' neste dispositivo'));
+      if (st) st.innerHTML = '<span style="color:' + (failed ? 'var(--rose)' : 'var(--sage-l)') + ';">' + msgTxt + ' A recarregar...</span>';
+      showSavedBar(msgTxt, failed ? 'warn' : '');
+      setTimeout(() => { location.reload(); }, failed ? 3000 : 1500);
     } catch(err) {
       console.error('Erro na importação:', err);
       if (st) st.innerHTML = '<span style="color:var(--rose);">Erro ao importar: ' + err.message + '</span>';
