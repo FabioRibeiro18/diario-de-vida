@@ -41,8 +41,8 @@
 
   --text:      #f1f5f9;      /* quase branco */
   --text2:     #cbd5e1;      /* cinza claro */
-  --muted:     #64748b;      /* slate muted */
-  --faint:     #334155;      /* muito suave */
+  --muted:     #7b8aa3;      /* slate muted */
+  --faint:     #55647c;      /* muito suave */
 
   --radius:    14px;
   --radius-s:  10px;
@@ -1595,9 +1595,161 @@ canvas { display:block; width:100% !important; max-width:100%; }
   .flow-item-action { align-self: flex-end; }
   .btn { padding: 9px 14px; font-size: 12px; }
 }
+
+/* ── MASCOTE PIXEL ART ── */
+.mascot-card {
+  display: flex; align-items: center; gap: 20px;
+  background: linear-gradient(135deg, rgba(45,212,191,0.06), rgba(245,158,11,0.03));
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 22px; margin-bottom: 20px;
+  box-shadow: var(--shadow);
+  position: relative; overflow: hidden;
+}
+.mascot-card::after {
+  content: ''; position: absolute; right: -40px; top: -40px;
+  width: 160px; height: 160px;
+  background: radial-gradient(circle, rgba(45,212,191,0.06), transparent 70%);
+  pointer-events: none;
+}
+.mascot-stage { width: 128px; height: 128px; flex: 0 0 auto; position: relative; display: flex; align-items: center; justify-content: center; }
+.mascot-stage::before {
+  content: ''; position: absolute; inset: 6%; border-radius: 50%;
+  background: radial-gradient(circle, rgba(var(--mascot-glow,45,212,191),0.20) 0%, transparent 70%);
+}
+.mascot-svg { width: 100%; height: 100%; position: relative; z-index: 1; overflow: visible; }
+.mascot-side { flex: 1; min-width: 0; position: relative; z-index: 1; }
+.mascot-name-row { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
+.mascot-name { font-family: 'Source Serif 4', serif; font-size: 20px; font-weight: 300; color: var(--moss-l); }
+.mascot-stage-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--sand); }
+.mascot-bubble {
+  position: relative; background: var(--surface); border: 1px solid var(--border2);
+  border-radius: 12px; padding: 11px 14px; font-size: 13px; line-height: 1.6;
+  color: var(--text2); font-style: italic;
+}
+.mascot-bubble::before {
+  content: ''; position: absolute; left: -6px; top: 16px; width: 10px; height: 10px;
+  background: var(--surface); border-left: 1px solid var(--border2); border-bottom: 1px solid var(--border2);
+  transform: rotate(45deg);
+}
+.mascot-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; font-family: 'JetBrains Mono', monospace; font-size: 9.5px; color: var(--muted); letter-spacing: 0.3px; }
+.mascot-dot { opacity: 0.45; }
+@keyframes mascotBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2.5px); } }
+@keyframes mascotSway { 0%,100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
+@keyframes mascotZzz { 0% { opacity: 0; transform: translate(0,0); } 25% { opacity: 1; } 100% { opacity: 0; transform: translate(5px,-7px); } }
+@keyframes mascotTwinkle { 0%,100% { opacity: 0.35; } 50% { opacity: 1; } }
+.m-anim .m-bob { animation: mascotBob 3.4s ease-in-out infinite; }
+.m-anim .m-leaf { animation: mascotSway 4.2s ease-in-out infinite; transform-box: fill-box; transform-origin: bottom center; }
+.m-anim .m-zzz { animation: mascotZzz 2.8s ease-in-out infinite; }
+.m-anim .m-spark { animation: mascotTwinkle 1.9s ease-in-out infinite; }
+@media (prefers-reduced-motion: reduce) {
+  .m-anim .m-bob, .m-anim .m-leaf, .m-anim .m-zzz, .m-anim .m-spark { animation: none; }
+}
+
+.mascot-settings { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
+.mascot-stage-settings { width: 120px; height: 120px; }
+.mascot-settings-fields { flex: 1; min-width: 220px; }
+.mascot-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.mascot-swatches { display: flex; gap: 8px; flex-wrap: wrap; }
+.mascot-swatch {
+  width: 28px; height: 28px; border-radius: 8px; border: 2px solid transparent;
+  cursor: pointer; padding: 0; transition: transform 0.15s, border-color 0.15s, box-shadow 0.15s;
+}
+.mascot-swatch:hover { transform: translateY(-2px); }
+.mascot-swatch.active { border-color: #fff; box-shadow: 0 0 0 2px var(--moss); }
+.mascot-opts { display: flex; gap: 6px; flex-wrap: wrap; }
+.mascot-opt {
+  padding: 6px 12px; border-radius: 20px; border: 1px solid var(--border2);
+  background: var(--surface); color: var(--muted); cursor: pointer;
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; transition: all 0.15s;
+}
+.mascot-opt:hover { border-color: var(--moss-l); color: var(--moss); }
+.mascot-opt.active { background: var(--moss); border-color: var(--moss); color: #0a0d13; font-weight: 600; }
+.mascot-check { display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; }
+.mascot-check input { accent-color: var(--moss); }
+.mascot-status { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--moss-l); min-height: 14px; margin-top: 8px; }
+.mascot-hint { font-size: 11px; color: var(--muted); line-height: 1.6; margin-top: 10px; }
+
+/* UI POLISH */
+[hidden] { display: none !important; }
+:where(button, a, .nav-item, .flow-step, .mascot-swatch, .mascot-opt):focus-visible {
+  outline: 2px solid var(--moss-l);
+  outline-offset: 2px;
+}
+.skip-link {
+  display: none;
+  position: fixed; top: 10px; left: 10px; z-index: 100001;
+  padding: 10px 14px; border-radius: 8px;
+  background: var(--moss); color: #0a0d13;
+  font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 600;
+  transform: translateY(-200%); transition: transform .18s ease;
+}
+.skip-link:focus { transform: translateY(0); }
+body.app-ready .skip-link { display: block; }
+.mascot-customize {
+  margin-left: auto; padding: 4px 10px; border-radius: 999px;
+  border: 1px dashed var(--border2); background: transparent;
+  color: var(--muted); font-family: 'JetBrains Mono', monospace;
+  font-size: 9px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
+}
+.mascot-customize:hover { color: var(--moss-l); border-color: var(--moss); }
+.onboarding-card {
+  background: linear-gradient(135deg, rgba(45,212,191,0.08), rgba(245,158,11,0.04));
+  border: 1px solid rgba(45,212,191,0.25);
+  border-radius: var(--radius); padding: 16px 18px; margin-bottom: 18px;
+}
+.onboarding-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; }
+.onboarding-title { font-family: 'Source Serif 4', serif; font-size: 18px; font-weight: 300; color: var(--text); }
+.onboarding-title em { color: var(--moss-l); font-style: italic; }
+.onboarding-sub { font-size: 12px; color: var(--text2); line-height: 1.55; margin-top: 3px; }
+.onboarding-dismiss { background: transparent; border: none; color: var(--muted); font-size: 20px; line-height: 1; cursor: pointer; padding: 2px 6px; border-radius: 6px; }
+.onboarding-dismiss:hover { color: var(--text); }
+.onboarding-steps { display: flex; flex-wrap: wrap; gap: 8px; }
+.onboarding-step {
+  padding: 9px 14px; border-radius: 999px; border: 1px solid var(--border2);
+  background: var(--surface); color: var(--text2); cursor: pointer;
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: .4px;
+  transition: border-color .15s, color .15s, transform .15s;
+}
+.onboarding-step:hover { border-color: var(--moss); color: var(--moss-l); transform: translateY(-1px); }
+@media (max-width: 768px) {
+  .mobile-menu-btn { min-width: 44px; min-height: 44px; margin-right: 8px; font-size: 20px; }
+  .saved-bar { left: 14px; right: 14px; bottom: 16px; border-radius: 12px; text-align: center; }
+  .mascot-customize { font-size: 8px; }
+  .nav-item { padding: 12px 20px; }
+  .flow-step { min-width: 76px; }
+  .mascot-swatch { width: 36px; height: 36px; }
+  .mascot-opt { padding: 8px 14px; }
+  .onboarding-step { min-height: 40px; }
+}
+#mainContent:focus { outline: none; }
+@media (max-width: 640px) {
+  .top-header-author { display: none; }
+  .top-header-quote { font-size: 11px; padding-right: 4px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto !important; }
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: .01ms !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .mascot-card { gap: 12px; padding: 14px; align-items: flex-start; }
+  .mascot-stage { width: 92px; height: 92px; }
+  .mascot-name { font-size: 17px; }
+  .mascot-bubble { font-size: 12px; padding: 9px 12px; }
+  .mascot-bubble::before { top: 14px; }
+  .mascot-settings { gap: 12px; }
+  .mascot-stage-settings { width: 96px; height: 96px; }
+}
 </style>
 </head>
 <body>
+
+<a class="skip-link" href="#mainContent" onclick="skipToMain(event)">Saltar para o conteúdo</a>
 
 <!-- ══ AUTH OVERLAY ══ -->
 <div id="authOverlay" style="
@@ -1638,6 +1790,9 @@ canvas { display:block; width:100% !important; max-width:100%; }
       <input
         id="authEmail"
         type="email"
+        autocomplete="email"
+        autocapitalize="none"
+        spellcheck="false"
         placeholder="o.teu.email@exemplo.com"
         onkeydown="if(event.key==='Enter')submitAuthForm()"
         style="
@@ -1664,6 +1819,7 @@ canvas { display:block; width:100% !important; max-width:100%; }
         <input
           id="authPassword"
           type="password"
+          autocomplete="current-password"
           placeholder="••••••••"
           onkeydown="if(event.key==='Enter')submitAuthForm()"
           style="
@@ -1800,7 +1956,7 @@ canvas { display:block; width:100% !important; max-width:100%; }
   </div>
 
   <nav class="sidebar-nav" id="sidebarNav">
-    <div class="nav-item active" onclick="showSection('overview',this)">
+    <div class="nav-item active" role="button" tabindex="0" aria-current="page" onclick="showSection('overview',this)">
       <span class="nav-icon">🌿</span> Resumo
     </div>
     <div class="nav-item" onclick="showSection('noventa',this)">
@@ -1866,11 +2022,11 @@ canvas { display:block; width:100% !important; max-width:100%; }
 
 <!-- ══ MAIN CONTENT ══ -->
 <div class="top-header">
-  <button id="mobileMenuBtn" class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Abrir Menu">☰</button>
+  <button id="mobileMenuBtn" class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Abrir Menu" aria-expanded="false" aria-controls="appSidebar">☰</button>
   <div class="top-header-quote" id="topQuote"></div>
   <div class="top-header-author" id="topAuthor"></div>
 </div>
-<main class="main-content">
+<main class="main-content" id="mainContent">
 
 <!-- ▸ OVERVIEW -->
 <div class="section active" id="section-overview">
@@ -1879,7 +2035,37 @@ canvas { display:block; width:100% !important; max-width:100%; }
     <div class="section-sub">visão geral · <span id="todayFull"></span></div>
   </div>
 
-  <!-- ▸ DAILY FLOW -->
+  <!-- ▸ MASCOTE REATIVO -->
+  <div class="mascot-card" id="mascotCard">
+    <div class="mascot-stage" id="mascotStage" aria-hidden="true"></div>
+    <div class="mascot-side">
+      <div class="mascot-name-row">
+        <div class="mascot-name" id="mascotNameTop">Broto</div>
+        <div class="mascot-stage-label" id="mascotStageLabel"></div>
+        <button type="button" class="mascot-customize" onclick="showSection('settings', navBySection('settings'))">Personalizar</button>
+      </div>
+      <div class="mascot-bubble" id="mascotBubble" role="status" aria-live="polite">Olá! Vamos registar o dia?</div>
+      <div class="mascot-meta" id="mascotMeta"></div>
+    </div>
+  </div>
+
+  <div class="onboarding-card" id="onboardingCard" hidden>
+    <div class="onboarding-head">
+      <div>
+        <div class="onboarding-title">Primeiro passo, <em>hoje</em></div>
+        <div class="onboarding-sub">Regista uma secção para o Broto começar a crescer. Cada dia conta.</div>
+      </div>
+      <button type="button" class="onboarding-dismiss" onclick="dismissOnboarding()" aria-label="Dispensar sugestões">&times;</button>
+    </div>
+    <div class="onboarding-steps">
+      <button type="button" class="onboarding-step" onclick="showSection('sleep', navBySection('sleep'))">&#127769; Sono</button>
+      <button type="button" class="onboarding-step" onclick="showSection('water', navBySection('water'))">&#128167; Água</button>
+      <button type="button" class="onboarding-step" onclick="showSection('meals', navBySection('meals'))">&#127869; Refeição</button>
+      <button type="button" class="onboarding-step" onclick="showSection('weight', navBySection('weight'))">&#9878; Peso</button>
+      <button type="button" class="onboarding-step" onclick="showSection('journal', navBySection('journal'))">&#128211; Diário</button>
+    </div>
+  </div>
+
   <div class="flow-progress">
     <div class="flow-progress-label">
       <span id="flowProgressText">0 de 8 secções preenchidas hoje</span>
@@ -2946,6 +3132,49 @@ canvas { display:block; width:100% !important; max-width:100%; }
     <div class="section-title">⚙️ <em>Configurações</em></div>
     <div class="section-sub">integrações e preferências</div>
   </div>
+
+  <div class="card">
+    <div class="card-title">🌱 Mascote pixel</div>
+    <div class="mascot-settings">
+      <div class="mascot-stage mascot-stage-settings" id="mascotSettingsStage" aria-hidden="true"></div>
+      <div class="mascot-settings-fields">
+        <div class="field" style="margin-bottom:14px;">
+          <label for="mascotNameInput">Nome do mascote</label>
+          <input type="text" id="mascotNameInput" maxlength="20" placeholder="Broto" autocomplete="off">
+        </div>
+        <div style="margin-bottom:14px;">
+          <div class="mascot-label">Cor</div>
+          <div class="mascot-swatches">
+            <button type="button" class="mascot-swatch" data-mascot-palette="teal"  onclick="setMascotPalette('teal')"  style="background:#2dd4bf" title="Teal" aria-label="Teal"></button>
+            <button type="button" class="mascot-swatch" data-mascot-palette="amber" onclick="setMascotPalette('amber')" style="background:#f59e0b" title="Âmbar" aria-label="Âmbar"></button>
+            <button type="button" class="mascot-swatch" data-mascot-palette="rose"  onclick="setMascotPalette('rose')"  style="background:#f472b6" title="Rosa" aria-label="Rosa"></button>
+            <button type="button" class="mascot-swatch" data-mascot-palette="sky"   onclick="setMascotPalette('sky')"   style="background:#60a5fa" title="Azul" aria-label="Azul"></button>
+            <button type="button" class="mascot-swatch" data-mascot-palette="moss"  onclick="setMascotPalette('moss')"  style="background:#84cc16" title="Verde" aria-label="Verde"></button>
+            <button type="button" class="mascot-swatch" data-mascot-palette="grape" onclick="setMascotPalette('grape')" style="background:#a78bfa" title="Lavanda" aria-label="Lavanda"></button>
+          </div>
+        </div>
+        <div style="margin-bottom:14px;">
+          <div class="mascot-label">Acessório</div>
+          <div class="mascot-opts">
+            <button type="button" class="mascot-opt" data-mascot-acc="none"    onclick="setMascotAccessory('none')">Nenhum</button>
+            <button type="button" class="mascot-opt" data-mascot-acc="hat"     onclick="setMascotAccessory('hat')">🎩 Chapéu</button>
+            <button type="button" class="mascot-opt" data-mascot-acc="glasses" onclick="setMascotAccessory('glasses')">🕶 Óculos</button>
+            <button type="button" class="mascot-opt" data-mascot-acc="scarf"   onclick="setMascotAccessory('scarf')">🧣 Cachecol</button>
+            <button type="button" class="mascot-opt" data-mascot-acc="flower"  onclick="setMascotAccessory('flower')">🌸 Flor</button>
+          </div>
+        </div>
+        <label class="mascot-check"><input type="checkbox" id="mascotAnimateToggle"> Animações</label>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">
+          <button class="btn btn-primary" onclick="saveMascotOptions()" style="font-size:12px;">💾 Guardar</button>
+          <button class="btn btn-secondary" onclick="exportMascotPNG(512)" style="font-size:12px;">⬇ PNG 512</button>
+          <button class="btn btn-secondary" onclick="exportMascotPNG(192)" style="font-size:12px;">⬇ PNG 192</button>
+          <button class="btn btn-ghost" onclick="resetMascot()" style="font-size:12px;">↺ Repor</button>
+        </div>
+        <div id="mascotSettingsStatus" class="mascot-status"></div>
+        <div class="mascot-hint">Reage ao teu dia (sono, água, sequência) e cresce de fase com o uso. Exporta PNG para substituíres os ícones da PWA.</div>
+      </div>
+    </div>
+  </div>
   <div class="card">
     <div class="card-title">☁️ Google Sheets</div>
     <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Os teus dados sincronizam automaticamente ao guardar. 1 linha por dia, atualizada a cada gravação.</p>
@@ -3267,7 +3496,7 @@ gsk_... (3ª chave)" style="width:100%;background:var(--surface);border:1px soli
 </div>
 
 <!-- Saved indicator -->
-<div class="saved-bar" id="savedBar">✓ Dados guardados</div>
+<div class="saved-bar" id="savedBar" role="status" aria-live="polite">✓ Dados guardados</div>
 
 <script>
 // ═══════════════════════════════════════════════════════════════════
@@ -3628,6 +3857,8 @@ function toggleMobileMenu(force) {
     sb.classList.remove('mobile-open');
     if (bd) bd.classList.remove('active');
   }
+  const btn = document.getElementById('mobileMenuBtn');
+  if (btn) btn.setAttribute('aria-expanded', String(nextState));
 }
 
 function showSection(id, el) {
@@ -3637,12 +3868,13 @@ function showSection(id, el) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
   const target = document.getElementById('section-' + id);
   if (target) target.classList.add('active');
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  if (el) el.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(n => { n.classList.remove('active'); n.removeAttribute('aria-current'); });
+  if (el) { el.classList.add('active'); el.setAttribute('aria-current', 'page'); }
   if (id === 'overview') updateOverview();
   if (id === 'stats') { setTimeout(renderAllCharts, 60); updateGoalCounter(); }
   if (id === 'exercise') renderHobbies();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -5425,6 +5657,7 @@ function saveData() {
   // Atualizar resumo a partir do snap guardado (funciona mesmo noutras secções)
   updateOverviewFromSnap(snap);
   updateSidebarCals();
+  renderMascot();
   // Sync to Sheets if configured (não sincronizar durante reload para evitar loop)
   if(!_reloading && typeof sheetsUrl !== 'undefined' && sheetsUrl) setTimeout(syncAllData, 600);
 }
@@ -6190,6 +6423,541 @@ const FLOW_STEPS = [
 
 let activeFlowStep = null;
 
+// ═══════════════════════════════════════════════════════════════════
+// MASCOTE PIXEL ART — REATIVO & PERSONALIZÁVEL
+// ═══════════════════════════════════════════════════════════════════
+
+const MASCOT_KEY = 'dvMascot';
+const MASCOT_DEFAULT = { name: 'Broto', palette: 'teal', accessory: 'none', animate: true };
+const MASCOT_STAGE_NAMES = ['rebento', 'jovem', 'florescer', 'pleno'];
+
+const MASCOT_PALETTES = {
+  teal:  { base: '#2dd4bf', light: '#5eead4', dark: '#0f766e', cheek: '#f472b6', glow: '45,212,191' },
+  amber: { base: '#f59e0b', light: '#fcd34d', dark: '#92400e', cheek: '#fb7185', glow: '245,158,11' },
+  rose:  { base: '#f472b6', light: '#f9a8d4', dark: '#9d174d', cheek: '#fda4af', glow: '244,114,182' },
+  sky:   { base: '#60a5fa', light: '#93c5fd', dark: '#1e40af', cheek: '#f472b6', glow: '96,165,250' },
+  moss:  { base: '#84cc16', light: '#bef264', dark: '#3f6212', cheek: '#f59e0b', glow: '132,204,22' },
+  grape: { base: '#a78bfa', light: '#c4b5fd', dark: '#5b21b6', cheek: '#f472b6', glow: '167,139,250' },
+};
+
+const MASCOT_ACCESSORIES = { none: 'Nenhum', hat: 'Chapéu', glasses: 'Óculos', scarf: 'Cachecol', flower: 'Flor' };
+
+function getMascotConfig() {
+  try {
+    return Object.assign({}, MASCOT_DEFAULT, JSON.parse(localStorage.getItem(MASCOT_KEY) || '{}'));
+  } catch (e) {
+    return Object.assign({}, MASCOT_DEFAULT);
+  }
+}
+function saveMascotConfig(cfg) {
+  try { localStorage.setItem(MASCOT_KEY, JSON.stringify(cfg)); } catch (e) {}
+}
+
+function mascotStreak() {
+  try {
+    if (typeof DB === 'undefined' || typeof localDateStr !== 'function') return 0;
+    const start = new Date();
+    if (!(DB[localDateStr(start)] && DB[localDateStr(start)].savedAt)) start.setDate(start.getDate() - 1);
+    let n = 0;
+    for (let i = 0; i < 400; i++) {
+      const d = new Date(start);
+      d.setDate(start.getDate() - i);
+      const k = localDateStr(d);
+      if (DB[k] && DB[k].savedAt) n++;
+      else break;
+    }
+    return n;
+  } catch (e) { return 0; }
+}
+
+function mascotTotalDays() {
+  try { return Object.keys(DB).filter(k => DB[k] && DB[k].savedAt).length; } catch (e) { return 0; }
+}
+
+function mascotStage() {
+  const score = Math.max(mascotStreak(), Math.min(mascotTotalDays(), 30));
+  if (score >= 30) return 4;
+  if (score >= 14) return 3;
+  if (score >= 3) return 2;
+  return 1;
+}
+
+function getMascotReaction() {
+  const cfg = getMascotConfig();
+  let today = {};
+  try { today = (typeof DB !== 'undefined' && DB[TODAY]) ? DB[TODAY] : {}; } catch (e) {}
+
+  let wc = 0, wg = 8;
+  try {
+    wc = (typeof waterCount === 'number') ? waterCount : (today.waterCount || 0);
+    wg = (typeof waterGoal === 'number' && waterGoal > 0) ? waterGoal : (today.waterGoal || 8);
+  } catch (e) {}
+
+  let sleepH = 0;
+  try {
+    const bedEl = document.getElementById('bedtime');
+    const wakeEl = document.getElementById('waketime');
+    const bed = bedEl ? bedEl.value : '';
+    const wake = wakeEl ? wakeEl.value : '';
+    if (bed && wake) {
+      const [bh, bm] = bed.split(':').map(Number);
+      const [wh, wm] = wake.split(':').map(Number);
+      let bM = bh * 60 + bm, wM = wh * 60 + wm;
+      if (wM < bM) wM += 24 * 60;
+      sleepH = (wM - bM) / 60;
+    } else if (typeof getSleepH === 'function') {
+      sleepH = getSleepH(today);
+    }
+  } catch (e) { sleepH = 0; }
+
+  let flowPct = 0;
+  try {
+    if (typeof FLOW_STEPS !== 'undefined' && Array.isArray(FLOW_STEPS) && FLOW_STEPS.length) {
+      let done = 0;
+      FLOW_STEPS.forEach(step => {
+        const st = step.check();
+        if (st === 'done') done += 1;
+        else if (st === 'partial') done += 0.5;
+      });
+      flowPct = Math.round((done / FLOW_STEPS.length) * 100);
+    }
+  } catch (e) {}
+
+  const streak = mascotStreak();
+  const hour = new Date().getHours();
+  let expression = 'neutral';
+  let text = '';
+
+  if (sleepH > 0 && sleepH < 6.5) {
+    expression = 'sleepy';
+    text = `Dormiste só ${sleepH.toFixed(1)}h… hoje vou devagar contigo. Se puderes, deita-te mais cedo.`;
+  } else if (hour >= 10 && wc < Math.ceil(wg * 0.5)) {
+    expression = 'thirsty';
+    text = `Tenho sede! Só ${wc} de ${wg} copos de água. Bebe um gole por mim? 💧`;
+  } else if (streak >= 7) {
+    expression = 'proud';
+    text = `${streak} dias seguidos a registar! Estou a crescer contigo — continua assim. 🌱`;
+  } else if (flowPct >= 60 || wc >= wg || sleepH >= 7) {
+    expression = 'happy';
+    if (flowPct >= 60) text = `Já tens ${flowPct}% do dia preenchido. Que organização!`;
+    else if (wc >= wg) text = `Meta de água batida (${wc}/${wg})! Estou orgulhoso.`;
+    else text = `Dormiste ${sleepH.toFixed(1)}h — bem! Hoje rende mais.`;
+  } else {
+    expression = 'neutral';
+    text = 'Olá! Ainda há pouco registado hoje. Começa pelo sono ou pela água?';
+  }
+
+  return { expression, text, waterCount: wc, waterGoal: wg, sleepH, streak, flowPct, stage: mascotStage(), name: cfg.name || 'Broto' };
+}
+
+function _mRect(x, y, w, h, fill, cls, opacity) {
+  return `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="${fill}"`
+    + (cls ? ` class="${cls}"` : '')
+    + (opacity != null ? ` opacity="${opacity}"` : '')
+    + '/>';
+}
+
+function _mLeaves(stage) {
+  const gd = '#15803d', gl = '#4ade80', gb = '#22c55e';
+  let s = '<g class="m-leaf">';
+  if (stage >= 2) {
+    // folha esquerda
+    s += _mRect(2, 7, 5, 1, gd) + _mRect(3, 6, 4, 1, gd) + _mRect(2, 8, 4, 1, gd);
+    s += _mRect(3, 7, 3, 1, gl) + _mRect(4, 6, 2, 1, gb) + _mRect(3, 8, 2, 1, gb);
+    // folha direita (espelhada)
+    s += _mRect(17, 7, 5, 1, gd) + _mRect(17, 6, 4, 1, gd) + _mRect(18, 8, 4, 1, gd);
+    s += _mRect(18, 7, 3, 1, gl) + _mRect(18, 6, 2, 1, gb) + _mRect(19, 8, 2, 1, gb);
+    // ligação das folhas ao corpo
+    s += _mRect(6, 8, 2, 1, gd) + _mRect(6, 8, 1, 1, gb);
+    s += _mRect(16, 8, 2, 1, gd) + _mRect(17, 8, 1, 1, gb);
+  } else {
+    // rebento: folhas pequenas
+    s += _mRect(3, 7, 4, 1, gd) + _mRect(4, 6, 3, 1, gd) + _mRect(3, 8, 3, 1, gd);
+    s += _mRect(4, 7, 2, 1, gl) + _mRect(4, 6, 1, 1, gb);
+    s += _mRect(17, 7, 4, 1, gd) + _mRect(17, 6, 3, 1, gd) + _mRect(18, 8, 3, 1, gd);
+    s += _mRect(18, 7, 2, 1, gl) + _mRect(19, 6, 1, 1, gb);
+    s += _mRect(6, 8, 2, 1, gd) + _mRect(16, 8, 2, 1, gd);
+  }
+  s += '</g>';
+
+  // caule
+  s += _mRect(11, 6, 2, 2, '#8b5e3c') + _mRect(11, 6, 1, 2, '#a16207');
+  if (stage < 2) {
+    s += _mRect(10, 5, 4, 1, gd) + _mRect(11, 5, 2, 1, gb);
+  }
+  if (stage >= 2) {
+    s += _mRect(11, 4, 2, 4, '#8b5e3c');
+    if (stage === 2) {
+      s += _mRect(11, 1, 2, 1, gd) + _mRect(10, 2, 4, 2, gd) + _mRect(11, 4, 2, 1, gd);
+      s += _mRect(11, 2, 2, 2, gb) + _mRect(11, 3, 2, 1, gl);
+    } else if (stage === 3) {
+      // ramo lateral com botão dourado
+      s += _mRect(12, 4, 4, 1, '#8b5e3c');
+      s += _mRect(16, 4, 2, 1, gd);
+      s += _mRect(16, 1, 2, 3, '#f59e0b');
+      s += _mRect(16, 2, 1, 1, '#fcd34d');
+    } else {
+      // flor aberta no topo (5 pétalas + centro)
+      s += _mRect(11, 0, 2, 2, '#f472b6');
+      s += _mRect(9, 2, 2, 2, '#f472b6');
+      s += _mRect(13, 2, 2, 2, '#f472b6');
+      s += _mRect(11, 4, 2, 2, '#f472b6');
+      s += _mRect(11, 2, 2, 2, '#fcd34d');
+    }
+  }
+  return s;
+}
+
+function _mBody(pal) {
+  let s = '';
+  const outlineRows = [[8, 8, 8], [9, 6, 12], [10, 5, 14], [11, 5, 14], [12, 5, 14], [13, 5, 14], [14, 5, 14], [15, 5, 14], [16, 6, 12], [17, 7, 10], [18, 8, 8]];
+  outlineRows.forEach(([y, x, w]) => { s += _mRect(x, y, w, 1, pal.dark); });
+  const innerRows = [[9, 7, 10], [10, 6, 12], [11, 6, 12], [12, 6, 12], [13, 6, 12], [14, 6, 12], [15, 6, 12], [16, 7, 10], [17, 8, 8], [18, 9, 6]];
+  innerRows.forEach(([y, x, w]) => { s += _mRect(x, y, w, 1, pal.base); });
+  // barriga
+  s += _mRect(8, 14, 8, 2, pal.light, null, 0.35);
+  s += _mRect(9, 16, 6, 1, pal.light, null, 0.2);
+  // pés
+  s += _mRect(7, 19, 3, 2, pal.dark) + _mRect(14, 19, 3, 2, pal.dark);
+  s += _mRect(8, 19, 1, 1, pal.base) + _mRect(15, 19, 1, 1, pal.base);
+  return s;
+}
+
+function _mFace(expression, pal) {
+  const eye = '#0b1220', white = '#f8fafc';
+  let s = '';
+
+  if (expression === 'sleepy') {
+    s += _mRect(8, 12, 2, 1, eye) + _mRect(14, 12, 2, 1, eye);
+    s += _mRect(10, 15, 4, 1, eye);
+  } else if (expression === 'thirsty') {
+    s += _mRect(8, 11, 2, 2, eye) + _mRect(14, 11, 2, 2, eye);
+    s += _mRect(8, 11, 1, 1, white) + _mRect(14, 11, 1, 1, white);
+    s += _mRect(11, 14, 2, 2, eye);
+    s += _mRect(18, 10, 1, 1, '#60a5fa') + _mRect(17, 11, 2, 1, '#60a5fa') + _mRect(18, 12, 1, 1, '#60a5fa');
+  } else if (expression === 'proud') {
+    s += _mRect(8, 12, 1, 1, eye) + _mRect(9, 11, 1, 1, eye);
+    s += _mRect(14, 11, 1, 1, eye) + _mRect(15, 12, 1, 1, eye);
+    s += _mRect(10, 14, 4, 1, eye) + _mRect(9, 13, 1, 1, eye) + _mRect(14, 13, 1, 1, eye);
+  } else if (expression === 'happy') {
+    s += _mRect(8, 11, 2, 2, eye) + _mRect(14, 11, 2, 2, eye);
+    s += _mRect(8, 11, 1, 1, white) + _mRect(14, 11, 1, 1, white);
+    s += _mRect(10, 14, 4, 1, eye) + _mRect(9, 13, 1, 1, eye) + _mRect(14, 13, 1, 1, eye);
+  } else {
+    s += _mRect(8, 11, 2, 2, eye) + _mRect(14, 11, 2, 2, eye);
+    s += _mRect(8, 11, 1, 1, white) + _mRect(14, 11, 1, 1, white);
+    s += _mRect(10, 15, 4, 1, eye);
+  }
+
+  // bochechas
+  s += _mRect(6, 13, 1, 2, pal.cheek, null, 0.75);
+  s += _mRect(17, 13, 1, 2, pal.cheek, null, 0.75);
+  return s;
+}
+
+function _mAccessory(acc) {
+  let s = '';
+  if (acc === 'hat') {
+    s += _mRect(8, 2, 8, 1, '#92400e') + _mRect(8, 2, 1, 4, '#92400e') + _mRect(15, 2, 1, 4, '#92400e');
+    s += _mRect(9, 3, 6, 3, '#f59e0b') + _mRect(8, 5, 8, 1, '#92400e');
+    s += _mRect(4, 6, 16, 1, '#b45309') + _mRect(5, 7, 14, 1, '#f59e0b');
+  } else if (acc === 'glasses') {
+    const f = '#0b1220';
+    s += _mRect(6, 10, 4, 1, f) + _mRect(6, 13, 4, 1, f) + _mRect(6, 10, 1, 4, f) + _mRect(9, 10, 1, 4, f);
+    s += _mRect(14, 10, 4, 1, f) + _mRect(14, 13, 4, 1, f) + _mRect(14, 10, 1, 4, f) + _mRect(17, 10, 1, 4, f);
+    s += _mRect(10, 11, 4, 1, f);
+    s += _mRect(7, 11, 2, 2, '#60a5fa', null, 0.22) + _mRect(15, 11, 2, 2, '#60a5fa', null, 0.22);
+  } else if (acc === 'scarf') {
+    s += _mRect(5, 16, 14, 2, '#dc2626') + _mRect(5, 17, 14, 1, '#b91c1c');
+    s += _mRect(17, 18, 3, 1, '#dc2626') + _mRect(18, 19, 2, 2, '#b91c1c');
+  } else if (acc === 'flower') {
+    // flor de 5 pétalas na folha esquerda
+    s += _mRect(4, 5, 2, 2, '#f472b6');
+    s += _mRect(4, 9, 2, 2, '#f472b6');
+    s += _mRect(2, 7, 2, 2, '#f472b6');
+    s += _mRect(6, 7, 2, 2, '#f472b6');
+    s += _mRect(4, 7, 2, 2, '#fbbf24');
+  }
+  return s;
+}
+
+function _mEffects(expression) {
+  if (expression === 'sleepy') {
+    return '<g class="m-zzz">'
+      + _mRect(18, 5, 1, 1, '#94a3b8') + _mRect(19, 6, 1, 1, '#94a3b8')
+      + _mRect(17, 6, 2, 1, '#94a3b8') + _mRect(17, 7, 2, 1, '#94a3b8')
+      + '</g>';
+  }
+  if (expression === 'proud') {
+    return '<g class="m-spark">'
+      + _mRect(3, 4, 1, 3, '#fcd34d') + _mRect(2, 5, 3, 1, '#fcd34d')
+      + _mRect(20, 9, 1, 3, '#fcd34d') + _mRect(19, 10, 3, 1, '#fcd34d')
+      + '</g>';
+  }
+  return '';
+}
+
+function _mEsc(str) {
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function renderMascotSVG(opts) {
+  opts = opts || {};
+  const cfg = opts.cfg || getMascotConfig();
+  const pal = MASCOT_PALETTES[cfg.palette] || MASCOT_PALETTES.teal;
+  const stage = opts.stage || mascotStage();
+  const expression = opts.expression || getMascotReaction().expression;
+  const animate = opts.animate !== false && cfg.animate !== false;
+
+  const art = _mLeaves(stage) + _mBody(pal) + _mFace(expression, pal) + _mAccessory(cfg.accessory);
+
+  return `<svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" shape-rendering="crispEdges" class="mascot-svg${animate ? ' m-anim' : ''}" role="img" aria-label="Mascote ${_mEsc(cfg.name || 'Broto')}">`
+    + `<g class="m-bob">${art}</g>`
+    + _mEffects(expression)
+    + '</svg>';
+}
+
+function renderMascot() {
+  const stageEl = document.getElementById('mascotStage');
+  if (!stageEl) return;
+
+  const cfg = getMascotConfig();
+  const pal = MASCOT_PALETTES[cfg.palette] || MASCOT_PALETTES.teal;
+  const reaction = getMascotReaction();
+
+  stageEl.style.setProperty('--mascot-glow', pal.glow);
+  stageEl.innerHTML = renderMascotSVG({ cfg, stage: reaction.stage, expression: reaction.expression });
+
+  const nameEl = document.getElementById('mascotNameTop');
+  if (nameEl) nameEl.textContent = reaction.name;
+
+  const stageLabel = document.getElementById('mascotStageLabel');
+  if (stageLabel) stageLabel.textContent = 'fase ' + reaction.stage + ' · ' + (MASCOT_STAGE_NAMES[reaction.stage - 1] || '');
+
+  const bubble = document.getElementById('mascotBubble');
+  if (bubble) bubble.textContent = reaction.text;
+
+  const meta = document.getElementById('mascotMeta');
+  if (meta) {
+    meta.innerHTML = '🔥 ' + reaction.streak + 'd seguidos <span class="mascot-dot">·</span> 💧 '
+      + reaction.waterCount + '/' + reaction.waterGoal + ' <span class="mascot-dot">·</span> 🌙 '
+      + (reaction.sleepH ? reaction.sleepH.toFixed(1) + 'h' : '—')
+      + ' <span class="mascot-dot">·</span> 📋 ' + reaction.flowPct + '%';
+  }
+
+  renderMascotSettingsPreview();
+}
+
+function renderMascotSettingsPreview() {
+  const el = document.getElementById('mascotSettingsStage');
+  if (!el) return;
+
+  const cfg = getMascotConfig();
+  const pal = MASCOT_PALETTES[cfg.palette] || MASCOT_PALETTES.teal;
+  const reaction = getMascotReaction();
+
+  el.style.setProperty('--mascot-glow', pal.glow);
+  el.innerHTML = renderMascotSVG({ cfg, stage: reaction.stage, expression: reaction.expression });
+}
+
+function initMascotSettings() {
+  const cfg = getMascotConfig();
+  const nameInput = document.getElementById('mascotNameInput');
+  if (nameInput) nameInput.value = cfg.name || 'Broto';
+
+  const anim = document.getElementById('mascotAnimateToggle');
+  if (anim) anim.checked = cfg.animate !== false;
+
+  document.querySelectorAll('[data-mascot-palette]').forEach(btn => {
+    const on = btn.dataset.mascotPalette === cfg.palette;
+    btn.classList.toggle('active', on);
+    btn.setAttribute('aria-pressed', String(on));
+  });
+  document.querySelectorAll('[data-mascot-acc]').forEach(btn => {
+    const on = btn.dataset.mascotAcc === cfg.accessory;
+    btn.classList.toggle('active', on);
+    btn.setAttribute('aria-pressed', String(on));
+  });
+
+  renderMascotSettingsPreview();
+}
+
+function setMascotPalette(palette) {
+  if (!MASCOT_PALETTES[palette]) return;
+  const cfg = getMascotConfig();
+  cfg.palette = palette;
+  saveMascotConfig(cfg);
+  initMascotSettings();
+  renderMascot();
+}
+
+function setMascotAccessory(accessory) {
+  if (!(accessory in MASCOT_ACCESSORIES)) return;
+  const cfg = getMascotConfig();
+  cfg.accessory = accessory;
+  saveMascotConfig(cfg);
+  initMascotSettings();
+  renderMascot();
+}
+
+function saveMascotOptions() {
+  const cfg = getMascotConfig();
+  const nameInput = document.getElementById('mascotNameInput');
+  const anim = document.getElementById('mascotAnimateToggle');
+  cfg.name = ((nameInput && nameInput.value) || '').trim().slice(0, 20) || 'Broto';
+  cfg.animate = anim ? anim.checked : true;
+  saveMascotConfig(cfg);
+
+  const status = document.getElementById('mascotSettingsStatus');
+  if (status) {
+    status.textContent = '✓ Mascote guardado!';
+    status.style.color = 'var(--moss-l)';
+    setTimeout(() => { status.textContent = ''; }, 2500);
+  }
+  renderMascot();
+  initMascotSettings();
+}
+
+function resetMascot() {
+  if (!confirm('Repor o mascote original?')) return;
+  try { localStorage.removeItem(MASCOT_KEY); } catch (e) {}
+  initMascotSettings();
+  renderMascot();
+  const status = document.getElementById('mascotSettingsStatus');
+  if (status) {
+    status.textContent = '↺ Mascote reposto';
+    status.style.color = 'var(--muted)';
+    setTimeout(() => { status.textContent = ''; }, 2500);
+  }
+}
+
+function _mRoundRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function exportMascotPNG(size) {
+  size = parseInt(size, 10) || 512;
+  const cfg = getMascotConfig();
+  const pal = MASCOT_PALETTES[cfg.palette] || MASCOT_PALETTES.teal;
+  const reaction = getMascotReaction();
+  const svg = renderMascotSVG({ cfg, stage: reaction.stage, expression: reaction.expression, animate: false })
+    .replace('<svg ', `<svg width="${size}" height="${size}" `);
+  const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const img = new Image();
+
+  img.onload = () => {
+    try {
+      const canvas = document.createElement('canvas');
+      canvas.width = size;
+      canvas.height = size;
+      const ctx = canvas.getContext('2d');
+
+      ctx.fillStyle = '#0f1117';
+      _mRoundRect(ctx, 0, 0, size, size, size * 0.22);
+      ctx.fill();
+
+      const glow = ctx.createRadialGradient(size / 2, size * 0.48, size * 0.04, size / 2, size * 0.5, size * 0.52);
+      glow.addColorStop(0, `rgba(${pal.glow},0.20)`);
+      glow.addColorStop(1, 'rgba(0,0,0,0)');
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(size / 2, size / 2, size * 0.48, 0, Math.PI * 2);
+      ctx.fill();
+
+      const pad = Math.round(size * 0.13);
+      ctx.drawImage(img, pad, pad, size - pad * 2, size - pad * 2);
+
+      canvas.toBlob(b => {
+        URL.revokeObjectURL(url);
+        if (!b) return;
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(b);
+        a.download = `icon-${size}.png`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 1500);
+
+        const status = document.getElementById('mascotSettingsStatus');
+        if (status) {
+          status.textContent = `✓ icon-${size}.png descarregado`;
+          status.style.color = 'var(--moss-l)';
+          setTimeout(() => { status.textContent = ''; }, 3000);
+        }
+      }, 'image/png');
+    } catch (e) {
+      alert('Erro ao exportar PNG: ' + e.message);
+    }
+  };
+  img.onerror = () => {
+    URL.revokeObjectURL(url);
+    alert('Erro ao gerar a imagem do mascote.');
+  };
+  img.src = url;
+}
+
+let onboardingDismissed = false;
+
+function navBySection(id) {
+  return Array.from(document.querySelectorAll('.nav-item')).find(n => (n.getAttribute('onclick') || '').includes("'" + id + "'")) || null;
+}
+
+function dismissOnboarding() {
+  onboardingDismissed = true;
+  renderOnboarding();
+}
+
+function renderOnboarding() {
+  const card = document.getElementById('onboardingCard');
+  if (!card) return;
+  const empty = mascotTotalDays() === 0 && !onboardingDismissed;
+  card.hidden = !empty;
+  const grid = document.getElementById('overviewGrid');
+  if (grid) grid.hidden = empty;
+}
+
+function skipToMain(e) {
+  if (e) e.preventDefault();
+  if (typeof showSection === 'function') showSection('overview', navBySection('overview'));
+  const main = document.getElementById('mainContent');
+  if (main) {
+    main.setAttribute('tabindex', '-1');
+    main.focus({ preventScroll: true });
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    main.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' });
+  }
+}
+
+document.addEventListener('keydown', function (e) {
+  if (e.key === 'Escape') {
+    if (typeof toggleMobileMenu === 'function') toggleMobileMenu(false);
+    return;
+  }
+  if (e.key === 'Enter' || e.key === ' ') {
+    const t = e.target;
+    if (t && t.matches && t.matches('.nav-item, .flow-step')) {
+      e.preventDefault();
+      t.click();
+    }
+  }
+});
+
+document.querySelectorAll('.nav-item').forEach(function (n) {
+  n.setAttribute('role', 'button');
+  n.setAttribute('tabindex', '0');
+});
+
 function renderDailyFlow() {
   const container = document.getElementById('dailyFlow');
   if (!container) return;
@@ -6222,7 +6990,7 @@ function renderDailyFlow() {
     }
 
     html += `
-      <div class="flow-step" onclick="toggleFlowDetail('${step.id}')">
+      <div class="flow-step" role="button" tabindex="0" onclick="toggleFlowDetail('${step.id}')">
         <div class="flow-circle ${circleClass}">${step.icon}</div>
         <div class="flow-label ${labelClass}">${step.label}</div>
       </div>
@@ -6263,10 +7031,12 @@ function toggleFlowDetail(stepId) {
 
 // Hook into updateOverview to also refresh flow
 const _origUpdateOverview = updateOverview;
-function updateOverview() {
+updateOverview = function () {
   _origUpdateOverview();
   renderDailyFlow();
-}
+  renderMascot();
+  renderOnboarding();
+};
 
 
 
@@ -6977,10 +7747,10 @@ if (getGroqKey()) {
 
 const SUPABASE_URL = 'https://nocafjkyiaigxttwdkei.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_JemTyDpY6iPhrpSAemaQDg_ws94_aBm';
-let supabase = null;
+let supabaseClient = null;
 try {
   if (window.supabase && typeof window.supabase.createClient === 'function') {
-    supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   }
 } catch(e) {
   console.error('Erro ao inicializar cliente Supabase:', e);
@@ -7036,7 +7806,7 @@ async function submitAuthForm() {
     return;
   }
 
-  if (!supabase) {
+  if (!supabaseClient) {
     if (errEl) errEl.textContent = 'Supabase indisponível. Podes aceder pelo modo local abaixo.';
     return;
   }
@@ -7056,7 +7826,7 @@ async function submitAuthForm() {
         throw new Error('As palavras-passe não coincidem.');
       }
 
-      const { data, error } = await supabase.auth.signUp({
+      const { data, error } = await supabaseClient.auth.signUp({
         email,
         password
       });
@@ -7070,13 +7840,13 @@ async function submitAuthForm() {
           errEl.style.color = 'var(--sage-l)';
           errEl.textContent = '✓ Conta criada com sucesso! A iniciar sessão...';
         }
-        const { data: logData, error: logErr } = await supabase.auth.signInWithPassword({ email, password });
+        const { data: logData, error: logErr } = await supabaseClient.auth.signInWithPassword({ email, password });
         if (!logErr && logData.user) {
           onUserAuthenticated(logData.user);
         }
       }
     } else {
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { data, error } = await supabaseClient.auth.signInWithPassword({
         email,
         password
       });
@@ -7118,6 +7888,7 @@ async function onUserAuthenticated(user) {
 function showApp(user) {
   document.getElementById('authOverlay').style.display = 'none';
   document.getElementById('appContent').style.display = 'block';
+  document.body.classList.add('app-ready');
 
   const userEmail = (user && user.email) ? user.email : (localStorage.getItem('dvGuestMode') ? 'Convidado (Offline)' : '');
   const userLabel = document.getElementById('sidebarUserEmail');
@@ -7129,12 +7900,13 @@ function showApp(user) {
 }
 
 async function logout() {
-  if (supabase) {
-    try { await supabase.auth.signOut(); } catch(e) {}
+  if (supabaseClient) {
+    try { await supabaseClient.auth.signOut(); } catch(e) {}
   }
   localStorage.removeItem('dvGuestMode');
   document.getElementById('appContent').style.display = 'none';
   document.getElementById('authOverlay').style.display = 'flex';
+  document.body.classList.remove('app-ready');
   const emailInput = document.getElementById('authEmail');
   const pwdInput = document.getElementById('authPassword');
   const errEl = document.getElementById('authError');
@@ -7145,12 +7917,12 @@ async function logout() {
 
 // ── SINCRONIZAÇÃO DA BASE DE DADOS COM SUPABASE ──
 async function loadFromSupabase() {
-  if (!supabase) return;
+  if (!supabaseClient) return;
   try {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session || !session.user) return;
 
-    const { data, error } = await supabase
+const { data, error } = await supabaseClient
       .from('diario_registos')
       .select('data, dados')
       .order('data', { ascending: true });
@@ -7176,12 +7948,12 @@ async function loadFromSupabase() {
 }
 
 async function saveToSupabase(date, snap) {
-  if (!supabase) return;
+  if (!supabaseClient) return;
   try {
-    const { data: { session } } = await supabase.auth.getSession();
+    const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session || !session.user) return;
 
-    const { error } = await supabase
+    const { error } = await supabaseClient
       .from('diario_registos')
       .upsert({
         user_id: session.user.id,
@@ -7243,9 +8015,9 @@ function resetPassword() {
 }
 
 async function initAuth() {
-  if (supabase) {
+  if (supabaseClient) {
     try {
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabaseClient.auth.getSession();
       if (session && session.user) {
         onUserAuthenticated(session.user);
         return;
@@ -7981,6 +8753,7 @@ function renderLast5Days() {
 }
 
 function initSettingsPage() {
+  initMascotSettings();
   // Sheets URL
   const urlInput = document.getElementById('sheetsUrlSettingsInput');
   if (urlInput && sheetsUrl) urlInput.value = sheetsUrl;
@@ -8381,7 +9154,14 @@ function clearAllData() {
 })();
 
 initPWA();
-setTimeout(() => { checkAchievements(); renderTrends(); generateWeeklySummary(false); }, 2000);
+setTimeout(() => {
+  try { checkAchievements(); } catch (e) {}
+  try { renderTrends(); } catch (e) {}
+  try { generateWeeklySummary(false); } catch (e) {}
+}, 2000);
+setTimeout(renderMascot, 300);
+setTimeout(renderMascot, 2500);
+setInterval(renderMascot, 60000);
 
 </script>
 </div><!-- end appContent -->
