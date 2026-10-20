@@ -3,7 +3,7 @@
 // Funcionalidades: cache offline + notificações push
 // ═══════════════════════════════════════════════════════════════════
 
-const CACHE_NAME = 'diario-v2';
+const CACHE_NAME = 'diario-v3';
 const ASSETS = [
   './',
   './index.html',
