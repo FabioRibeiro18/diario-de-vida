@@ -34,7 +34,8 @@ avatar-chooser { --avatar-bg:var(--card); --avatar-surface:var(--surface); --ava
 .tm-runner{position:absolute;left:50%;bottom:100%;font-size:34px;line-height:1;animation:tmBounce var(--tm-bounce,.7s) ease-in-out infinite;animation-play-state:var(--tm-play,paused)}
 @keyframes tmBelt{from{background-position:0 0}to{background-position:-36px 0}}
 @keyframes tmBounce{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(-6px)}}
-.tm-controls{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.tm-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.tm-ctrl{min-width:0}
 .tm-ctrl label{display:block;font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
 .tm-step{display:flex;align-items:center;gap:6px}
 .tm-step button{flex:0 0 40px;height:40px;border-radius:10px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:20px;cursor:pointer;line-height:1}
@@ -54,6 +55,30 @@ avatar-chooser { --avatar-bg:var(--card); --avatar-surface:var(--surface); --ava
 .pf-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--moss),var(--moss-l));transition:width .4s}
 @media (prefers-reduced-motion: reduce){.tm-belt,.tm-runner,.tm-record{animation:none}.tm-belt-wrap,.pf-bar i,.tm-bar i{transition:none}}
 @media (max-width:560px){.tm-controls{grid-template-columns:1fr}}
+.comp-toolbar{display:flex;justify-content:flex-end;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px}
+.comp-updated{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)}
+.comp-summary{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0 0}
+.comp-pill{padding:4px 9px;border:1px solid var(--border);border-radius:999px;background:var(--surface);font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2)}
+.comp-podium{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:16px 0}
+.comp-podium-card{position:relative;padding:16px 10px;border:1px solid var(--border);border-radius:12px;background:linear-gradient(180deg,var(--surface),var(--card));text-align:center;overflow:hidden}
+.comp-podium-card.first{border-color:rgba(245,158,11,.55);box-shadow:inset 0 0 0 1px rgba(245,158,11,.12)}
+.comp-podium-card.second{border-color:rgba(203,213,225,.4)}
+.comp-podium-card.third{border-color:rgba(224,123,57,.45)}
+.comp-podium-medal{font-size:26px;line-height:1}
+.comp-podium-name{margin-top:6px;font-size:13px;color:var(--text);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.comp-podium-value{margin-top:3px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--moss-l)}
+.comp-me{margin:0 0 14px;padding:12px 14px;border:1px solid rgba(45,212,191,.35);border-radius:10px;background:rgba(45,212,191,.07);display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:13px}
+.comp-me-empty{display:block;color:var(--muted);background:transparent;border-color:var(--border);font-size:12px}
+.comp-empty{padding:18px 0 8px;text-align:center;color:var(--muted);font-size:13px}
+.comp-note{margin-top:12px;font-size:11px;color:var(--muted);line-height:1.6}
+.avatar-progress{margin:0 0 16px;padding:14px 16px;border:1px solid var(--border);border-radius:12px;background:linear-gradient(135deg,rgba(45,212,191,.08),rgba(245,158,11,.04))}
+.avatar-progress-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.avatar-progress-level{font-size:14px;font-weight:600;color:var(--text)}
+.avatar-progress-text{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2)}
+.avatar-progress-track{height:8px;border-radius:999px;background:var(--surface);border:1px solid var(--border);overflow:hidden;margin:10px 0 8px}
+.avatar-progress-track i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--moss),var(--sand));transition:width .4s}
+.avatar-progress-next{font-size:11px;color:var(--muted);line-height:1.5}
+@media (max-width:560px){.comp-podium{grid-template-columns:1fr}.comp-podium-card{display:flex;align-items:center;gap:10px;text-align:left}.comp-podium-name{margin-top:0}.comp-podium-value{margin-left:auto;margin-top:0}}
 </style>
 <style>
 /* ── DESIGN SYSTEM: Verde Musgo & Bege Natural ── */
@@ -805,6 +830,59 @@ body::after {
 .stat-tile-icon { font-size: 20px; margin-bottom: 8px; }
 .stat-tile-val { font-family: 'Source Serif 4', serif; font-size: 22px; font-weight: 300; color: var(--moss-l); }
 .stat-tile-name { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 3px; }
+
+/* ── PESAGEM SEMANAL ── */
+.weekly-weight-card {
+  position: relative; overflow: hidden; margin-bottom: 20px; padding: 18px 20px;
+  background: linear-gradient(135deg, rgba(45,212,191,0.07), rgba(196,168,130,0.04));
+  border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow);
+}
+.weekly-weight-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+  background: linear-gradient(90deg, var(--moss-d), var(--moss), transparent);
+}
+.weekly-weight-card[data-status="atrasada"]::before { background: linear-gradient(90deg, var(--clay), var(--amber, #f59e0b), transparent); }
+.weekly-weight-card[data-status="em falta"]::before { background: linear-gradient(90deg, var(--muted), var(--sand), transparent); }
+.weekly-weight-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap; }
+.weekly-weight-kicker { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--moss-l); }
+.weekly-weight-status, .weekly-weight-page-status {
+  display: inline-flex; align-items: center; gap: 5px; margin-top: 6px; padding: 3px 9px; border-radius: 999px;
+  font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: .8px; text-transform: uppercase;
+  border: 1px solid var(--border2); color: var(--text2); background: var(--surface);
+}
+.weekly-weight-status[data-status="feita"], .weekly-weight-page-status[data-status="feita"] { color: var(--moss-l); border-color: rgba(45,212,191,.35); background: rgba(45,212,191,.08); }
+.weekly-weight-status[data-status="atrasada"], .weekly-weight-page-status[data-status="atrasada"] { color: var(--amber, #f59e0b); border-color: rgba(245,158,11,.35); background: rgba(245,158,11,.08); }
+.weekly-weight-status[data-status="em falta"], .weekly-weight-page-status[data-status="em falta"] { color: var(--sand); border-color: rgba(196,168,130,.35); background: rgba(196,168,130,.08); }
+.weekly-weight-date { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); }
+.weekly-weight-main { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; margin: 12px 0 6px; }
+.weekly-weight-val { font-family: 'Source Serif 4', serif; font-size: 38px; font-weight: 300; line-height: 1; color: var(--moss-l); }
+.weekly-weight-val span { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); margin-left: 4px; letter-spacing: 1px; }
+.weekly-weight-meta { font-size: 12px; color: var(--text2); line-height: 1.6; }
+.weekly-weight-next { margin: 2px 0 12px; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: .3px; }
+.weekly-weight-page-top { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+.weekly-weight-page-next { margin-top: 6px; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); }
+.weight-history { display: flex; flex-direction: column; }
+.weight-history-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 11px 0; border-bottom: 1px solid var(--border); }
+.weight-history-row:last-child { border-bottom: none; }
+.weight-history-row.current { background: rgba(45,212,191,.04); margin: 0 -8px; padding-left: 8px; padding-right: 8px; border-radius: 6px; }
+.weight-history-week { font-size: 13px; color: var(--text); }
+.weight-history-sub { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; color: var(--muted); margin-top: 3px; }
+.weight-history-value { text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text2); white-space: nowrap; }
+.weight-extra { color: var(--sand); text-transform: uppercase; letter-spacing: .5px; }
+.weight-diff { display: block; margin-top: 3px; font-size: 10px; color: var(--muted); }
+.weight-diff.up { color: var(--clay); }
+.weight-diff.down { color: var(--moss-l); }
+.weight-history-empty { padding: 10px 0 4px; font-size: 13px; color: var(--muted); line-height: 1.7; }
+@media (max-width: 480px) {
+  .weekly-weight-card { padding: 15px 16px; }
+  .weekly-weight-val { font-size: 32px; }
+  .weight-history-row { align-items: flex-start; }
+  .weight-history-value { font-size: 11px; }
+}
+.weight-chart-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 8px; }
+.weight-chart-head .card-title { margin-bottom: 0; }
+.weight-chart-toggle { display: inline-flex; gap: 6px; }
+.weight-chart-toggle .ex-filter-btn { font-size: 10px; padding: 5px 11px; }
 
 /* ── JOURNAL / MOOD ── */
 .mood-selector {
@@ -1689,6 +1767,56 @@ canvas { display:block; width:100% !important; max-width:100%; }
   .m-anim .m-bob, .m-anim .m-leaf, .m-anim .m-zzz, .m-anim .m-spark { animation: none; }
 }
 
+/* ── OVERVIEW: AVATAR EM DESTAQUE + MASCOTE COMPACTA ── */
+.overview-hero {
+  display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(220px, .75fr);
+  gap: 16px; align-items: stretch; margin-bottom: 20px;
+}
+.overview-avatar-panel {
+  position: relative; overflow: hidden; padding: 18px 20px 14px;
+  background: radial-gradient(circle at 50% 0%, rgba(45,212,191,.10), transparent 62%), linear-gradient(145deg, rgba(20,28,34,.6), rgba(15,22,27,.35));
+  border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow);
+}
+.overview-avatar-panel::after {
+  content: ''; position: absolute; inset: auto 12% -60px; height: 120px;
+  background: radial-gradient(ellipse, rgba(196,168,130,.14), transparent 70%); pointer-events: none;
+}
+.overview-avatar-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; flex-wrap: wrap; position: relative; z-index: 1; margin-bottom: 8px; }
+.overview-avatar-kicker { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--moss-l); }
+.overview-avatar-name { font-family: 'Source Serif 4', serif; font-size: 26px; font-weight: 300; color: var(--text); line-height: 1.15; margin-top: 2px; }
+.overview-avatar-meta { margin-top: 5px; font-size: 12px; color: var(--text2); line-height: 1.5; }
+.overview-avatar-cta { font-size: 11px; padding: 7px 12px; white-space: nowrap; }
+.overview-avatar-panel companion-scene, .overview-avatar-panel .avatar-hero-scene { display: block; max-width: 100%; }
+.overview-avatar-panel .avatar-hero-scene { margin-bottom: 0; }
+.mascot-card-compact {
+  margin-bottom: 0; padding: 16px; flex-direction: column; align-items: flex-start;
+  justify-content: flex-start; gap: 10px; align-self: start;
+  background: linear-gradient(135deg, rgba(45,212,191,0.05), rgba(245,158,11,0.025));
+}
+.mascot-card-compact .mascot-stage { width: 100px; height: 100px; }
+.mascot-card-compact .mascot-side { width: 100%; }
+.mascot-card-compact .mascot-name-row { margin-bottom: 6px; gap: 7px; }
+.mascot-card-compact .mascot-name { font-size: 16px; }
+.mascot-card-compact .mascot-bubble { font-size: 11.5px; padding: 8px 10px; line-height: 1.5; }
+.mascot-card-compact .mascot-bubble::before { top: 12px; }
+.mascot-card-compact .mascot-meta { font-size: 9px; margin-top: 7px; gap: 5px; }
+.mascot-card-compact .mascot-customize { font-size: 9px; padding: 4px 8px; }
+@media (max-width: 980px) {
+  .overview-hero { grid-template-columns: 1fr; }
+  .mascot-card-compact { flex-direction: row; align-items: center; }
+  .mascot-card-compact .mascot-side { flex: 1; }
+}
+@media (max-width: 560px) {
+  .overview-avatar-panel { padding: 15px 14px 12px; }
+  .overview-avatar-name { font-size: 22px; }
+  .overview-avatar-head { align-items: stretch; }
+  .overview-avatar-cta { width: 100%; }
+  .mascot-card-compact { padding: 12px 14px; gap: 10px; }
+  .mascot-card-compact .mascot-stage { width: 72px; height: 72px; }
+  .mascot-card-compact .mascot-bubble, .mascot-card-compact .mascot-meta { display: none; }
+  .mascot-card-compact .mascot-name-row { margin-bottom: 0; }
+}
+
 .mascot-settings { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
 .mascot-stage-settings { width: 120px; height: 120px; }
 .mascot-settings-fields { flex: 1; min-width: 220px; }
@@ -2062,17 +2190,32 @@ body.app-ready .skip-link { display: block; }
     <div class="section-sub">visão geral · <span id="todayFull"></span></div>
   </div>
 
-  <!-- ▸ MASCOTE REATIVO -->
-  <div class="mascot-card" id="mascotCard">
-    <div class="mascot-stage" id="mascotStage" aria-hidden="true"></div>
-    <div class="mascot-side">
-      <div class="mascot-name-row">
-        <div class="mascot-name" id="mascotNameTop">Broto</div>
-        <div class="mascot-stage-label" id="mascotStageLabel"></div>
-        <button type="button" class="mascot-customize" onclick="showSection('settings', navBySection('settings'))">Personalizar</button>
+  <!-- ▸ AVATAR EM DESTAQUE + MASCOTE COMPACTA -->
+  <div class="overview-hero" id="overviewHero">
+    <section class="overview-avatar-panel" aria-labelledby="avatarHeroName">
+      <div class="overview-avatar-head">
+        <div>
+          <div class="overview-avatar-kicker">O teu companheiro</div>
+          <div class="overview-avatar-name" id="avatarHeroName">Mika</div>
+          <div class="overview-avatar-meta" id="avatarHeroMeta"></div>
+        </div>
+        <button type="button" class="btn btn-secondary overview-avatar-cta" onclick="showSection('avatar', navBySection('avatar'))">Personalizar avatar</button>
       </div>
-      <div class="mascot-bubble" id="mascotBubble" role="status" aria-live="polite">Olá! Vamos registar o dia?</div>
-      <div class="mascot-meta" id="mascotMeta"></div>
+      <div class="avatar-missing" style="display:none;margin-bottom:14px;padding:12px 14px;border:1px solid var(--border2);border-radius:10px;font-size:12px;color:var(--text2);line-height:1.6;">⚠️ Não foi possível carregar o avatar. Confirma que a pasta «avatar» (com avatar-chooser.js, companion-scene.js e a pasta assets) está no GitHub, ao lado do index.html.</div>
+      <companion-scene id="avatarSceneOverview" class="avatar-hero-scene" name="Mika" level="1" hearts="0" xp="0" gender="woman" weight="80"></companion-scene>
+    </section>
+
+    <div class="mascot-card mascot-card-compact" id="mascotCard">
+      <div class="mascot-stage" id="mascotStage" aria-hidden="true"></div>
+      <div class="mascot-side">
+        <div class="mascot-name-row">
+          <div class="mascot-name" id="mascotNameTop">Broto</div>
+          <div class="mascot-stage-label" id="mascotStageLabel"></div>
+          <button type="button" class="mascot-customize" onclick="showSection('settings', navBySection('settings'))">Personalizar</button>
+        </div>
+        <div class="mascot-bubble" id="mascotBubble" role="status" aria-live="polite">Olá! Vamos registar o dia?</div>
+        <div class="mascot-meta" id="mascotMeta"></div>
+      </div>
     </div>
   </div>
 
@@ -2093,13 +2236,10 @@ body.app-ready .skip-link { display: block; }
     </div>
   </div>
 
-  <div class="avatar-missing" style="display:none;margin-bottom:14px;padding:12px 14px;border:1px solid var(--border2);border-radius:10px;font-size:12px;color:var(--text2);line-height:1.6;">⚠️ Não foi possível carregar o avatar. Confirma que a pasta «avatar» (com avatar-chooser.js, companion-scene.js e a pasta assets) está no GitHub, ao lado do index.html.</div>
-  <companion-scene id="avatarSceneOverview" name="Mika" level="1" hearts="0" xp="0" gender="woman" weight="80"></companion-scene>
-
   <!-- ▸ DAILY FLOW -->
   <div class="flow-progress">
     <div class="flow-progress-label">
-      <span id="flowProgressText">0 de 8 secções preenchidas hoje</span>
+      <span id="flowProgressText">0 de 3 secções preenchidas hoje</span>
       <span id="flowProgressPct" style="color:var(--moss-l);">0%</span>
     </div>
     <div class="flow-progress-bar">
@@ -2116,9 +2256,25 @@ body.app-ready .skip-link { display: block; }
     <div class="flow-detail-items" id="flowDetailItems"></div>
   </div>
 
+  <section class="weekly-weight-card" id="weeklyWeightCard" aria-labelledby="weeklyWeightTitle">
+    <div class="weekly-weight-head">
+      <div>
+        <div class="weekly-weight-kicker" id="weeklyWeightTitle">Pesagem semanal</div>
+        <div class="weekly-weight-status" id="weeklyWeightStatus">—</div>
+      </div>
+      <div class="weekly-weight-date" id="weeklyWeightDate"></div>
+    </div>
+    <div class="weekly-weight-main">
+      <div class="weekly-weight-val" id="weeklyWeightValue">—</div>
+      <div class="weekly-weight-meta" id="weeklyWeightMeta">Ainda não há registos de peso.</div>
+    </div>
+    <div class="weekly-weight-next" id="weeklyWeightNext"></div>
+    <button type="button" class="btn btn-primary" id="weeklyWeightCta" onclick="openWeeklyWeight()" style="width:100%;font-size:12px;">Registar peso desta semana</button>
+  </section>
+
   <div class="stat-grid" id="overviewGrid">
     <div class="stat-tile"><div class="stat-tile-icon">🌙</div><div class="stat-tile-val" id="ov-sleep">—</div><div class="stat-tile-name">horas sono</div></div>
-    <div class="stat-tile"><div class="stat-tile-icon">⚖️</div><div class="stat-tile-val" id="ov-weight">—</div><div class="stat-tile-name">peso kg</div></div>
+    <div class="stat-tile"><div class="stat-tile-icon">⚖️</div><div class="stat-tile-val" id="ov-weight">—</div><div class="stat-tile-name" id="ov-weight-name">peso kg</div></div>
     <div class="stat-tile"><div class="stat-tile-icon">🍽️</div><div class="stat-tile-val" id="ov-cal">—</div><div class="stat-tile-name">kcal</div></div>
     <div class="stat-tile"><div class="stat-tile-icon">💼</div><div class="stat-tile-val" id="ov-work">—</div><div class="stat-tile-name">h. trabalho</div></div>
   </div>
@@ -2206,7 +2362,19 @@ body.app-ready .skip-link { display: block; }
 <div class="section" id="section-weight">
   <div class="section-header">
     <div class="section-title">Peso <em>& Corpo</em></div>
-    <div class="section-sub">registo de hoje</div>
+    <div class="section-sub">Pesagem semanal — domingo</div>
+  </div>
+
+  <div class="card weekly-weight-page-card" id="weeklyWeightPageCard">
+    <div class="card-title">pesagem semanal — domingo</div>
+    <div class="weekly-weight-page-top">
+      <div>
+        <div class="weekly-weight-page-status" id="weeklyWeightPageStatus">—</div>
+        <div class="weekly-weight-page-next" id="weeklyWeightPageNext"></div>
+      </div>
+      <button type="button" class="btn btn-primary" onclick="openWeeklyWeight()" style="font-size:12px;">Registar peso desta semana</button>
+    </div>
+    <div class="weight-history" id="weightWeekHistory" aria-live="polite"></div>
   </div>
 
   <div class="card">
@@ -2630,6 +2798,21 @@ body.app-ready .skip-link { display: block; }
   </div>
 
   <div class="card">
+    <div class="card-title">treinador IA</div>
+    <div class="ai-panel" style="margin-bottom:12px;">
+      <div class="ai-panel-label">análise dos últimos 7 dias</div>
+      <button class="btn btn-primary" id="tmCoachBtn" onclick="generateTreadmillCoach()" style="width:100%;">✨ Analisar o meu treino</button>
+      <div class="ai-response" id="tmCoachResponse" aria-live="polite"></div>
+    </div>
+    <div class="ai-panel" style="margin-bottom:0;">
+      <div class="ai-panel-label">plano dos próximos 7 dias</div>
+      <button class="btn btn-primary" id="tmPlanBtn" onclick="generateTreadmillPlan()" style="width:100%;">🗓️ Gerar plano semanal</button>
+      <div class="ai-response" id="tmPlanResponse" aria-live="polite"></div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);line-height:1.6;margin-top:12px;">A IA usa o teu histórico local e o peso mais recente. Não substitui aconselhamento médico.</div>
+  </div>
+
+  <div class="card">
     <div class="card-title">treinos registados</div>
     <div id="tmHistory"></div>
   </div>
@@ -2676,15 +2859,28 @@ body.app-ready .skip-link { display: block; }
   <div class="avatar-missing" style="display:none;margin-bottom:14px;padding:12px 14px;border:1px solid var(--border2);border-radius:10px;font-size:12px;color:var(--text2);line-height:1.6;">⚠️ Não foi possível carregar o avatar. Confirma que a pasta «avatar» (com avatar-chooser.js, companion-scene.js e a pasta assets) está no GitHub, ao lado do index.html.</div>
   <companion-scene id="avatarSceneEdit" name="Mika" level="1" hearts="0" xp="0" gender="woman" weight="80"></companion-scene>
 
+  <div class="avatar-progress" aria-live="polite">
+    <div class="avatar-progress-top">
+      <span class="avatar-progress-level" id="avatarProgressLevel">Nível 1</span>
+      <span class="avatar-progress-text" id="avatarProgressText">0/7 registos para o nível 2</span>
+    </div>
+    <div class="avatar-progress-track"><i id="avatarProgressFill"></i></div>
+    <div class="avatar-progress-next" id="avatarNextUnlock"></div>
+  </div>
+
   <div class="card">
     <div class="card-title">personalizar</div>
     <div class="field">
       <label>Nome do companheiro</label>
       <input type="text" id="avatarName" maxlength="20" placeholder="ex: Mika">
     </div>
+    <div class="field" style="margin-top:12px;">
+      <label>Último peso (automático)</label>
+      <div id="avatarAutoWeight" style="padding:10px 13px;border:1px solid var(--border);border-radius:8px;background:var(--surface);font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text2);">—</div>
+    </div>
     <avatar-chooser id="avatarChooser" gender="woman" weight="80" style="margin-top:14px;"></avatar-chooser>
     <div style="margin-top:12px;font-size:12px;color:var(--muted);line-height:1.6;">
-      Nível: sobe a cada 7 dias com registo guardado · Corações: dias com registo nos últimos 7 dias (máx. 5) · O peso usado é o mais recente que registaste (entre 60 e 110 kg).
+      Nível: sobe a cada 7 dias com registo guardado e desbloqueia novos estilos · Corações: dias com registo nos últimos 7 dias (máx. 5) · O peso usado é o mais recente que registaste (entre 60 e 110 kg).
     </div>
     <button class="btn btn-primary" onclick="saveAvatarName(this)" style="width:100%;margin-top:14px;">Guardar nome</button>
   </div>
@@ -2713,7 +2909,15 @@ body.app-ready .skip-link { display: block; }
         </select>
       </div>
     </div>
+    <div class="comp-toolbar">
+      <span class="comp-updated" id="compUpdated"></span>
+      <button class="btn btn-secondary" onclick="renderCompetition()" style="font-size:12px;padding:6px 12px;">↻ Atualizar</button>
+    </div>
+    <div class="comp-summary" id="compSummary"></div>
+    <div class="comp-podium" id="compPodium" aria-live="polite"></div>
+    <div id="compMe"></div>
     <div id="compTable" style="margin-top:14px;"></div>
+    <div class="comp-note">O ranking usa os registos sincronizados na conta. Empates ficam com a mesma posição.</div>
   </div>
 </div>
 
@@ -2786,7 +2990,13 @@ body.app-ready .skip-link { display: block; }
 
   <!-- WEIGHT chart -->
   <div class="card" id="card-weight-chart">
-    <div class="card-title">⚖️ peso — evolução</div>
+    <div class="weight-chart-head">
+      <div class="card-title">⚖️ peso — evolução</div>
+      <div class="weight-chart-toggle" role="group" aria-label="Agregação do gráfico de peso">
+        <button type="button" class="ex-filter-btn active" id="weightModeWeek" onclick="setWeightChartMode('week')" aria-pressed="true">Semanal</button>
+        <button type="button" class="ex-filter-btn" id="weightModeDay" onclick="setWeightChartMode('day')" aria-pressed="false">Diário</button>
+      </div>
+    </div>
     <canvas id="chart-weight" height="200"></canvas>
     <div style="margin-top:10px;display:flex;gap:16px;flex-wrap:wrap;" id="stats-weight-summary"></div>
   </div>
@@ -3042,9 +3252,16 @@ hf_... (2ª chave)" style="width:100%;background:var(--surface);border:1px solid
       <div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:6px;">🌅 MANHÃ</div><input type="text" id="remManhaSettings" placeholder="08:00" maxlength="5" oninput="fmtTime(this)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;outline:none;"></div>
       <div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:6px;">🍽️ ALMOÇO</div><input type="text" id="remAlmocoSettings" placeholder="13:00" maxlength="5" oninput="fmtTime(this)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;outline:none;"></div>
       <div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:6px;">🌙 NOITE</div><input type="text" id="remNoiteSettings" placeholder="22:00" maxlength="5" oninput="fmtTime(this)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;outline:none;"></div>
+      <div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:6px;">⚖️ PESAGEM · HORA</div><input type="text" id="remPesoHoraSettings" placeholder="09:00" maxlength="5" aria-label="Hora da pesagem semanal" oninput="fmtTime(this)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;outline:none;"></div>
+      <div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:6px;">⚖️ PESAGEM · DIA</div><select id="remPesoDiaSettings" aria-label="Dia da pesagem semanal" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;"><option value="0">Domingo</option><option value="1">Segunda</option><option value="2">Terça</option><option value="3">Quarta</option><option value="4">Quinta</option><option value="5">Sexta</option><option value="6">Sábado</option></select></div>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+      <input type="checkbox" id="remPesoEnabledSettings" style="width:18px;height:18px;accent-color:var(--moss);">
+      <label for="remPesoEnabledSettings" style="font-size:13px;color:var(--text);">Lembrete semanal de pesagem</label>
     </div>
     <button class="btn btn-primary" onclick="saveSettingsReminders()" style="width:100%;">💾 Guardar lembretes</button>
     <div id="remSettingsStatus" style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--moss-l);"></div>
+  </div>
   <div class="card">
     <div class="card-title">🔒 Segurança & Palavra-passe</div>
     <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Altera a tua palavra-passe de acesso. O hash é guardado com segurança no teu dispositivo.</p>
@@ -3121,6 +3338,17 @@ hf_... (2ª chave)" style="width:100%;background:var(--surface);border:1px solid
       <div style="flex:1;">
         <div style="font-size:12px;color:var(--text2);margin-bottom:6px;">Lembrete da noite</div>
         <input type="text" id="remNoite" placeholder="22:00" maxlength="5" oninput="fmtTime(this)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;outline:none;">
+      </div>
+    </div>
+    <div class="sync-step">
+      <div class="sync-step-num">⚖️</div>
+      <div style="flex:1;">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:6px;">Pesagem semanal</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <input type="text" id="remPesoHora" placeholder="09:00" maxlength="5" oninput="fmtTime(this)" aria-label="Hora da pesagem semanal" style="width:90px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;outline:none;">
+          <select id="remPesoDia" aria-label="Dia da pesagem semanal" style="flex:1;min-width:130px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;"><option value="0">Domingo</option><option value="1">Segunda</option><option value="2">Terça</option><option value="3">Quarta</option><option value="4">Quinta</option><option value="5">Sexta</option><option value="6">Sábado</option></select>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);"><input type="checkbox" id="remPesoEnabled" style="width:16px;height:16px;accent-color:var(--moss);"> Ativo</label>
+        </div>
       </div>
     </div>
     <div style="margin-top:16px;display:flex;justify-content:space-between;gap:8px;">
@@ -3580,12 +3808,12 @@ function _wf(id) {
   return isToday ? document.getElementById(id).value : ((DB[TODAY] || {})[id] || '');
 }
 // Preferências (lembretes, IA, conquistas) → guardadas também na conta
-var _CFG_MAP = { dvReminders: 'reminders', dvAiProvider: 'aiProvider', dvOpenRouterModel: 'openrouterModel', dvAchievements: 'achievements', dvPerfil: 'perfil' };
+var _CFG_MAP = { dvReminders: 'reminders', dvAiProvider: 'aiProvider', dvOpenRouterModel: 'openrouterModel', dvAchievements: 'achievements', dvPerfil: 'perfil', dvAvatar: 'avatar' };
 function cfgSave(localKey, str) {
   try { localStorage.setItem(localKey, str); } catch (e) {}
   var ck = _CFG_MAP[localKey]; if (!ck) return Promise.resolve('local');
   var val = str;
-  if (ck === 'reminders' || ck === 'achievements' || ck === 'perfil') { try { val = JSON.parse(str); } catch (e) { val = str; } }
+  if (ck === 'reminders' || ck === 'achievements' || ck === 'perfil' || ck === 'avatar') { try { val = JSON.parse(str); } catch (e) { val = str; } }
   var patch = {}; patch[ck] = val;
   return SyncManager.saveConfig(patch);
 }
@@ -3603,7 +3831,7 @@ async function loadConfigFromCloud() {
         try { localStorage.setItem(lk, typeof cfg[ck] === 'string' ? cfg[ck] : JSON.stringify(cfg[ck])); } catch (e) {}
       } else {
         var lv = localStorage.getItem(lk);
-        if (lv != null) { try { push[ck] = (ck === 'reminders' || ck === 'achievements' || ck === 'perfil') ? JSON.parse(lv) : lv; } catch (e) {} }
+        if (lv != null) { try { push[ck] = (ck === 'reminders' || ck === 'achievements' || ck === 'perfil' || ck === 'avatar') ? JSON.parse(lv) : lv; } catch (e) {} }
       }
     });
     try { applyPerfilToForm(); } catch (e) {}
@@ -3985,6 +4213,8 @@ function showSection(id, el) {
   if (el) { el.classList.add('active'); el.setAttribute('aria-current', 'page'); }
   if (id === 'overview') updateOverview();
   if (id === 'stats') { setTimeout(renderAllCharts, 60); updateGoalCounter(); }
+  if (id === 'weight') { renderWeightHistory(); renderWeeklyWeight(); }
+  if (id === 'avatar') { updateAvatarScenes(); }
   if (id === 'exercise') renderHobbies();
   const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
@@ -5525,9 +5755,13 @@ function _updateOverviewBase() {
     document.getElementById('ov-sleep').textContent = '—';
   }
 
-  // ── PESO ──
-  const w = document.getElementById('weight').value;
-  document.getElementById('ov-weight').textContent = w ? w + 'kg' : '—';
+  // ── PESO (último registo, não exige pesagem hoje) ──
+  const lw = latestWeightEntry();
+  const w = lw ? lw.w : null;
+  const ovW = document.getElementById('ov-weight');
+  const ovWName = document.getElementById('ov-weight-name');
+  if (ovW) ovW.textContent = w ? fmtWeight(w) + ' kg' : '—';
+  if (ovWName) ovWName.textContent = lw ? weightAgoLabel(lw.d) : 'peso kg';
 
   // ── CALORIAS ──
   let calIn = 0;
@@ -5583,8 +5817,12 @@ function updateOverviewFromSnap(s) {
     document.getElementById('ov-sleep').textContent = '—';
   }
 
-  // PESO
-  document.getElementById('ov-weight').textContent = s.weight ? s.weight + 'kg' : '—';
+  // PESO (último registo, não exige pesagem hoje)
+  const lwSnap = latestWeightEntry();
+  const ovWSnap = document.getElementById('ov-weight');
+  const ovWNameSnap = document.getElementById('ov-weight-name');
+  if (ovWSnap) ovWSnap.textContent = lwSnap ? fmtWeight(lwSnap.w) + ' kg' : '—';
+  if (ovWNameSnap) ovWNameSnap.textContent = lwSnap ? weightAgoLabel(lwSnap.d) : 'peso kg';
 
   // CALORIAS
   let calIn = 0;
@@ -5736,6 +5974,8 @@ function saveData(silent) {
   // Atualizar resumo a partir do snap guardado (funciona mesmo noutras secções)
   updateOverviewFromSnap(snap);
   updateAvatarScenes();
+  renderWeeklyWeight();
+  renderWeightHistory();
   updateSidebarCals();
   renderMascot();
   // Sync to Sheets if configured (não sincronizar durante reload para evitar loop)
@@ -5759,12 +5999,51 @@ document.addEventListener('keydown', e => {
 // ═══════════════════════════════════════════════════════════════════
 
 let statsPeriod = 7;
+let statsWeightMode = 'week';
 
 function setStatsPeriod(days, btn) {
   statsPeriod = days;
   document.querySelectorAll('#section-stats .ex-filter-btn').forEach(b => b.classList.remove('active'));
   if(btn) btn.classList.add('active');
   renderAllCharts();
+}
+
+function setWeightChartMode(mode) {
+  statsWeightMode = mode === 'day' ? 'day' : 'week';
+  const weekBtn = document.getElementById('weightModeWeek');
+  const dayBtn = document.getElementById('weightModeDay');
+  if (weekBtn) { weekBtn.classList.toggle('active', statsWeightMode === 'week'); weekBtn.setAttribute('aria-pressed', String(statsWeightMode === 'week')); }
+  if (dayBtn) { dayBtn.classList.toggle('active', statsWeightMode === 'day'); dayBtn.setAttribute('aria-pressed', String(statsWeightMode === 'day')); }
+  renderAllCharts();
+}
+
+function weightWeeklySeries(period) {
+  const weeks = Math.max(8, Math.ceil((period || statsPeriod) / 7));
+  const current = weightWeekStart();
+  const labels = [], data = [];
+  for (let i = weeks - 1; i >= 0; i--) {
+    const start = new Date(current);
+    start.setDate(start.getDate() - 7 * i);
+    const sum = weightWeekSummary(start);
+    labels.push(weightShortDate(sum.start));
+    data.push(sum.entries.length ? +avg(sum.entries.map(x => x.w)).toFixed(1) : null);
+  }
+  return { labels, data };
+}
+
+function weightWeeklyStats() {
+  const current = weightWeekStart();
+  const vals = [];
+  for (let i = 3; i >= 0; i--) {
+    const start = new Date(current);
+    start.setDate(start.getDate() - 7 * i);
+    const sum = weightWeekSummary(start);
+    if (sum.entries.length) vals.push(avg(sum.entries.map(x => x.w)));
+  }
+  const weeklyAvg = vals.length ? avg(vals) : null;
+  const variation = vals.length >= 2 ? vals[vals.length - 1] - vals[0] : null;
+  const last = lastSavedWeightEntry();
+  return { current: last ? last.w : null, weeklyAvg, variation, weeks: vals.length };
 }
 
 // ── Get ordered days from DB ──────────────────────────────────────
@@ -5832,6 +6111,7 @@ function drawGrid(ctx, minY, maxY, steps=5) {
   ctx.strokeStyle = CHART_COLORS.border;
   ctx.lineWidth = 0.5;
   ctx.setLineDash([3,3]);
+  const dec = (maxY - minY) < 2 ? 2 : (maxY - minY) < 10 ? 1 : 0;
   for(let i=0; i<=steps; i++) {
     const y = pad.top + (chartH/steps)*i;
     ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(pad.left+chartW, y); ctx.stroke();
@@ -5839,7 +6119,7 @@ function drawGrid(ctx, minY, maxY, steps=5) {
     ctx.fillStyle = CHART_COLORS.muted;
     ctx.font = '10px JetBrains Mono, monospace';
     ctx.textAlign = 'right';
-    ctx.fillText(val % 1 === 0 ? val : val.toFixed(1), pad.left-6, y+4);
+    ctx.fillText(dec ? val.toFixed(dec).replace('.', ',') : String(Math.round(val)), pad.left-6, y+4);
   }
   ctx.setLineDash([]);
   return pad;
@@ -6125,16 +6405,18 @@ function renderActivityCalendar() {
   const weeks = [];
   let week = [];
   const cur = new Date(startDate);
-  while(cur <= endDate || week.length) {
+  while(cur <= endDate) {
     if(week.length === 7) { weeks.push(week); week=[]; }
-    if(cur > endDate) { week.push(null); cur.setDate(cur.getDate()+1); continue; }
     const dateStr = localDateStr(cur);
     const d = DB[dateStr] || null;
     const score = d ? calcDayScore(d) : 0;
     week.push({date:dateStr, score, day:cur.getDate(), month:cur.getMonth(), hasData:!!d});
     cur.setDate(cur.getDate()+1);
   }
-  if(week.length) weeks.push(week);
+  if(week.length) {
+    while(week.length < 7) week.push(null);
+    weeks.push(week);
+  }
 
   const dayLabels = ['D','S','T','Q','Q','S','S'];
   const monthNames = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
@@ -6228,6 +6510,7 @@ function renderKPIs(days) {
   const avgCal    = avg(calArr);
   const sleepTrend = trend(sleepArr);
   const weightTrend = trend(weightArr);
+  const weightStats = weightWeeklyStats();
 
   const trendIcon = (v) => v===null?'':v>0?'↑':'↓';
   const trendColor = (v,good='up') => v===null?'var(--muted)':((v>0&&good==='up')||(v<0&&good==='down'))?'var(--moss)':'var(--clay)';
@@ -6241,9 +6524,9 @@ function renderKPIs(days) {
     </div>
     <div class="stat-kpi">
       <div class="stat-kpi-label">⚖️ Peso atual</div>
-      <div class="stat-kpi-val">${weightArr.filter(Boolean).pop()||'—'}<span style="font-size:14px;color:var(--muted)">kg</span></div>
-      <div class="stat-kpi-sub">último registo</div>
-      ${weightTrend!==null?`<div class="stat-kpi-trend" style="color:${trendColor(weightTrend,'down')}">${trendIcon(weightTrend)} ${Math.abs(weightTrend).toFixed(1)}kg no período</div>`:''}
+      <div class="stat-kpi-val">${weightStats.current!==null?fmtWeight(weightStats.current):'—'}<span style="font-size:14px;color:var(--muted)">kg</span></div>
+      <div class="stat-kpi-sub">${weightStats.weeklyAvg!==null?'média semanal '+fmtWeight(weightStats.weeklyAvg)+' kg':'sem média semanal'}</div>
+      ${weightStats.variation!==null?`<div class="stat-kpi-trend" style="color:${trendColor(weightStats.variation,'down')}">${trendIcon(weightStats.variation)} ${fmtWeightDelta(Math.abs(weightStats.variation))}kg nas últimas 4 semanas</div>`:''}
     </div>
     <div class="stat-kpi">
       <div class="stat-kpi-label">🍽️ Calorias médias</div>
@@ -6256,12 +6539,19 @@ function renderKPIs(days) {
 // ── MAIN RENDER ───────────────────────────────────────────────────
 
 function renderAllCharts() {
+  const weekBtn = document.getElementById('weightModeWeek');
+  const dayBtn = document.getElementById('weightModeDay');
+  if (weekBtn) { weekBtn.classList.toggle('active', statsWeightMode === 'week'); weekBtn.setAttribute('aria-pressed', String(statsWeightMode === 'week')); }
+  if (dayBtn) { dayBtn.classList.toggle('active', statsWeightMode === 'day'); dayBtn.setAttribute('aria-pressed', String(statsWeightMode === 'day')); }
   const days = getLastNDays(statsPeriod);
   const labels = days.map(shortDate);
 
   // ── Data extraction
   const sleepData  = days.map(d => { const dd=getDayData(d); if(!dd.bedtime||!dd.waketime)return null; let[bh,bm]=dd.bedtime.split(':').map(Number),[wh,wm]=dd.waketime.split(':').map(Number); let bM=bh*60+bm,wM=wh*60+wm;if(wM<bM)wM+=24*60;return+((wM-bM)/60).toFixed(1); });
-  const weightData = days.map(d => { const dd=getDayData(d); return dd.weight?+dd.weight:null; });
+  const dailyWeightData = days.map(d => { const dd=getDayData(d); return dd.weight?+dd.weight:null; });
+  const weeklyWeight = statsWeightMode === 'week' ? weightWeeklySeries(statsPeriod) : null;
+  const weightLabels = weeklyWeight ? weeklyWeight.labels : labels;
+  const weightData = weeklyWeight ? weeklyWeight.data : dailyWeightData;
   const calData    = days.map(d => { const dd=getDayData(d); if(!dd.meals) return null; const mv=typeof dd.meals==='object'&&!Array.isArray(dd.meals)?Object.values(dd.meals).flat():dd.meals; const t=mv.reduce((s,m)=>s+(m.cal||0),0); return t||null; });
 
   // Weight goal
@@ -6270,7 +6560,7 @@ function renderAllCharts() {
   // ── Draw charts
   renderKPIs(days);
 
-  drawLineChart('chart-weight', labels, [{
+  drawLineChart('chart-weight', weightLabels, [{
     data: weightData, color: CHART_COLORS.clay,
     goal: weightGoalVal
   }]);
@@ -6292,10 +6582,10 @@ function renderAllCharts() {
 
   const validWeights = weightData.filter(Boolean);
   document.getElementById('stats-weight-summary').innerHTML =
-    makeSummaryItem('mínimo', validWeights.length?Math.min(...validWeights).toFixed(1):null,'kg') +
-    makeSummaryItem('máximo', validWeights.length?Math.max(...validWeights).toFixed(1):null,'kg') +
-    makeSummaryItem('diferença', validWeights.length>=2?(validWeights[validWeights.length-1]-validWeights[0]).toFixed(1):null,'kg') +
-    (weightGoalVal?makeSummaryItem('falta para meta', validWeights.length?(validWeights[validWeights.length-1]-weightGoalVal).toFixed(1):null,'kg'):'');
+    makeSummaryItem('mínimo', validWeights.length?fmtWeight(Math.min(...validWeights)):null,' kg') +
+    makeSummaryItem('máximo', validWeights.length?fmtWeight(Math.max(...validWeights)):null,' kg') +
+    makeSummaryItem('diferença', validWeights.length>=2?fmtWeightDelta(validWeights[validWeights.length-1]-validWeights[0]):null,' kg') +
+    (weightGoalVal?makeSummaryItem('falta para meta', validWeights.length?fmtWeightDelta(validWeights[validWeights.length-1]-weightGoalVal):null,' kg'):'');
 
   const avgCal = avg(calData);
   document.getElementById('stats-cal-summary').innerHTML =
@@ -6336,19 +6626,6 @@ const FLOW_STEPS = [
       if (q) lines.push(q);
       const big = document.getElementById('sleepBig').textContent;
       if (big !== '0') lines.push(big + 'h de sono');
-      return lines;
-    }
-  },
-  {
-    id: 'weight', icon: '⚖️', label: 'Peso',
-    section: 'weight',
-    check: () => document.getElementById('weight').value ? 'done' : null,
-    detail: () => {
-      const w = document.getElementById('weight').value;
-      const g = document.getElementById('weightGoal').value;
-      if (!w) return ['Ainda não registado'];
-      const lines = ['Peso: ' + w + 'kg'];
-      if (g) lines.push('Meta: ' + g + 'kg');
       return lines;
     }
   },
@@ -7004,6 +7281,8 @@ updateOverview = function () {
   renderDailyFlow();
   renderMascot();
   renderOnboarding();
+  renderWeeklyWeight();
+  renderWeightHistory();
   if (typeof updateAvatarScenes === 'function') updateAvatarScenes();
 };
 
@@ -7857,7 +8136,7 @@ async function onUserAuthenticated(user) {
   const lastUser = localStorage.getItem('dvLastUserId');
   if (lastUser && user && user.id && lastUser !== user.id) {
     ['dvLifeDiary_v3', 'dvSheetsUrl', 'dvAvatar', 'dvSyncQueue', 'dvSyncMeta', 'diarioVida',
-     'dvReminders', 'dvAiProvider', 'dvOpenRouterModel', 'dvAchievements', 'dvPerfil'].forEach(k => localStorage.removeItem(k));
+     'dvReminders', 'dvAiProvider', 'dvOpenRouterModel', 'dvAchievements', 'dvPerfil', 'dvTreadmillPlan'].forEach(k => localStorage.removeItem(k));
     localStorage.setItem('dvLastUserId', user.id);
     location.reload();
     return;
@@ -7916,7 +8195,7 @@ async function logout() {
   if (hadSession) {
     // Tudo confirmado na nuvem: limpa a cópia local para não ficar no dispositivo
     ['dvLifeDiary_v3', 'dvSheetsUrl', 'dvAvatar', 'dvSyncQueue', 'dvSyncMeta', 'diarioVida', 'dvLastUserId',
-     'dvReminders', 'dvAiProvider', 'dvOpenRouterModel', 'dvAchievements', 'dvPerfil'].forEach(k => localStorage.removeItem(k));
+     'dvReminders', 'dvAiProvider', 'dvOpenRouterModel', 'dvAchievements', 'dvPerfil', 'dvTreadmillPlan'].forEach(k => localStorage.removeItem(k));
     location.reload();
     return;
   }
@@ -8141,6 +8420,7 @@ function initTreadmill() {
   d.max = TODAY;
   if (!d.value) d.value = TODAY;
   loadTreadmillDay();
+  tmRenderSavedPlan();
 }
 function loadTreadmillDay() {
   const date = document.getElementById('tmDate').value || TODAY;
@@ -8227,6 +8507,147 @@ function renderTreadmillHistory() {
   }).join('');
 }
 
+const TM_PLAN_KEY = 'dvTreadmillPlan';
+
+function tmDayName(date) {
+  const p = date.split('-').map(Number);
+  return new Date(p[0], p[1] - 1, p[2]).toLocaleDateString('pt-PT', { weekday: 'short' }).replace('.', '');
+}
+function tmFutureDate(n) {
+  const d = new Date();
+  d.setDate(d.getDate() + n);
+  return localDateStr(d);
+}
+function tmWeekStats() {
+  const days = [];
+  for (let i = 6; i >= 0; i--) {
+    const date = tmDateOffset(i);
+    const d = DB[date] || {};
+    const time = parseFloat(d.treadmillTime) || 0;
+    const dist = parseFloat(d.treadmillDistance) || 0;
+    const incl = parseFloat(d.treadmillIncline) || 0;
+    days.push({
+      date, time, dist, incl,
+      speed: time > 0 && dist > 0 ? dist / (time / 60) : 0,
+      kcal: tmKcal(time, dist, incl)
+    });
+  }
+  const active = days.filter(d => d.time > 0 || d.dist > 0);
+  const totalTime = active.reduce((s, d) => s + d.time, 0);
+  const totalDist = active.reduce((s, d) => s + d.dist, 0);
+  const totalKcal = active.reduce((s, d) => s + d.kcal, 0);
+  const avgIncl = active.length ? active.reduce((s, d) => s + d.incl, 0) / active.length : 0;
+  return {
+    days, active, totalTime, totalDist, totalKcal, avgIncl,
+    avgSpeed: totalTime > 0 ? totalDist / (totalTime / 60) : 0
+  };
+}
+function tmTrainingContext(week) {
+  const lw = latestWeightEntry();
+  const p = getPerfil();
+  const hEl = document.getElementById('height'), gEl = document.getElementById('weightGoal');
+  const altura = parseFloat(hEl && hEl.value) || parseFloat(p.altura) || 0;
+  const objetivo = parseFloat(gEl && gEl.value) || parseFloat(p.pesoObjetivo) || 0;
+  const dec = n => Number(n).toFixed(1).replace('.', ',');
+  const lines = [];
+  lines.push('Peso mais recente: ' + (lw ? fmtWeight(lw.w) + ' kg' : 'não registado'));
+  lines.push('Altura: ' + (altura > 0 ? altura + ' cm' : 'não registada'));
+  lines.push('Peso objetivo: ' + (objetivo > 0 ? fmtWeight(objetivo) + ' kg' : 'não definido'));
+  lines.push('Resumo dos últimos 7 dias: ' + dec(week.totalDist) + ' km, ' +
+    Math.round(week.totalTime) + ' min, ' + week.active.length + ' treino(s), média ' +
+    (week.avgSpeed ? dec(week.avgSpeed) + ' km/h' : 'não calculável') + ', inclinação média ' +
+    dec(week.avgIncl) + '%, ~' + Math.round(week.totalKcal) + ' kcal.');
+  lines.push('Dias:');
+  week.days.forEach(d => {
+    const detail = (d.time > 0 || d.dist > 0)
+      ? d.time + ' min, ' + d.dist + ' km, inclinação ' + d.incl + '%, ' +
+        (d.speed ? dec(d.speed) + ' km/h' : 'ritmo não calculável') + ', ~' + Math.round(d.kcal) + ' kcal'
+      : 'sem treino registado';
+    lines.push('- ' + d.date + ' (' + tmDayName(d.date) + '): ' + detail);
+  });
+  return lines.join('\n');
+}
+function tmAiShow(id, text) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.className = 'ai-response visible';
+  el.textContent = text;
+}
+function tmAiLoading(id, message) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  el.className = 'ai-response visible';
+  el.innerHTML = '<span class="loading-dots">' + message + '</span>';
+}
+function tmAiError(e) {
+  const msg = e && e.message ? e.message : 'Erro de ligação';
+  return msg.includes('configurada') ? '⚙️ ' + msg : '❌ ' + msg;
+}
+function tmSavePlan(text) {
+  try {
+    localStorage.setItem(TM_PLAN_KEY, JSON.stringify({ text, at: new Date().toISOString() }));
+    return true;
+  } catch (e) { return false; }
+}
+function tmRenderSavedPlan() {
+  const el = document.getElementById('tmPlanResponse');
+  if (!el) return;
+  let p = null;
+  try { p = JSON.parse(localStorage.getItem(TM_PLAN_KEY) || 'null'); } catch (e) {}
+  if (!p || !p.text) return;
+  const when = p.at ? new Date(p.at) : null;
+  const stamp = when && !isNaN(when) ? '\n\nGerado em ' + when.toLocaleString('pt-PT') + '.' : '';
+  tmAiShow('tmPlanResponse', p.text + stamp);
+}
+async function generateTreadmillCoach() {
+  const btn = document.getElementById('tmCoachBtn');
+  const week = tmWeekStats();
+  if (!week.active.length) {
+    tmAiShow('tmCoachResponse', 'Ainda não há treinos nos últimos 7 dias. Regista pelo menos um treino para eu poder analisar.');
+    return;
+  }
+  const old = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ A analisar…'; }
+  tmAiLoading('tmCoachResponse', 'A analisar os teus treinos');
+  try {
+    const text = await callGemini(
+      'És um treinador de corrida e fitness em Portugal. Analisa o histórico de passadeira fornecido e responde em PT-PT, de forma prática e prudente. Não inventes dados, não faças diagnóstico médico e não prometas resultados. Se faltarem dados, diz o que falta. Estrutura a resposta em: 1) o que está a correr bem; 2) um risco ou ponto de atenção; 3) o próximo treino concreto, com aquecimento, duração, distância, ritmo, inclinação e arrefecimento. Máximo 220 palavras.',
+      'Dados dos últimos 7 dias:\n' + tmTrainingContext(week) + '\n\nFaz a análise.',
+      900
+    );
+    tmAiShow('tmCoachResponse', text);
+  } catch (e) {
+    tmAiShow('tmCoachResponse', tmAiError(e));
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = old; }
+  }
+}
+async function generateTreadmillPlan() {
+  const btn = document.getElementById('tmPlanBtn');
+  const old = btn ? btn.textContent : '';
+  if (btn) { btn.disabled = true; btn.textContent = '⏳ A preparar…'; }
+  tmAiLoading('tmPlanResponse', 'A preparar o plano semanal');
+  const week = tmWeekStats();
+  const dates = [];
+  for (let i = 1; i <= 7; i++) {
+    const date = tmFutureDate(i);
+    dates.push(date + ' (' + tmDayName(date) + ')');
+  }
+  try {
+    const text = await callGemini(
+      'És um treinador de corrida e fitness em Portugal. Cria um plano de passadeira para os próximos 7 dias, em PT-PT, adequado ao histórico e ao peso fornecidos. Inclui 3 a 5 sessões e dias de descanso. Para cada sessão indica: dia/data, objetivo, aquecimento, duração, distância aproximada, ritmo em km/h, inclinação, RPE de 1 a 10 e arrefecimento. Aumenta o volume no máximo 10% em relação à semana anterior. Não faças diagnóstico médico nem prometas resultados. Máximo 400 palavras.',
+      'Contexto:\n' + tmTrainingContext(week) + '\n\nDatas dos próximos 7 dias: ' + dates.join(', ') + '.\nCria o plano.',
+      1400
+    );
+    if (tmSavePlan(text)) tmRenderSavedPlan();
+    else tmAiShow('tmPlanResponse', text);
+  } catch (e) {
+    tmAiShow('tmPlanResponse', tmAiError(e));
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = old; }
+  }
+}
+
 // ── PERFIL: altura, peso atual e peso objetivo (guardados na conta) ──
 function getPerfil() {
   try { return JSON.parse(localStorage.getItem('dvPerfil')) || {}; } catch (e) { return {}; }
@@ -8245,6 +8666,213 @@ function firstWeightEntry() {
   for (const d of days) { const w = parseFloat(DB[d] && DB[d].weight); if (w > 0) return w; }
   return null;
 }
+
+// ── PESO SEMANAL (domingo como início da semana) ──
+function weightDateFrom(value) {
+  if (value instanceof Date) return new Date(value.getFullYear(), value.getMonth(), value.getDate());
+  const s = String(value || '').slice(0, 10);
+  const p = s.split('-').map(Number);
+  if (p.length === 3 && p[0] > 1900) return new Date(p[0], p[1] - 1, p[2]);
+  const n = new Date();
+  return new Date(n.getFullYear(), n.getMonth(), n.getDate());
+}
+function weightWeekStart(value) {
+  const d = weightDateFrom(value || new Date());
+  d.setDate(d.getDate() - d.getDay());
+  return d;
+}
+function weightWeekEnd(value) {
+  const d = weightWeekStart(value);
+  d.setDate(d.getDate() + 6);
+  return d;
+}
+function weightWeekKey(value) { return localDateStr(weightWeekStart(value)); }
+function weightEntriesInRange(start, end) {
+  const s = localDateStr(start), e = localDateStr(end);
+  return Object.keys(DB)
+    .filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d) && d >= s && d <= e)
+    .sort()
+    .map(d => ({ d, w: parseFloat(DB[d] && DB[d].weight) }))
+    .filter(x => x.w > 0);
+}
+function weightEntriesForWeek(value) {
+  return weightEntriesInRange(weightWeekStart(value), weightWeekEnd(value));
+}
+function weightDue() {
+  return weightEntriesForWeek(new Date()).length === 0;
+}
+function weightStatus() {
+  if (!weightDue()) return 'feita';
+  return new Date().getDay() === 0 ? 'em falta' : 'atrasada';
+}
+function nextWeightDate() {
+  const now = new Date();
+  const start = weightWeekStart(now);
+  if (now.getDay() === 0 && weightDue()) return localDateStr(now);
+  start.setDate(start.getDate() + 7);
+  return localDateStr(start);
+}
+function weightDaysAgo(dateStr) {
+  if (!dateStr) return null;
+  const a = weightDateFrom(dateStr), b = weightDateFrom(new Date());
+  return Math.round((b - a) / 86400000);
+}
+function weightAgoLabel(dateStr) {
+  const n = weightDaysAgo(dateStr);
+  if (n === null) return '';
+  if (n <= 0) return 'hoje';
+  return n === 1 ? 'há 1 dia' : 'há ' + n + ' dias';
+}
+function lastSavedWeightEntry() {
+  const days = Object.keys(DB).filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d)).sort().reverse();
+  for (const d of days) {
+    const w = parseFloat(DB[d] && DB[d].weight);
+    if (w > 0) return { w, d };
+  }
+  return null;
+}
+function weightWeekSummary(value) {
+  const start = weightWeekStart(value);
+  const end = weightWeekEnd(value);
+  const entries = weightEntriesInRange(start, end);
+  const latest = entries.length ? entries[entries.length - 1] : null;
+  const sunday = entries.find(x => x.d === localDateStr(start)) || null;
+  return {
+    start: localDateStr(start),
+    end: localDateStr(end),
+    entries,
+    latest,
+    sunday,
+    weight: latest ? latest.w : null,
+    isExtra: !!latest && latest.d !== localDateStr(start)
+  };
+}
+function weightShortDate(dateStr) {
+  if (!dateStr) return '';
+  const p = dateStr.split('-');
+  return p[2] + '/' + p[1];
+}
+function weightLongDate(dateStr) {
+  if (!dateStr) return '';
+  const d = weightDateFrom(dateStr);
+  const days = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
+  const months = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho', 'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+  return days[d.getDay()] + ', ' + d.getDate() + ' de ' + months[d.getMonth()];
+}
+function fmtWeight(n, dec) {
+  if (!(n > 0)) return '—';
+  return Number(n).toFixed(dec === undefined ? 1 : dec).replace('.', ',');
+}
+function fmtWeightDelta(n, dec) {
+  return Number(n || 0).toFixed(dec === undefined ? 1 : dec).replace('.', ',');
+}
+function openWeeklyWeight() {
+  showSection('weight', navBySection('weight'));
+  setTimeout(() => {
+    const el = document.getElementById('weight');
+    if (!el) return;
+    const wt = document.getElementById('weightTime');
+    if (wt && !wt.value) { try { wt.value = getNowTime(); } catch (e) {} }
+    el.focus({ preventScroll: true });
+    const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    el.scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'center' });
+  }, 150);
+}
+function weightEntryBeforeWeek(dateStr) {
+  const base = weightWeekStart(dateStr);
+  for (let i = 1; i <= 12; i++) {
+    const start = new Date(base);
+    start.setDate(start.getDate() - 7 * i);
+    const entries = weightEntriesInRange(start, weightWeekEnd(start));
+    if (entries.length) return { w: entries[entries.length - 1].w, d: entries[entries.length - 1].d };
+  }
+  return null;
+}
+function renderWeeklyWeight() {
+  const card = document.getElementById('weeklyWeightCard');
+  if (!card) return;
+  const status = weightStatus();
+  const summary = weightWeekSummary();
+  const last = lastSavedWeightEntry();
+  const prev = last ? weightEntryBeforeWeek(last.d) : null;
+  const diff = last && prev ? last.w - prev.w : null;
+  const next = nextWeightDate();
+
+  card.dataset.status = status;
+  const statusEl = document.getElementById('weeklyWeightStatus');
+  if (statusEl) {
+    statusEl.dataset.status = status;
+    statusEl.textContent = status === 'feita' ? 'Feita esta semana' : status === 'atrasada' ? 'Atrasada' : 'Em falta';
+  }
+  const dateEl = document.getElementById('weeklyWeightDate');
+  if (dateEl) dateEl.textContent = 'Semana de ' + weightShortDate(summary.start) + ' a ' + weightShortDate(summary.end);
+
+  const valEl = document.getElementById('weeklyWeightValue');
+  if (valEl) valEl.innerHTML = last ? fmtWeight(last.w) + '<span>kg</span>' : '—';
+
+  const metaEl = document.getElementById('weeklyWeightMeta');
+  if (metaEl) {
+    if (!last) {
+      metaEl.textContent = 'Ainda não há registos de peso.';
+    } else {
+      let text = 'Último registo: ' + weightShortDate(last.d) + ' · ' + weightAgoLabel(last.d);
+      if (diff !== null) {
+        const arrow = diff > 0 ? '↑' : diff < 0 ? '↓' : '→';
+        text += ' · ' + arrow + ' ' + fmtWeightDelta(Math.abs(diff)) + ' kg vs semana anterior';
+      }
+      if (summary.isExtra) text += ' · registo extra';
+      metaEl.textContent = text;
+    }
+  }
+
+  const nextEl = document.getElementById('weeklyWeightNext');
+  if (nextEl) nextEl.textContent = 'Próxima pesagem: ' + weightLongDate(next);
+
+  const cta = document.getElementById('weeklyWeightCta');
+  if (cta) cta.textContent = summary.entries.length ? 'Atualizar peso desta semana' : 'Registar peso desta semana';
+}
+
+function renderWeightHistory() {
+  const status = weightStatus();
+  const statusPage = document.getElementById('weeklyWeightPageStatus');
+  const nextPage = document.getElementById('weeklyWeightPageNext');
+  if (statusPage) {
+    statusPage.dataset.status = status;
+    statusPage.textContent = status === 'feita' ? 'Feita esta semana' : status === 'atrasada' ? 'Atrasada' : 'Em falta';
+  }
+  if (nextPage) nextPage.textContent = 'Próxima pesagem: ' + weightLongDate(nextWeightDate());
+  const box = document.getElementById('weightWeekHistory');
+  if (!box) return;
+  const rows = [];
+  const current = weightWeekStart();
+  for (let i = 0; i < 8; i++) {
+    const start = new Date(current);
+    start.setDate(start.getDate() - 7 * i);
+    const sum = weightWeekSummary(start);
+    const prev = (() => {
+      const p = new Date(start); p.setDate(p.getDate() - 7);
+      return weightWeekSummary(p);
+    })();
+    const diff = sum.weight !== null && prev.weight !== null ? sum.weight - prev.weight : null;
+    rows.push({ sum, diff, current: i === 0 });
+  }
+  if (!rows.some(r => r.sum.weight !== null)) {
+    box.innerHTML = '<div class="weight-history-empty">Ainda não há pesagens registadas. A primeira cria o teu histórico semanal.</div>';
+    return;
+  }
+  box.innerHTML = rows.map(({sum, diff, current}) => {
+    const value = sum.weight !== null ? fmtWeight(sum.weight) + ' kg' : '—';
+    let sub = sum.latest ? weightShortDate(sum.latest.d) + ' · ' + weightAgoLabel(sum.latest.d) : 'sem registo';
+    if (sum.isExtra) sub += ' · <span class="weight-extra">extra</span>';
+    if (sum.sunday) sub += ' · domingo';
+    const diffTxt = diff === null ? '' : `<span class="weight-diff ${diff > 0 ? 'up' : diff < 0 ? 'down' : ''}">${diff > 0 ? '↑' : diff < 0 ? '↓' : '→'} ${fmtWeightDelta(Math.abs(diff))} kg</span>`;
+    return `<div class="weight-history-row${current ? ' current' : ''}">
+      <div><div class="weight-history-week">Semana de ${weightShortDate(sum.start)}</div><div class="weight-history-sub">${sub}</div></div>
+      <div class="weight-history-value">${value}${diffTxt}</div>
+    </div>`;
+  }).join('');
+}
+
 // Os campos «altura» e «peso objetivo» da página Peso alimentam vários cálculos: o perfil da conta preenche-os se estiverem vazios
 function applyPerfilToForm() {
   const p = getPerfil();
@@ -8326,9 +8954,58 @@ function savePerfil(btn) {
 }
 
 // ── AVATAR (género e nome guardados na conta; peso = último peso registado) ──
+var AVATAR_DEFAULTS = {
+  genero: 'woman', nome: '', cabelo: 'curto', corCabelo: 'castanho',
+  roupa: 'tshirt', corRoupa: 'teal', acessorio: 'none', cenario: 'ginasio',
+  aura: 'none', moldura: 'none', hue: 0, brilho: 100
+};
+const AVATAR_UNLOCK_LEVELS = {
+  hair: { curto: 1, medio: 1, longo: 2, rabo: 3, caracois: 4, careca: 1 },
+  'hair-color': { castanho: 1, preto: 1, loiro: 2, ruivo: 3, grisalho: 5, azul: 4 },
+  outfit: { tshirt: 1, hoodie: 2, top: 3, fato: 5 },
+  'outfit-color': { teal: 1, escuro: 1, branco: 1, vermelho: 2, azul: 3, roxo: 4 },
+  accessory: { none: 1, auscultadores: 2, bone: 2, sweatband: 3, oculos: 3, toalha: 4, garrafa: 5, medalha: 6 },
+  scene: { ginasio: 1, parque: 2, praia: 3, noite: 5, minimal: 7 },
+  aura: { none: 1, suave: 2, forte: 4 },
+  frame: { none: 1, clara: 3, dourada: 6 }
+};
+const AVATAR_UNLOCK_NAMES = {
+  hair: 'novos cabelos', 'hair-color': 'cores de cabelo', outfit: 'roupa',
+  'outfit-color': 'cores de roupa', accessory: 'acessórios', scene: 'cenários',
+  aura: 'auras', frame: 'molduras'
+};
+function avatarLockedTokens(level) {
+  const out = [];
+  Object.keys(AVATAR_UNLOCK_LEVELS).forEach(name => {
+    Object.keys(AVATAR_UNLOCK_LEVELS[name]).forEach(value => {
+      const need = AVATAR_UNLOCK_LEVELS[name][value];
+      if (need > level) out.push(name + ':' + value + ':' + need);
+    });
+  });
+  return out.join(',');
+}
+function avatarNextUnlockText(level, inLevel) {
+  let next = Infinity;
+  Object.keys(AVATAR_UNLOCK_LEVELS).forEach(name => {
+    Object.keys(AVATAR_UNLOCK_LEVELS[name]).forEach(value => {
+      const need = AVATAR_UNLOCK_LEVELS[name][value];
+      if (need > level && need < next) next = need;
+    });
+  });
+  if (!isFinite(next)) return 'Todos os estilos estão desbloqueados.';
+  const cats = Object.keys(AVATAR_UNLOCK_LEVELS)
+    .filter(name => Object.keys(AVATAR_UNLOCK_LEVELS[name]).some(value => AVATAR_UNLOCK_LEVELS[name][value] === next))
+    .map(name => AVATAR_UNLOCK_NAMES[name]);
+  const remaining = (next - level) * 7 - inLevel;
+  return 'Nível ' + next + ' desbloqueia ' + cats.join(', ') + ' · faltam ' + remaining + ' registo(s).';
+}
 var avatarPrefs = (function() {
   try { return JSON.parse(localStorage.getItem('dvAvatar')) || {}; } catch(e) { return {}; }
 })();
+
+function avatarNormalizedPrefs() {
+  return Object.assign({}, AVATAR_DEFAULTS, avatarPrefs || {});
+}
 
 function avatarLatestWeight() {
   const days = Object.keys(DB).sort().reverse();
@@ -8362,27 +9039,68 @@ function avatarMessage() {
 
 function updateAvatarScenes() {
   try {
-    const prefs = avatarPrefs || {};
+    const prefs = avatarNormalizedPrefs();
     const st = avatarStats();
+    const inLevel = Math.round(st.xp * 7);
     const w = avatarLatestWeight();
     const weight = Math.round(Math.min(110, Math.max(60, w || 80)));
     const gender = prefs.genero === 'man' ? 'man' : 'woman';
-    const name = (prefs.nome || 'Mika').slice(0, 20);
+    const name = (prefs.nome || 'Mika').slice(0, 20).trim() || 'Mika';
+    const last = lastSavedWeightEntry();
+    const attrs = {
+      gender,
+      weight: String(weight),
+      name,
+      level: String(st.level),
+      hearts: String(st.hearts),
+      xp: st.xp.toFixed(2),
+      message: avatarMessage(),
+      hair: prefs.cabelo,
+      'hair-color': prefs.corCabelo,
+      outfit: prefs.roupa,
+      'outfit-color': prefs.corRoupa,
+      accessory: prefs.acessorio,
+      scene: prefs.cenario,
+      aura: prefs.aura,
+      frame: prefs.moldura,
+      hue: String(prefs.hue),
+      brightness: String(prefs.brilho)
+    };
     ['avatarSceneOverview', 'avatarSceneEdit'].forEach(id => {
       const el = document.getElementById(id);
       if (!el) return;
-      el.setAttribute('gender', gender);
-      el.setAttribute('weight', String(weight));
-      el.setAttribute('name', name);
-      el.setAttribute('level', String(st.level));
-      el.setAttribute('hearts', String(st.hearts));
-      el.setAttribute('xp', st.xp.toFixed(2));
-      el.setAttribute('message', avatarMessage());
+      Object.keys(attrs).forEach(k => el.setAttribute(k, attrs[k]));
     });
     const ch = document.getElementById('avatarChooser');
-    if (ch) { ch.setAttribute('gender', gender); ch.setAttribute('weight', String(weight)); }
+    if (ch) {
+      Object.keys(attrs).forEach(k => { if (k !== 'message' && k !== 'level' && k !== 'hearts' && k !== 'xp') ch.setAttribute(k, attrs[k]); });
+      ch.setAttribute('locked', avatarLockedTokens(st.level));
+    }
     const ni = document.getElementById('avatarName');
     if (ni && document.activeElement !== ni) ni.value = prefs.nome || '';
+    const heroName = document.getElementById('avatarHeroName');
+    if (heroName) heroName.textContent = name;
+    const heroMeta = document.getElementById('avatarHeroMeta');
+    if (heroMeta) {
+      const genderLabel = gender === 'man' ? 'Homem' : 'Mulher';
+      heroMeta.textContent = genderLabel + ' · ' + (last
+        ? 'última pesagem ' + fmtWeight(last.w) + ' kg · ' + weightAgoLabel(last.d)
+        : 'ainda sem pesagem registada');
+    }
+    const autoW = document.getElementById('avatarAutoWeight');
+    if (autoW) {
+      autoW.textContent = last
+        ? fmtWeight(last.w) + ' kg · ' + weightAgoLabel(last.d) + ' (aplicado automaticamente)'
+        : 'Sem registo de peso. Usa 80 kg como referência.';
+    }
+    const levelEl = document.getElementById('avatarProgressLevel');
+    const progressText = document.getElementById('avatarProgressText');
+    const progressFill = document.getElementById('avatarProgressFill');
+    const nextUnlock = document.getElementById('avatarNextUnlock');
+    if (levelEl) levelEl.textContent = 'Nível ' + st.level;
+    if (progressText) progressText.textContent = inLevel + '/7 registos para o nível ' + (st.level + 1);
+    if (progressFill) progressFill.style.width = Math.round(inLevel / 7 * 100) + '%';
+    if (nextUnlock) nextUnlock.textContent = avatarNextUnlockText(st.level, inLevel);
   } catch(e) {
     console.error('Erro ao atualizar o avatar:', e);
   }
@@ -8404,7 +9122,18 @@ function saveAvatarName(btn) {
 (function() {
   const ch = document.getElementById('avatarChooser');
   if (ch) ch.addEventListener('avatar-change', e => {
-    avatarPrefs.genero = e.detail.gender === 'man' ? 'man' : 'woman';
+    const d = e.detail || {};
+    if (d.gender !== undefined) avatarPrefs.genero = d.gender === 'man' ? 'man' : 'woman';
+    if (d.hair !== undefined) avatarPrefs.cabelo = d.hair;
+    if (d.hairColor !== undefined) avatarPrefs.corCabelo = d.hairColor;
+    if (d.outfit !== undefined) avatarPrefs.roupa = d.outfit;
+    if (d.outfitColor !== undefined) avatarPrefs.corRoupa = d.outfitColor;
+    if (d.accessory !== undefined) avatarPrefs.acessorio = d.accessory;
+    if (d.scene !== undefined) avatarPrefs.cenario = d.scene;
+    if (d.aura !== undefined) avatarPrefs.aura = d.aura;
+    if (d.frame !== undefined) avatarPrefs.moldura = d.frame;
+    if (d.hue !== undefined) avatarPrefs.hue = Number(d.hue) || 0;
+    if (d.brightness !== undefined) avatarPrefs.brilho = Number(d.brightness) || 100;
     saveAvatarPrefs();
   });
 })();
@@ -8416,23 +9145,52 @@ setTimeout(() => {
 }, 4000);
 
 function saveAvatarToCloud() {
-  return SyncManager.saveProfile({ avatar_genero: avatarPrefs.genero || null, avatar_nome: avatarPrefs.nome || null });
+  const prefs = avatarNormalizedPrefs();
+  const legacy = SyncManager.saveProfile({
+    avatar_genero: prefs.genero || null,
+    avatar_nome: prefs.nome || null
+  });
+  const modern = SyncManager.saveConfig({ avatar: prefs });
+  return Promise.all([legacy, modern]).then(() => modern);
 }
 
 async function loadAvatarFromCloud() {
   if (!supabaseClient) return;
   try {
+    try {
+      const local = JSON.parse(localStorage.getItem('dvAvatar') || 'null');
+      if (local && typeof local === 'object') avatarPrefs = Object.assign({}, AVATAR_DEFAULTS, local);
+    } catch (e) {}
     const { data: { session } } = await supabaseClient.auth.getSession();
     if (!session || !session.user) return;
-    const { data, error } = await supabaseClient
+    let res = await supabaseClient
       .from('diario_perfil')
-      .select('avatar_genero, avatar_nome')
+      .select('avatar_genero, avatar_nome, config')
       .eq('user_id', session.user.id)
       .maybeSingle();
-    if (error) { console.error('Supabase avatar load error:', error); return; }
-    if (data && (data.avatar_genero || data.avatar_nome)) {
-      avatarPrefs = { genero: data.avatar_genero || avatarPrefs.genero, nome: data.avatar_nome || avatarPrefs.nome };
+    if (res.error) {
+      res = await supabaseClient
+        .from('diario_perfil')
+        .select('avatar_genero, avatar_nome')
+        .eq('user_id', session.user.id)
+        .maybeSingle();
+    }
+    const data = res.data;
+    if (res.error) { console.error('Supabase avatar load error:', res.error); return; }
+    const cfg = (data && data.config) || {};
+    const cfgAvatar = cfg.avatar && typeof cfg.avatar === 'object' ? cfg.avatar : null;
+    if (cfgAvatar) {
+      avatarPrefs = Object.assign({}, AVATAR_DEFAULTS, cfgAvatar);
+      if (!cfgAvatar.genero && data.avatar_genero) avatarPrefs.genero = data.avatar_genero;
+      if (!cfgAvatar.nome && data.avatar_nome) avatarPrefs.nome = data.avatar_nome;
       try { localStorage.setItem('dvAvatar', JSON.stringify(avatarPrefs)); } catch(e) {}
+    } else if (data && (data.avatar_genero || data.avatar_nome)) {
+      avatarPrefs = Object.assign({}, AVATAR_DEFAULTS, avatarPrefs, {
+        genero: data.avatar_genero || avatarPrefs.genero,
+        nome: data.avatar_nome || avatarPrefs.nome
+      });
+      try { localStorage.setItem('dvAvatar', JSON.stringify(avatarPrefs)); } catch(e) {}
+      saveAvatarToCloud();
     } else if (avatarPrefs.genero || avatarPrefs.nome) {
       saveAvatarToCloud();
     }
@@ -8476,39 +9234,85 @@ async function initCompetition() {
 async function renderCompetition() {
   const box = document.getElementById('compTable');
   if (!box) return;
+  const summary = document.getElementById('compSummary');
+  const podium = document.getElementById('compPodium');
+  const meBox = document.getElementById('compMe');
+  const updated = document.getElementById('compUpdated');
   const metric = document.getElementById('compMetric').value;
   const period = document.getElementById('compPeriod').value;
-  if (!supabaseClient) { box.innerHTML = '<div style="color:var(--muted);font-size:13px;">Disponível apenas com conta.</div>'; return; }
-  box.innerHTML = '<div style="color:var(--muted);font-size:13px;">A carregar...</div>';
+  const metricLabel = metric === 'km' ? 'Distância' : metric === 'min' ? 'Tempo' : 'Dias com registo';
+  const periodLabel = period === 'semana' ? 'Esta semana' : 'Este mês';
+  const unit = metric === 'km' ? ' km' : metric === 'min' ? ' min' : ' dia(s)';
+  const medals = ['🥇', '🥈', '🥉'];
+  const clear = (html) => {
+    if (summary) summary.innerHTML = '';
+    if (podium) podium.innerHTML = '';
+    if (meBox) meBox.innerHTML = '';
+    if (updated) updated.textContent = '';
+    box.innerHTML = html;
+  };
+  if (!supabaseClient) { clear('<div class="comp-empty">Disponível apenas com conta.</div>'); return; }
+  clear('<div class="comp-empty">A carregar...</div>');
   try {
     const { data, error } = await supabaseClient.rpc('ranking', { p_metrica: metric, p_periodo: period });
     if (error) {
       console.error('Erro no ranking:', error);
-      box.innerHTML = '<div style="color:var(--muted);font-size:13px;">Não foi possível carregar o ranking.</div>';
+      clear('<div class="comp-empty">Não foi possível carregar o ranking.</div>');
       return;
     }
-    if (!data || !data.length) {
-      box.innerHTML = '<div style="color:var(--muted);font-size:13px;">Ainda não há participantes.</div>';
+    const rows = (data || []).map((r, i) => Object.assign({}, r, { pos: Number(r.pos) || i + 1 }));
+    if (updated) updated.textContent = 'Atualizado às ' + new Date().toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' });
+    if (summary) {
+      summary.innerHTML = '<span class="comp-pill">' + rows.length + ' participante(s)</span>' +
+        '<span class="comp-pill">' + metricLabel + '</span>' +
+        '<span class="comp-pill">' + periodLabel + '</span>';
+    }
+    if (!rows.length) {
+      clear('<div class="comp-empty">Ainda não há participantes com atividade neste período.</div>');
+      if (summary) summary.innerHTML = '<span class="comp-pill">0 participante(s)</span><span class="comp-pill">' + metricLabel + '</span><span class="comp-pill">' + periodLabel + '</span>';
       return;
     }
-    const unit = metric === 'km' ? ' km' : metric === 'min' ? ' min' : (' dia(s)');
-    const medals = ['🥇','🥈','🥉'];
-    const rows = data.map(r => {
+    const valueText = (v) => {
+      const n = Number(v);
+      if (!isFinite(n)) return _escComp(v) + unit;
+      return (metric === 'km' ? n.toFixed(1).replace('.', ',') : String(Math.round(n))) + unit;
+    };
+    if (podium) {
+      podium.innerHTML = rows.slice(0, 3).map((r, i) => {
+        const cls = ['first', 'second', 'third'][i];
+        return '<div class="comp-podium-card ' + cls + '">' +
+          '<div class="comp-podium-medal">' + medals[i] + '</div>' +
+          '<div class="comp-podium-name">' + _escComp(r.nome) + ' <span style="color:var(--muted);font-size:10px;">' + r.pos + 'º</span></div>' +
+          '<div class="comp-podium-value">' + valueText(r.valor) + '</div>' +
+          '</div>';
+      }).join('');
+    }
+    const mine = rows.find(r => r.eu);
+    if (meBox) {
+      if (mine) {
+        const posLabel = mine.pos <= 3 ? medals[mine.pos - 1] : mine.pos + 'º';
+        meBox.innerHTML = '<div class="comp-me"><span>' + posLabel + ' · ' + _escComp(mine.nome) + ' <span style="color:var(--muted);font-size:11px;">(tu)</span></span>' +
+          '<strong style="font-family:\'JetBrains Mono\',monospace;">' + valueText(mine.valor) + '</strong></div>';
+      } else {
+        meBox.innerHTML = '<div class="comp-me comp-me-empty">A tua conta ainda não tem atividade neste período.</div>';
+      }
+    }
+    const rowsHtml = rows.map(r => {
       const pos = r.pos <= 3 ? medals[r.pos - 1] : r.pos + 'º';
-      const hl = r.eu ? 'background:rgba(90,110,74,0.15);font-weight:600;' : '';
+      const hl = r.eu ? 'background:rgba(45,212,191,0.10);font-weight:600;' : '';
       return '<tr style="' + hl + '">' +
         '<td style="padding:10px 8px;width:48px;">' + pos + '</td>' +
         '<td style="padding:10px 8px;">' + _escComp(r.nome) + (r.eu ? ' <span style="color:var(--muted);font-size:11px;">(tu)</span>' : '') + '</td>' +
-        '<td style="padding:10px 8px;text-align:right;font-family:\'JetBrains Mono\',monospace;">' + _escComp(r.valor) + unit + '</td>' +
+        '<td style="padding:10px 8px;text-align:right;font-family:\'JetBrains Mono\',monospace;">' + valueText(r.valor) + '</td>' +
         '</tr>';
     }).join('');
     box.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:14px;">' +
       '<thead><tr style="color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:1px;text-align:left;border-bottom:1px solid var(--border);">' +
       '<th style="padding:6px 8px;">#</th><th style="padding:6px 8px;">Nome</th><th style="padding:6px 8px;text-align:right;">Total</th></tr></thead>' +
-      '<tbody>' + rows + '</tbody></table>';
+      '<tbody>' + rowsHtml + '</tbody></table>';
   } catch(e) {
     console.error('Erro ao carregar o ranking:', e);
-    box.innerHTML = '<div style="color:var(--muted);font-size:13px;">Não foi possível carregar o ranking.</div>';
+    clear('<div class="comp-empty">Não foi possível carregar o ranking.</div>');
   }
 }
 
@@ -8708,9 +9512,14 @@ function scheduleReminders() {
     const diff = target - now;
     if (diff > 0 && diff < 60000) sendNotification(title, body);
   };
-  check(prefs.manha, 'Bom dia!', 'Nao te esquecas de registar o sono e o peso.');
+  check(prefs.manha, 'Bom dia!', 'Nao te esquecas de registar o sono.');
   check(prefs.almoco, 'Hora de almoco!', 'Regista o que comeste.');
   check(prefs.noite, 'Boa noite!', 'Completa o teu diario de hoje.');
+  const sem = prefs.pesoSemana || { enabled: true, dia: 0, hora: '09:00' };
+  const semDia = sem.dia === undefined || sem.dia === null ? 0 : Number(sem.dia);
+  if (sem.enabled !== false && now.getDay() === semDia) {
+    check(sem.hora || '09:00', 'Pesagem semanal', 'Hoje e dia de pesagem. Regista o teu peso no Diario de Vida.');
+  }
 }
 setInterval(scheduleReminders, 60000);
 
@@ -8898,6 +9707,13 @@ function openRemindersModal() {
   document.getElementById('remManha').value = prefs.manha||'08:00';
   document.getElementById('remAlmoco').value = prefs.almoco||'13:00';
   document.getElementById('remNoite').value = prefs.noite||'22:00';
+  const sem = prefs.pesoSemana || { enabled: true, dia: 0, hora: '09:00' };
+  const semHora = document.getElementById('remPesoHora');
+  const semDia = document.getElementById('remPesoDia');
+  const semEnabled = document.getElementById('remPesoEnabled');
+  if (semHora) semHora.value = sem.hora || '09:00';
+  if (semDia) semDia.value = String(sem.dia === undefined || sem.dia === null ? 0 : sem.dia);
+  if (semEnabled) semEnabled.checked = sem.enabled !== false;
   document.getElementById('remEnabled').checked = prefs.enabled!==false;
   modal.classList.add('open');
 }
@@ -8909,15 +9725,22 @@ function closeRemindersModal() {
 async function saveReminders() {
   const granted = await requestNotifications();
   if (!granted) { alert('Precisas de permitir notificações primeiro.'); return; }
-  const prefs = {
+  let old = {};
+  try { old = JSON.parse(localStorage.getItem('dvReminders') || '{}'); } catch (e) {}
+  const prefs = Object.assign({}, old, {
     enabled: document.getElementById('remEnabled').checked,
     manha: document.getElementById('remManha').value,
     almoco: document.getElementById('remAlmoco').value,
     noite: document.getElementById('remNoite').value,
-  };
+    pesoSemana: {
+      enabled: document.getElementById('remPesoEnabled') ? document.getElementById('remPesoEnabled').checked : true,
+      dia: parseInt(document.getElementById('remPesoDia') && document.getElementById('remPesoDia').value, 10) || 0,
+      hora: (document.getElementById('remPesoHora') && document.getElementById('remPesoHora').value) || '09:00'
+    }
+  });
   cfgSave('dvReminders', JSON.stringify(prefs));
   closeRemindersModal();
-  sendNotification('🔔 Lembretes ativados!', 'Vais receber lembretes diários.');
+  sendNotification('🔔 Lembretes ativados!', 'Vais receber lembretes diários e a pesagem semanal.');
 }
 
 // Inicializar
@@ -9421,6 +10244,13 @@ function initSettingsPage() {
   if (mh) mh.value = prefs.manha || '08:00';
   if (al) al.value = prefs.almoco || '13:00';
   if (nt) nt.value = prefs.noite || '22:00';
+  const sem = prefs.pesoSemana || { enabled: true, dia: 0, hora: '09:00' };
+  const semEn = document.getElementById('remPesoEnabledSettings');
+  const semDia = document.getElementById('remPesoDiaSettings');
+  const semHora = document.getElementById('remPesoHoraSettings');
+  if (semEn) semEn.checked = sem.enabled !== false;
+  if (semDia) semDia.value = String(sem.dia === undefined || sem.dia === null ? 0 : sem.dia);
+  if (semHora) semHora.value = sem.hora || '09:00';
 }
 
 function changeAiProvider() {
@@ -9645,12 +10475,19 @@ function clearSettingsGeminiKey() {
 async function saveSettingsReminders() {
   const granted = await requestNotifications();
   if (!granted) { alert('Precisas de permitir notificações primeiro.'); return; }
-  const prefs = {
+  let old = {};
+  try { old = JSON.parse(localStorage.getItem('dvReminders') || '{}'); } catch (e) {}
+  const prefs = Object.assign({}, old, {
     enabled: document.getElementById('remEnabledSettings')?.checked,
     manha:   document.getElementById('remManhaSettings')?.value,
     almoco:  document.getElementById('remAlmocoSettings')?.value,
     noite:   document.getElementById('remNoiteSettings')?.value,
-  };
+    pesoSemana: {
+      enabled: document.getElementById('remPesoEnabledSettings') ? document.getElementById('remPesoEnabledSettings').checked : true,
+      dia: parseInt(document.getElementById('remPesoDiaSettings')?.value, 10) || 0,
+      hora: document.getElementById('remPesoHoraSettings')?.value || '09:00'
+    }
+  });
   const cfgP = cfgSave('dvReminders', JSON.stringify(prefs));
   const status = document.getElementById('remSettingsStatus');
   if (status) {
