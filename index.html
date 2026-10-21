@@ -2801,6 +2801,22 @@ body.app-ready .skip-link { display: block; }
     </div>
     <div class="ai-panel" style="margin-bottom:0;">
       <div class="ai-panel-label">plano dos próximos 7 dias</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+        <div style="flex:1 1 170px;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Objetivo</div>
+          <select id="tmPlanGoal" onchange="tmSaveCriteria()" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;">
+            <option value="manter">Manter a forma</option>
+            <option value="perder">Perder peso</option>
+            <option value="resistencia">Ganhar resistência</option>
+            <option value="ritmo">Melhorar ritmo</option>
+            <option value="distancia">Preparar uma distância</option>
+          </select>
+        </div>
+        <div style="flex:1 1 170px;">
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Distância-alvo (km/semana)</div>
+          <input type="number" id="tmPlanTargetKm" min="0" step="0.5" placeholder="ex: 20" oninput="tmSaveCriteria()" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;">
+        </div>
+      </div>
       <button class="btn btn-primary" id="tmPlanBtn" onclick="generateTreadmillPlan()" style="width:100%;">🗓️ Gerar plano semanal</button>
       <div class="ai-response" id="tmPlanResponse" aria-live="polite"></div>
       <div class="ai-chat-shell tm-plan-chat" id="tmPlanChat" style="display:none;">
@@ -3815,8 +3831,8 @@ function _wf(id) {
   return isToday ? document.getElementById(id).value : ((DB[TODAY] || {})[id] || '');
 }
 // Preferências (lembretes, IA, conquistas) → guardadas também na conta
-var _CFG_MAP = { dvReminders: 'reminders', dvAiMode: 'aiMode', dvAiProvider: 'aiProvider', dvOpenRouterModel: 'openrouterModel', dvAchievements: 'achievements', dvPerfil: 'perfil', dvAvatar: 'avatar', dvTreadmillPlan: 'treadmillPlan', dvTreadmillPlanChat: 'treadmillPlanChat' };
-var _CFG_JSON = { reminders: 1, achievements: 1, perfil: 1, avatar: 1, treadmillPlan: 1, treadmillPlanChat: 1 };
+var _CFG_MAP = { dvReminders: 'reminders', dvAiMode: 'aiMode', dvAiProvider: 'aiProvider', dvOpenRouterModel: 'openrouterModel', dvAchievements: 'achievements', dvPerfil: 'perfil', dvAvatar: 'avatar', dvTreadmillPlan: 'treadmillPlan', dvTreadmillPlanChat: 'treadmillPlanChat', dvTreadmillCriteria: 'treadmillCriteria' };
+var _CFG_JSON = { reminders: 1, achievements: 1, perfil: 1, avatar: 1, treadmillPlan: 1, treadmillPlanChat: 1, treadmillCriteria: 1 };
 function _cfgAt(value) {
   return value && typeof value === 'object' && value.at ? (Date.parse(value.at) || 0) : 0;
 }
@@ -3839,7 +3855,7 @@ async function loadConfigFromCloud() {
     Object.keys(_CFG_MAP).forEach(function(lk) {
       var ck = _CFG_MAP[lk];
       if (cfg[ck] !== undefined && cfg[ck] !== null) {
-        if (ck === 'treadmillPlan' || ck === 'treadmillPlanChat') {
+        if (ck === 'treadmillPlan' || ck === 'treadmillPlanChat' || ck === 'treadmillCriteria') {
           var localRaw = localStorage.getItem(lk), localVal = null;
           try { localVal = JSON.parse(localRaw); } catch (e) {}
           if (_cfgAt(localVal) > _cfgAt(cfg[ck])) {
@@ -8704,6 +8720,7 @@ function initTreadmill() {
   d.max = TODAY;
   if (!d.value) d.value = TODAY;
   loadTreadmillDay();
+  tmLoadCriteriaForm();
   tmRenderSavedPlan();
 }
 function loadTreadmillDay() {
@@ -8792,8 +8809,16 @@ function renderTreadmillHistory() {
 
 const TM_PLAN_KEY = 'dvTreadmillPlan';
 const TM_PLAN_CHAT_KEY = 'dvTreadmillPlanChat';
+const TM_CRITERIA_KEY = 'dvTreadmillCriteria';
+const TM_GOAL_LABELS = {
+  manter: 'manter a forma',
+  perder: 'perder peso / queimar calorias',
+  resistencia: 'ganhar resistência',
+  ritmo: 'melhorar ritmo e velocidade',
+  distancia: 'preparar uma distância concreta'
+};
 const TM_PLAN_CHAT_SYSTEM = 'És um treinador de corrida e fitness em Portugal. Estás a discutir com o utilizador o plano de passadeira que já foi gerado. Responde em PT-PT, de forma prática, calorosa e prudente. Usa o plano e o histórico fornecidos e não inventes dados. Podes propor ajustes ao plano quando o utilizador pedir, mantendo o aumento de volume semanal abaixo de 10% e respeitando dores ou limitações. Não faças diagnóstico médico; se houver dor persistente ou preocupante, recomenda avaliação profissional. Sê conciso: máximo 250 palavras, exceto quando apresentares um plano ajustado.';
-const TM_PLAN_REWRITE_SYSTEM = 'És um treinador de corrida e fitness em Portugal. Reescreve o plano de passadeira completo aplicando os ajustes pedidos na conversa. Responde em PT-PT. Mantém 3 a 5 sessões e dias de descanso. Para cada sessão indica apenas o dia/data, a duração em minutos e a velocidade em km/h. Não incluas distância, inclinação, RPE, aquecimento, arrefecimento, objetivo, justificações nem outros detalhes. Mantém o aumento do tempo total semanal abaixo de 10%. Não faças diagnóstico médico nem prometas resultados.';
+const TM_PLAN_REWRITE_SYSTEM = 'És um treinador de corrida e fitness em Portugal. Reescreve o plano de passadeira completo aplicando os ajustes pedidos na conversa e respeitando os critérios do utilizador. Responde em PT-PT. Mantém 3 a 5 sessões e dias de descanso. Para cada sessão indica apenas o dia/data, a distância em km, o tempo em minutos e a velocidade em km/h, coerentes entre si (velocidade = distância ÷ tempo). Não incluas inclinação, RPE, aquecimento, arrefecimento, objetivo, justificações nem outros detalhes. Aproxima o total semanal da distância-alvo, se estiver definida. Não aumentes o tempo total semanal mais de 10%. Não faças diagnóstico médico nem prometas resultados.';
 let tmPlanChatMessages = [];
 let tmPlanChatBusy = false;
 
@@ -8885,6 +8910,38 @@ function tmCurrentPlan() {
     return p && typeof p.text === 'string' && p.text.trim() ? p : null;
   } catch (e) { return null; }
 }
+function tmGetCriteria() {
+  try {
+    const c = JSON.parse(localStorage.getItem(TM_CRITERIA_KEY) || '{}');
+    const goal = Object.prototype.hasOwnProperty.call(TM_GOAL_LABELS, c.goal) ? c.goal : 'manter';
+    return { goal, targetKm: parseFloat(c.targetKm) > 0 ? parseFloat(c.targetKm) : 0 };
+  } catch (e) { return { goal: 'manter', targetKm: 0 }; }
+}
+function tmSaveCriteria() {
+  const goalEl = document.getElementById('tmPlanGoal');
+  const kmEl = document.getElementById('tmPlanTargetKm');
+  const goal = goalEl && TM_GOAL_LABELS[goalEl.value] ? goalEl.value : 'manter';
+  const targetKm = kmEl ? (parseFloat(kmEl.value) || 0) : 0;
+  const payload = { goal, targetKm, at: new Date().toISOString() };
+  try { localStorage.setItem(TM_CRITERIA_KEY, JSON.stringify(payload)); } catch (e) {}
+  cfgSave(TM_CRITERIA_KEY, JSON.stringify(payload));
+  tmRenderPlanCards();
+}
+function tmLoadCriteriaForm() {
+  const c = tmGetCriteria();
+  const goalEl = document.getElementById('tmPlanGoal');
+  const kmEl = document.getElementById('tmPlanTargetKm');
+  if (goalEl) goalEl.value = c.goal;
+  if (kmEl) kmEl.value = c.targetKm > 0 ? c.targetKm : '';
+}
+function tmCriteriaText() {
+  const c = tmGetCriteria();
+  const lines = ['Objetivo do utilizador: ' + (TM_GOAL_LABELS[c.goal] || c.goal) + '.'];
+  lines.push(c.targetKm > 0
+    ? 'Distância-alvo: ' + c.targetKm + ' km no total da semana (aproxima o total das sessões deste valor).'
+    : 'Distância-alvo: não definida (escolhe um valor razoável para a semana).');
+  return lines.join('\n');
+}
 function tmPlanChatLoad() {
   tmPlanChatMessages = [];
   const plan = tmCurrentPlan();
@@ -8945,7 +9002,8 @@ function tmPlanChatRender() {
 }
 function tmPlanChatContext() {
   const plan = tmCurrentPlan();
-  return 'PLANO ATUAL:\n' + (plan ? plan.text : '') +
+  return 'CRITÉRIOS:\n' + tmCriteriaText() +
+    '\n\nPLANO ATUAL:\n' + (plan ? plan.text : '') +
     '\n\nHISTÓRICO E MEDIDAS:\n' + tmTrainingContext(tmWeekStats());
 }
 function tmPlanChatKeydown(event) {
@@ -9102,6 +9160,7 @@ function tmParsePlan(text) {
     const isRest = /descanso|repouso|folga/i.test(line);
     const minMatch = line.match(/(\d+(?:[.,]\d+)?)\s*(?:min\b|minuto)/i);
     const speedMatch = line.match(/(\d+(?:[.,]\d+)?)\s*km\s*\/?\s*h/i);
+    const distMatch = line.match(/(\d+(?:[.,]\d+)?)\s*km(?!\s*\/?\s*h)/i);
     let date = null;
     const iso = line.match(/(\d{4})-(\d{2})-(\d{2})/);
     const dm = line.match(/\b(\d{1,2})\/(\d{1,2})\b/);
@@ -9115,8 +9174,9 @@ function tmParsePlan(text) {
     }
     const minutes = minMatch ? parseFloat(minMatch[1].replace(',', '.')) : null;
     const speed = speedMatch ? parseFloat(speedMatch[1].replace(',', '.')) : null;
-    if (!date && minutes == null && speed == null && !isRest) return;
-    out.push({ label: line, date, minutes, speed, rest: isRest });
+    const distance = distMatch ? parseFloat(distMatch[1].replace(',', '.')) : null;
+    if (!date && minutes == null && speed == null && distance == null && !isRest) return;
+    out.push({ label: line, date, minutes, speed, distance, rest: isRest });
   });
   return out;
 }
@@ -9146,6 +9206,7 @@ function tmRenderPlanCards() {
     else { status = 'previsto'; color = 'var(--text2)'; badge = '○'; }
     if (!it.rest) { planned++; if (trained) done++; }
     const parts = [];
+    if (it.distance) parts.push(it.distance + ' km');
     if (it.minutes) parts.push(Math.round(it.minutes) + ' min');
     if (it.speed) parts.push(it.speed.toFixed(1) + ' km/h');
     const detail = it.rest ? 'descanso' : (parts.join(' · ') || 'sessão');
@@ -9161,7 +9222,14 @@ function tmRenderPlanCards() {
     '</div>';
   }).join('');
   box.innerHTML = rows;
-  if (summary) summary.textContent = planned ? (done + ' de ' + planned + ' sessões cumpridas') : '';
+  if (summary) {
+    const target = tmGetCriteria().targetKm;
+    const plannedKm = items.filter(i => !i.rest && i.distance).reduce((s, i) => s + i.distance, 0);
+    const bits = [];
+    if (planned) bits.push(done + ' de ' + planned + ' sessões cumpridas');
+    if (plannedKm) bits.push((Math.round(plannedKm * 10) / 10) + (target > 0 ? ' de ' + target : '') + ' km planeados');
+    summary.textContent = bits.join(' · ');
+  }
 }
 async function generateTreadmillCoach() {
   const btn = document.getElementById('tmCoachBtn');
@@ -9199,8 +9267,8 @@ async function generateTreadmillPlan() {
   }
   try {
     const text = await callGemini(
-      'És um treinador de corrida e fitness em Portugal. Cria um plano de passadeira para os próximos 7 dias, em PT-PT, adequado ao histórico e ao peso fornecidos. Inclui 3 a 5 sessões e dias de descanso. Para cada sessão indica apenas o dia/data, a duração em minutos e a velocidade em km/h. Não incluas distância, inclinação, RPE, aquecimento, arrefecimento, objetivo nem outros detalhes. Aumenta o tempo total no máximo 10% em relação à semana anterior. Não faças diagnóstico médico nem prometas resultados. Responde apenas com o plano, sem introdução nem comentários. Máximo 250 palavras.',
-      'Contexto:\n' + tmTrainingContext(week) + '\n\nDatas dos próximos 7 dias: ' + dates.join(', ') + '.\nCria o plano.',
+      'És um treinador de corrida e fitness em Portugal. Cria um plano de passadeira para os próximos 7 dias, em PT-PT, adequado ao histórico, ao peso e aos critérios do utilizador. Inclui 3 a 5 sessões e dias de descanso. Para cada sessão indica apenas o dia/data, a distância em km, o tempo em minutos e a velocidade em km/h, coerentes entre si (velocidade = distância ÷ tempo). Não incluas inclinação, RPE, aquecimento, arrefecimento, objetivo nem outros detalhes. Se houver distância-alvo semanal, aproxima o total das sessões desse valor. Não aumentes o tempo total semanal mais de 10% em relação à semana anterior. Não faças diagnóstico médico nem prometas resultados. Responde apenas com o plano, sem introdução nem comentários. Máximo 250 palavras.',
+      'Critérios do utilizador:\n' + tmCriteriaText() + '\n\nContexto:\n' + tmTrainingContext(week) + '\n\nDatas dos próximos 7 dias: ' + dates.join(', ') + '.\nCria o plano.',
       1400
     );
     if (tmSavePlan(text)) {
