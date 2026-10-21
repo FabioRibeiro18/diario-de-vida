@@ -75,6 +75,20 @@
 .tm-bar.sel{color:var(--text)}
 .pf-bar{height:10px;border-radius:6px;background:var(--surface);border:1px solid var(--border);overflow:hidden;margin-top:14px}
 .pf-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--moss),var(--moss-l));transition:width .4s}
+.tm-ach{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:var(--surface);font-size:11px;color:var(--muted);opacity:.55}
+.tm-ach.on{border-color:rgba(45,212,191,.5);color:var(--text2);background:rgba(45,212,191,.12);opacity:1}
+.tm-do{flex:0 0 auto;padding:5px 10px;border-radius:999px;border:1px solid var(--moss);background:rgba(45,212,191,.14);color:var(--moss-l);font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer}
+.tm-goal-row{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;color:var(--text2)}
+.tm-goal-row+.pf-bar{margin-top:8px}
+.tm-goal-row.mt{margin-top:16px}
+.tm-goal-pct{font-family:'JetBrains Mono',monospace;color:var(--moss-l)}
+.tm-week-bars{display:flex;align-items:flex-end;gap:6px;height:110px;margin-top:16px}
+.tm-week-bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;height:100%;color:var(--muted);font-size:9px}
+.tm-week-bar i{display:block;width:100%;border-radius:6px 6px 2px 2px;background:var(--moss);min-height:3px;transition:height .3s}
+.tm-week-bar.cur{color:var(--text)}
+.tm-week-bar.cur i{background:var(--moss-l);box-shadow:0 0 0 2px var(--moss-d)}
+.tm-trend{font-size:11px;color:var(--muted);margin-top:10px}
+@media (max-width:560px){.mini-tiles{grid-template-columns:1fr 1fr}}
 @media (prefers-reduced-motion: reduce){.tm-belt,.tm-runner,.tm-record{animation:none}.tm-belt-wrap,.pf-bar i,.tm-bar i{transition:none}}
 @media (max-width:560px){.tm-controls{grid-template-columns:1fr}}
 .comp-toolbar{display:flex;justify-content:flex-end;align-items:center;gap:10px;flex-wrap:wrap;margin-top:10px}
@@ -2819,6 +2833,40 @@ body.app-ready .skip-link { display: block; }
   </div>
 
   <div class="card">
+    <div class="card-title">objetivos da semana</div>
+    <div class="tm-goal-row"><span id="tmGoalSessionsLbl">0 / 3 treinos</span><span class="tm-goal-pct" id="tmGoalSessionsPct">0%</span></div>
+    <div class="pf-bar"><i id="tmGoalSessionsBar"></i></div>
+    <div class="tm-goal-row mt"><span id="tmGoalKmLbl">0 / 0 km</span><span class="tm-goal-pct" id="tmGoalKmPct">0%</span></div>
+    <div class="pf-bar"><i id="tmGoalKmBar"></i></div>
+    <div class="tm-trend" style="margin-top:14px;">🔥 <span id="tmGoalStreak">0</span> dias seguidos · melhor sequência: <span id="tmGoalBestStreak">0</span></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">conquistas</div>
+    <div id="tmAchievements" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">evolução semanal</div>
+    <div class="tm-week-bars" id="tmWeekBars"></div>
+    <div class="tm-trend" id="tmWeekTrend"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">recordes pessoais</div>
+    <div class="mini-tiles">
+      <div class="mini-tile"><div class="mini-val" id="tmRecSpeed">—</div><div class="mini-lbl">melhor km/h</div></div>
+      <div class="mini-tile"><div class="mini-val" id="tmRecKm">—</div><div class="mini-lbl">mais km num treino</div></div>
+      <div class="mini-tile"><div class="mini-val" id="tmRecLongest">—</div><div class="mini-lbl">treino mais longo</div></div>
+    </div>
+    <div class="mini-tiles" style="margin-top:10px;">
+      <div class="mini-tile"><div class="mini-val" id="tmRecWeek">—</div><div class="mini-lbl">maior semana (km)</div></div>
+      <div class="mini-tile"><div class="mini-val" id="tmRecSessions">0</div><div class="mini-lbl">treinos totais</div></div>
+      <div class="mini-tile"><div class="mini-val" id="tmRecDays">0</div><div class="mini-lbl">dias com treino</div></div>
+    </div>
+  </div>
+
+  <div class="card">
     <div class="card-title">treinador IA</div>
     <div class="ai-panel" style="margin-bottom:12px;">
       <div class="ai-panel-label">análise dos últimos 7 dias</div>
@@ -2864,6 +2912,7 @@ body.app-ready .skip-link { display: block; }
           <button type="button" class="ai-chat-chip" onclick="tmPlanChatAsk('Tenho dores no joelho. Como adapto o plano?')">Dores no joelho</button>
           <button type="button" class="ai-chat-chip" onclick="tmPlanChatAsk('Troca parte da corrida por caminhada inclinada.')">Mais caminhada</button>
           <button type="button" class="ai-chat-chip" onclick="tmPlanChatAsk('Explica-me o treino mais exigente da semana.')">Explicar treino</button>
+          <button type="button" class="ai-chat-chip" onclick="tmPlanChatWeekly()">Resumo da semana</button>
         </div>
         <form class="ai-chat-form" onsubmit="sendTmPlanChat(event)">
           <textarea id="tmPlanChatInput" class="ai-chat-input" rows="1" maxlength="2000" placeholder="Pergunta ou ajusta..." aria-label="Mensagem sobre o plano" oninput="aiChatAutoGrow(this)" onkeydown="tmPlanChatKeydown(event)"></textarea>
@@ -3303,10 +3352,15 @@ hf_... (2ª chave)" style="width:100%;background:var(--surface);border:1px solid
       <div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:6px;">🌙 NOITE</div><input type="text" id="remNoiteSettings" placeholder="22:00" maxlength="5" oninput="fmtTime(this)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;outline:none;"></div>
       <div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:6px;">⚖️ PESAGEM · HORA</div><input type="text" id="remPesoHoraSettings" placeholder="09:00" maxlength="5" aria-label="Hora da pesagem semanal" oninput="fmtTime(this)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;outline:none;"></div>
       <div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:6px;">⚖️ PESAGEM · DIA</div><select id="remPesoDiaSettings" aria-label="Dia da pesagem semanal" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;"><option value="0">Domingo</option><option value="1">Segunda</option><option value="2">Terça</option><option value="3">Quarta</option><option value="4">Quinta</option><option value="5">Sexta</option><option value="6">Sábado</option></select></div>
+      <div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:6px;">🏃 TREINO · HORA</div><input type="text" id="remTreinoHoraSettings" placeholder="18:00" maxlength="5" aria-label="Hora do lembrete de treino" oninput="fmtTime(this)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;outline:none;"></div>
     </div>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
       <input type="checkbox" id="remPesoEnabledSettings" style="width:18px;height:18px;accent-color:var(--moss);">
       <label for="remPesoEnabledSettings" style="font-size:13px;color:var(--text);">Lembrete semanal de pesagem</label>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
+      <input type="checkbox" id="remTreinoEnabledSettings" style="width:18px;height:18px;accent-color:var(--moss);">
+      <label for="remTreinoEnabledSettings" style="font-size:13px;color:var(--text);">Lembrete de treino nos dias com plano</label>
     </div>
     <button class="btn btn-primary" onclick="saveSettingsReminders()" style="width:100%;">💾 Guardar lembretes</button>
     <div id="remSettingsStatus" style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--moss-l);"></div>
@@ -3397,6 +3451,16 @@ hf_... (2ª chave)" style="width:100%;background:var(--surface);border:1px solid
           <input type="text" id="remPesoHora" placeholder="09:00" maxlength="5" oninput="fmtTime(this)" aria-label="Hora da pesagem semanal" style="width:90px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;outline:none;">
           <select id="remPesoDia" aria-label="Dia da pesagem semanal" style="flex:1;min-width:130px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;"><option value="0">Domingo</option><option value="1">Segunda</option><option value="2">Terça</option><option value="3">Quarta</option><option value="4">Quinta</option><option value="5">Sexta</option><option value="6">Sábado</option></select>
           <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);"><input type="checkbox" id="remPesoEnabled" style="width:16px;height:16px;accent-color:var(--moss);"> Ativo</label>
+        </div>
+      </div>
+    </div>
+    <div class="sync-step">
+      <div class="sync-step-num">🏃</div>
+      <div style="flex:1;">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:6px;">Treino planeado</div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <input type="text" id="remTreinoHora" placeholder="18:00" maxlength="5" oninput="fmtTime(this)" aria-label="Hora do lembrete de treino" style="width:90px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:8px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;outline:none;">
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--text2);"><input type="checkbox" id="remTreinoEnabled" style="width:16px;height:16px;accent-color:var(--moss);"> Avisar nos dias com plano</label>
         </div>
       </div>
     </div>
@@ -8707,6 +8771,7 @@ function tmRenderWeek() {
            '<span>' + (km[i] > 0 ? km[i] : '') + '</span><i style="height:' + h + 'px"></i><span>' + wd + '</span></button>';
   }).join('');
   tmRenderStats();
+  tmRenderProgress();
   tmRenderPlanCards();
 }
 function tmPrevDate(d) {
@@ -8739,6 +8804,170 @@ function tmRenderStats() {
   txt('tmStatBestSpeed', s.bestSpeed ? s.bestSpeed.toFixed(1) : '—');
   txt('tmStatLongest', s.longest ? Math.round(s.longest) + ' min' : '—');
   txt('tmStatStreak', String(s.streak));
+}
+function tmIsoDate(d) {
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+}
+function tmNextDate(d) {
+  const p = d.split('-').map(Number);
+  return tmIsoDate(new Date(p[0], p[1] - 1, p[2] + 1));
+}
+function tmWeeklySeries(weeks) {
+  const p = TODAY.split('-').map(Number);
+  const base = new Date(p[0], p[1] - 1, p[2]);
+  const out = [];
+  for (let i = weeks - 1; i >= 0; i--) {
+    const start = new Date(base.getFullYear(), base.getMonth(), base.getDate() - base.getDay() - i * 7);
+    let km = 0, min = 0, sessions = 0;
+    for (let j = 0; j < 7; j++) {
+      const key = tmIsoDate(new Date(start.getFullYear(), start.getMonth(), start.getDate() + j));
+      const x = DB[key];
+      if (!x) continue;
+      const t = parseFloat(x.treadmillTime) || 0;
+      const k = parseFloat(x.treadmillDistance) || 0;
+      if (t > 0 || k > 0) { sessions++; km += k; min += t; }
+    }
+    out.push({ km, min, sessions, label: String(start.getDate()).padStart(2, '0') + '/' + String(start.getMonth() + 1).padStart(2, '0') });
+  }
+  return out;
+}
+function tmBestStreak() {
+  const trained = d => DB[d] && (parseFloat(DB[d].treadmillTime) > 0 || parseFloat(DB[d].treadmillDistance) > 0);
+  const dates = Object.keys(DB).filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d) && trained(d)).sort();
+  let best = 0, cur = 0, prev = null;
+  dates.forEach(d => {
+    cur = (prev && tmNextDate(prev) === d) ? cur + 1 : 1;
+    if (cur > best) best = cur;
+    prev = d;
+  });
+  return best;
+}
+function tmComputeRecords() {
+  let bestSpeed = 0, bestKm = 0, longest = 0, days = 0;
+  Object.keys(DB).forEach(d => {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(d) || !DB[d]) return;
+    const t = parseFloat(DB[d].treadmillTime) || 0;
+    const k = parseFloat(DB[d].treadmillDistance) || 0;
+    if (t > 0 || k > 0) days++;
+    if (t > 0 && k > 0) bestSpeed = Math.max(bestSpeed, k / (t / 60));
+    bestKm = Math.max(bestKm, k);
+    longest = Math.max(longest, t);
+  });
+  const bestWeek = tmWeeklySeries(260).reduce((m, w) => Math.max(m, w.km), 0);
+  return { bestSpeed, bestKm, longest, days, bestWeek };
+}
+function tmRenderRecords() {
+  const r = tmComputeRecords();
+  const txt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  txt('tmRecSpeed', r.bestSpeed ? r.bestSpeed.toFixed(1) : '—');
+  txt('tmRecKm', r.bestKm ? (Math.round(r.bestKm * 10) / 10) + ' km' : '—');
+  txt('tmRecLongest', r.longest ? Math.round(r.longest) + ' min' : '—');
+  txt('tmRecWeek', r.bestWeek ? (Math.round(r.bestWeek * 10) / 10) + ' km' : '—');
+  txt('tmRecSessions', String(tmComputeStats().sessions));
+  txt('tmRecDays', String(r.days));
+}
+function tmWeeklyGoals() {
+  const week = tmWeekStats();
+  const items = tmCurrentPlan() ? tmParsePlan(tmCurrentPlan().text).filter(it => !it.rest) : [];
+  const target = tmGetCriteria().targetKm;
+  const plannedKm = items.reduce((s, it) => s + (it.distance || 0), 0);
+  return {
+    sessionsDone: week.active.length,
+    sessionsGoal: items.length || 3,
+    kmDone: week.totalDist,
+    kmGoal: target > 0 ? target : Math.round(plannedKm * 10) / 10
+  };
+}
+function tmRenderGoals() {
+  const g = tmWeeklyGoals();
+  const s = tmComputeStats();
+  const set = (lbl, pct, bar, done, goal, unit) => {
+    const p = goal > 0 ? Math.min(100, Math.round(done / goal * 100)) : 0;
+    const l = document.getElementById(lbl); if (l) l.textContent = (Math.round(done * 10) / 10) + ' / ' + goal + ' ' + unit;
+    const pe = document.getElementById(pct); if (pe) pe.textContent = p + '%';
+    const b = document.getElementById(bar); if (b) b.style.width = p + '%';
+  };
+  set('tmGoalSessionsLbl', 'tmGoalSessionsPct', 'tmGoalSessionsBar', g.sessionsDone, g.sessionsGoal, 'treinos');
+  set('tmGoalKmLbl', 'tmGoalKmPct', 'tmGoalKmBar', g.kmDone, g.kmGoal, 'km');
+  const st = document.getElementById('tmGoalStreak'); if (st) st.textContent = String(s.streak);
+  const bs = document.getElementById('tmGoalBestStreak'); if (bs) bs.textContent = String(tmBestStreak());
+}
+function tmAchievements() {
+  const s = tmComputeStats();
+  const r = tmComputeRecords();
+  return [
+    { icon: '🏃', label: 'Primeiro treino', done: s.sessions >= 1 },
+    { icon: '🔟', label: '10 treinos', done: s.sessions >= 10 },
+    { icon: '💪', label: '50 treinos', done: s.sessions >= 50 },
+    { icon: '🛣️', label: '50 km', done: s.km >= 50 },
+    { icon: '🚀', label: '200 km', done: s.km >= 200 },
+    { icon: '⚡', label: '10 km/h', done: r.bestSpeed >= 10 },
+    { icon: '🔥', label: '7 dias seguidos', done: tmBestStreak() >= 7 },
+    { icon: '⏱️', label: '60 min seguidos', done: r.longest >= 60 }
+  ];
+}
+function tmRenderAchievements() {
+  const box = document.getElementById('tmAchievements');
+  if (!box) return;
+  box.innerHTML = tmAchievements().map(a =>
+    '<span class="tm-ach' + (a.done ? ' on' : '') + '" title="' + (a.done ? 'Conquistado' : 'Ainda não conquistado') + '">' +
+    a.icon + ' ' + tmEsc(a.label) + '</span>'
+  ).join('');
+}
+function tmRenderWeeklyEvolution() {
+  const box = document.getElementById('tmWeekBars');
+  if (!box) return;
+  const series = tmWeeklySeries(8);
+  const max = Math.max.apply(null, series.map(w => w.km).concat([0.1]));
+  box.innerHTML = series.map((w, i) => {
+    const h = w.km > 0 ? Math.max(6, Math.round(w.km / max * 76)) : 3;
+    const kmTxt = Math.round(w.km * 10) / 10;
+    return '<div class="tm-week-bar' + (i === series.length - 1 ? ' cur' : '') +
+      '" title="semana de ' + w.label + ' · ' + kmTxt + ' km · ' + Math.round(w.min) + ' min · ' + w.sessions + ' treinos">' +
+      '<span>' + (w.km > 0 ? kmTxt : '') + '</span>' +
+      '<i style="height:' + h + 'px"></i><span>' + w.label + '</span></div>';
+  }).join('');
+  const trend = document.getElementById('tmWeekTrend');
+  if (trend) {
+    const last = series[series.length - 1], prev = series[series.length - 2];
+    const parts = [];
+    parts.push(last && last.sessions
+      ? 'esta semana: ' + (Math.round(last.km * 10) / 10) + ' km em ' + last.sessions + ' treino(s)'
+      : 'esta semana ainda sem treinos');
+    if (prev && prev.km > 0) {
+      const diff = Math.round((last.km - prev.km) * 10) / 10;
+      parts.push((diff >= 0 ? '+' : '') + diff + ' km vs semana anterior');
+    }
+    trend.textContent = parts.join(' · ');
+  }
+}
+function tmRenderProgress() {
+  tmRenderGoals();
+  tmRenderRecords();
+  tmRenderAchievements();
+  tmRenderWeeklyEvolution();
+}
+function tmCompletePlanned(date, dist, min) {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(date || '')) || date > TODAY) return;
+  const D = parseFloat(dist) || 0, M = parseFloat(min) || 0;
+  if (!D && !M) { alert('Este dia do plano não tem distância nem tempo definidos. Preenche à mão.'); return; }
+  const snap = Object.assign({}, DB[date] || {});
+  if (M) snap.treadmillTime = String(M);
+  if (D) snap.treadmillDistance = String(D);
+  if (!snap.savedAt) snap.savedAt = new Date().toISOString();
+  DB[date] = snap;
+  if (date === TODAY && typeof DAY === 'object' && DAY) {
+    if (M) DAY.treadmillTime = String(M);
+    if (D) DAY.treadmillDistance = String(D);
+  }
+  try { localStorage.setItem(DB_KEY, JSON.stringify(DB)); } catch (e) {}
+  const syncP = SyncManager.saveDay(date);
+  showSavedBar('⏳ A guardar…');
+  syncP.then(r => showSaveResult(r));
+  tmCelebrate('✓ Treino do plano registado' + (D ? ' · ' + D + ' km' : '') + (M ? ' · ' + M + ' min' : '') + '!');
+  if (document.getElementById('tmDate') && document.getElementById('tmDate').value === date) loadTreadmillDay();
+  else renderTreadmillHistory();
+  tmRenderWeek();
 }
 function initTreadmill() {
   const d = document.getElementById('tmDate');
@@ -9030,7 +9259,34 @@ function tmPlanChatContext() {
   const plan = tmCurrentPlan();
   return 'CRITÉRIOS:\n' + tmCriteriaText() +
     '\n\nPLANO ATUAL:\n' + (plan ? plan.text : '') +
+    '\n\n' + tmPlanExecutionText() +
     '\n\nHISTÓRICO E MEDIDAS:\n' + tmTrainingContext(tmWeekStats());
+}
+function tmPlanExecutionText() {
+  const plan = tmCurrentPlan();
+  const items = plan ? tmParsePlan(plan.text) : [];
+  if (!items.length) return 'PLANO VS EXECUÇÃO: sem plano guardado.';
+  const lines = ['PLANO VS EXECUÇÃO:'];
+  let planned = 0, done = 0, plannedKm = 0, doneKm = 0;
+  items.forEach(it => {
+    if (it.rest) { lines.push('- ' + (it.date || 'sem data') + ': descanso'); return; }
+    planned++;
+    plannedKm += it.distance || 0;
+    const pl = [it.distance ? it.distance + ' km' : '', it.minutes ? Math.round(it.minutes) + ' min' : '', it.speed ? it.speed.toFixed(1) + ' km/h' : ''].filter(Boolean).join(', ');
+    const d = it.date ? DB[it.date] : null;
+    const t = d ? (parseFloat(d.treadmillTime) || 0) : 0;
+    const k = d ? (parseFloat(d.treadmillDistance) || 0) : 0;
+    const did = t > 0 || k > 0;
+    if (did) { done++; doneKm += k; }
+    lines.push('- ' + (it.date || 'sem data') + ' (' + tmPlanLabel(it) + '): planeado ' + (pl || 'sessão') + ' | ' +
+      (did ? 'feito ' + k + ' km, ' + Math.round(t) + ' min' : (it.date && it.date < TODAY ? 'não feito' : 'ainda por fazer')));
+  });
+  lines.push('Resumo: ' + done + ' de ' + planned + ' sessões cumpridas, ' +
+    (Math.round(doneKm * 10) / 10) + ' de ' + (Math.round(plannedKm * 10) / 10) + ' km planeados.');
+  return lines.join('\n');
+}
+function tmPlanChatWeekly() {
+  tmPlanChatAsk('Faz-me o resumo da semana: compara o plano com o que realmente fiz, diz o que correu bem, o que falhou e uma mudança concreta para a próxima semana.');
 }
 function tmPlanChatKeydown(event) {
   if (event.key === 'Enter' && !event.shiftKey) {
@@ -9257,11 +9513,13 @@ function tmRenderPlanCards() {
     const weekday = it.date ? tmDayName(it.date) : '';
     const dayNum = it.date ? it.date.slice(8, 10) : '·';
     const clickable = !!(it.date && it.date <= TODAY);
+    const canComplete = !!(it.date && it.date <= TODAY && !trained);
     return '<div class="tmp-day ' + cls + (clickable ? ' click' : '') + '"' +
         (clickable ? ' onclick="tmSetDay(\'' + it.date + '\')"' : '') + '>' +
       '<div class="tmp-date"><b>' + dayNum + '</b><span>' + (weekday || '—') + '</span></div>' +
       '<div class="tmp-info"><div class="tmp-title">' + tmEsc(tmPlanLabel(it)) + '</div>' + statsHtml + '</div>' +
       '<div class="tmp-status ' + cls + '">' + badge + ' ' + status + '</div>' +
+      (canComplete ? '<button type="button" class="tm-do" title="Registar esta sessão com os valores do plano" onclick="event.stopPropagation();tmCompletePlanned(\'' + it.date + '\',' + (it.distance || 0) + ',' + (it.minutes || 0) + ')">Concluir</button>' : '') +
     '</div>';
   }).join('');
   box.innerHTML = rows;
@@ -9956,6 +10214,38 @@ function scheduleReminders() {
   if (sem.enabled !== false && now.getDay() === semDia) {
     check(sem.hora || '09:00', 'Pesagem semanal', 'Hoje e dia de pesagem. Regista o teu peso no Diario de Vida.');
   }
+  const tr = prefs.treino || { enabled: true, hora: '18:00' };
+  if (tr.enabled !== false && !tmReminderSentToday('treino')) {
+    const plan = tmCurrentPlan();
+    const items = plan ? tmParsePlan(plan.text) : [];
+    const todayItem = items.find(it => it.date === TODAY && !it.rest);
+    const done = DB[TODAY] && (parseFloat(DB[TODAY].treadmillTime) > 0 || parseFloat(DB[TODAY].treadmillDistance) > 0);
+    if (todayItem && !done) {
+      check(tr.hora || '18:00', '🏃 Treino de hoje', (tmPlanReminderText(todayItem)) + ' Abre o Diario de Vida para registar.');
+      const [th, tm2] = (tr.hora || '18:00').split(':').map(Number);
+      const tgt = new Date(); tgt.setHours(th, tm2, 0, 0);
+      const d = tgt - now;
+      if (d > 0 && d < 60000) tmReminderMarkSent('treino');
+    }
+  }
+}
+function tmReminderSentToday(kind) {
+  try { const s = JSON.parse(localStorage.getItem('dvReminderSent') || '{}'); return s[kind] === TODAY; } catch (e) { return false; }
+}
+function tmReminderMarkSent(kind) {
+  try {
+    let s = {};
+    try { s = JSON.parse(localStorage.getItem('dvReminderSent') || '{}'); } catch (e) {}
+    s[kind] = TODAY;
+    localStorage.setItem('dvReminderSent', JSON.stringify(s));
+  } catch (e) {}
+}
+function tmPlanReminderText(it) {
+  const bits = [];
+  if (it.distance) bits.push(it.distance + ' km');
+  if (it.minutes) bits.push(Math.round(it.minutes) + ' min');
+  if (it.speed) bits.push(it.speed.toFixed(1) + ' km/h');
+  return bits.length ? 'Hoje: ' + bits.join(' · ') + '.' : 'Tens uma sessão planeada para hoje.';
 }
 setInterval(scheduleReminders, 60000);
 
@@ -10150,6 +10440,11 @@ function openRemindersModal() {
   if (semHora) semHora.value = sem.hora || '09:00';
   if (semDia) semDia.value = String(sem.dia === undefined || sem.dia === null ? 0 : sem.dia);
   if (semEnabled) semEnabled.checked = sem.enabled !== false;
+  const tr = prefs.treino || { enabled: true, hora: '18:00' };
+  const trHora = document.getElementById('remTreinoHora');
+  const trEnabled = document.getElementById('remTreinoEnabled');
+  if (trHora) trHora.value = tr.hora || '18:00';
+  if (trEnabled) trEnabled.checked = tr.enabled !== false;
   document.getElementById('remEnabled').checked = prefs.enabled!==false;
   modal.classList.add('open');
 }
@@ -10172,6 +10467,10 @@ async function saveReminders() {
       enabled: document.getElementById('remPesoEnabled') ? document.getElementById('remPesoEnabled').checked : true,
       dia: parseInt(document.getElementById('remPesoDia') && document.getElementById('remPesoDia').value, 10) || 0,
       hora: (document.getElementById('remPesoHora') && document.getElementById('remPesoHora').value) || '09:00'
+    },
+    treino: {
+      enabled: document.getElementById('remTreinoEnabled') ? document.getElementById('remTreinoEnabled').checked : true,
+      hora: (document.getElementById('remTreinoHora') && document.getElementById('remTreinoHora').value) || '18:00'
     }
   });
   cfgSave('dvReminders', JSON.stringify(prefs));
@@ -10691,6 +10990,11 @@ function initSettingsPage() {
   if (semEn) semEn.checked = sem.enabled !== false;
   if (semDia) semDia.value = String(sem.dia === undefined || sem.dia === null ? 0 : sem.dia);
   if (semHora) semHora.value = sem.hora || '09:00';
+  const tr = prefs.treino || { enabled: true, hora: '18:00' };
+  const trEn = document.getElementById('remTreinoEnabledSettings');
+  const trHora = document.getElementById('remTreinoHoraSettings');
+  if (trEn) trEn.checked = tr.enabled !== false;
+  if (trHora) trHora.value = tr.hora || '18:00';
 }
 
 function changeAiMode() {
@@ -11017,6 +11321,10 @@ async function saveSettingsReminders() {
       enabled: document.getElementById('remPesoEnabledSettings') ? document.getElementById('remPesoEnabledSettings').checked : true,
       dia: parseInt(document.getElementById('remPesoDiaSettings')?.value, 10) || 0,
       hora: document.getElementById('remPesoHoraSettings')?.value || '09:00'
+    },
+    treino: {
+      enabled: document.getElementById('remTreinoEnabledSettings') ? document.getElementById('remTreinoEnabledSettings').checked : true,
+      hora: document.getElementById('remTreinoHoraSettings')?.value || '18:00'
     }
   });
   const cfgP = cfgSave('dvReminders', JSON.stringify(prefs));
