@@ -695,6 +695,16 @@ body::after {
 .ai-chat-send { flex: 0 0 auto; min-height: 44px; padding: 0 18px; font-size: 12px; }
 .ai-chat-hint { margin-top: 7px; font-family: 'JetBrains Mono', monospace; font-size: 8.5px; color: var(--faint); letter-spacing: 0.2px; }
 .ai-chat-status-msg { min-height: 15px; margin-top: 6px; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); }
+.tm-plan-chat { margin-top: 12px; padding: 12px; }
+.tm-plan-chat .ai-chat-top { margin-bottom: 8px; }
+.tm-plan-chat .ai-chat-log { min-height: 96px; max-height: 320px; padding: 10px; }
+.tm-plan-chat .ai-chat-empty { min-height: 82px; padding: 10px 8px; }
+.tm-plan-chat .ai-chat-empty-title { font-size: 18px; }
+.tm-plan-chat .ai-chat-empty-sub { max-width: 360px; font-size: 11px; line-height: 1.6; }
+.tm-plan-chat .ai-chat-bubble { max-width: 94%; font-size: 12.5px; }
+.tm-plan-chat .ai-chat-suggestions { margin: 8px 0; }
+.tm-plan-chat .ai-chat-input { min-height: 40px; font-size: 12.5px; }
+.tm-plan-chat .ai-chat-send { min-height: 40px; }
 @media (max-width: 560px) {
   .ai-chat-shell { padding: 12px; }
   .ai-chat-log { min-height: 280px; max-height: 46vh; padding: 10px; }
@@ -2779,6 +2789,30 @@ body.app-ready .skip-link { display: block; }
       <div class="ai-panel-label">plano dos próximos 7 dias</div>
       <button class="btn btn-primary" id="tmPlanBtn" onclick="generateTreadmillPlan()" style="width:100%;">🗓️ Gerar plano semanal</button>
       <div class="ai-response" id="tmPlanResponse" aria-live="polite"></div>
+      <div class="ai-chat-shell tm-plan-chat" id="tmPlanChat" style="display:none;">
+        <div class="ai-chat-top">
+          <div class="ai-chat-status"><span class="ai-chat-dot"></span> discutir o plano</div>
+          <button type="button" class="btn btn-secondary ai-chat-clear" onclick="tmPlanChatClear()">Limpar</button>
+        </div>
+        <div class="ai-chat-log" id="tmPlanChatLog" role="log" aria-live="polite" aria-label="Conversa sobre o plano">
+          <div class="ai-chat-empty" id="tmPlanChatEmpty">
+            <div class="ai-chat-empty-title">Fala sobre o plano</div>
+            <div class="ai-chat-empty-sub">Pede ajustes, tira dúvidas ou diz o que não encaixa na tua semana.</div>
+          </div>
+        </div>
+        <div class="ai-chat-suggestions" aria-label="Sugestões para o plano">
+          <button type="button" class="ai-chat-chip" onclick="tmPlanChatAsk('Ajusta o plano para apenas 3 treinos.')">3 treinos</button>
+          <button type="button" class="ai-chat-chip" onclick="tmPlanChatAsk('Tenho dores no joelho. Como adapto o plano?')">Dores no joelho</button>
+          <button type="button" class="ai-chat-chip" onclick="tmPlanChatAsk('Troca parte da corrida por caminhada inclinada.')">Mais caminhada</button>
+          <button type="button" class="ai-chat-chip" onclick="tmPlanChatAsk('Explica-me o treino mais exigente da semana.')">Explicar treino</button>
+        </div>
+        <form class="ai-chat-form" onsubmit="sendTmPlanChat(event)">
+          <textarea id="tmPlanChatInput" class="ai-chat-input" rows="1" maxlength="2000" placeholder="Pergunta ou ajusta..." aria-label="Mensagem sobre o plano" oninput="aiChatAutoGrow(this)" onkeydown="tmPlanChatKeydown(event)"></textarea>
+          <button type="submit" class="btn btn-primary ai-chat-send" id="tmPlanChatSend">Enviar</button>
+        </form>
+        <div class="ai-chat-hint">A conversa fica guardada com este plano; o plano em si só muda quando gerares outro.</div>
+        <div id="tmPlanChatStatus" class="ai-chat-status-msg" role="status" aria-live="polite"></div>
+      </div>
     </div>
     <div style="font-size:11px;color:var(--muted);line-height:1.6;margin-top:12px;">A IA usa o teu histórico local e o peso mais recente. Não substitui aconselhamento médico.</div>
   </div>
@@ -8680,6 +8714,10 @@ function renderTreadmillHistory() {
 }
 
 const TM_PLAN_KEY = 'dvTreadmillPlan';
+const TM_PLAN_CHAT_KEY = 'dvTreadmillPlanChat';
+const TM_PLAN_CHAT_SYSTEM = 'És um treinador de corrida e fitness em Portugal. Estás a discutir com o utilizador o plano de passadeira que já foi gerado. Responde em PT-PT, de forma prática, calorosa e prudente. Usa o plano e o histórico fornecidos e não inventes dados. Podes propor ajustes ao plano quando o utilizador pedir, mantendo o aumento de volume semanal abaixo de 10% e respeitando dores ou limitações. Não faças diagnóstico médico; se houver dor persistente ou preocupante, recomenda avaliação profissional. Sê conciso: máximo 250 palavras, exceto quando apresentares um plano ajustado.';
+let tmPlanChatMessages = [];
+let tmPlanChatBusy = false;
 
 function tmDayName(date) {
   const p = date.split('-').map(Number);
@@ -8761,15 +8799,141 @@ function tmSavePlan(text) {
     return true;
   } catch (e) { return false; }
 }
+function tmCurrentPlan() {
+  try {
+    const p = JSON.parse(localStorage.getItem(TM_PLAN_KEY) || 'null');
+    return p && typeof p.text === 'string' && p.text.trim() ? p : null;
+  } catch (e) { return null; }
+}
+function tmPlanChatLoad() {
+  tmPlanChatMessages = [];
+  const plan = tmCurrentPlan();
+  if (!plan || !plan.at) return;
+  try {
+    const saved = JSON.parse(localStorage.getItem(TM_PLAN_CHAT_KEY) || 'null');
+    if (saved && saved.at === plan.at && Array.isArray(saved.messages)) {
+      tmPlanChatMessages = saved.messages
+        .filter(m => m && (m.role === 'user' || m.role === 'assistant') && typeof m.text === 'string')
+        .slice(-30);
+    }
+  } catch (e) {}
+}
+function tmPlanChatSave() {
+  const plan = tmCurrentPlan();
+  if (!plan || !plan.at) return;
+  try {
+    localStorage.setItem(TM_PLAN_CHAT_KEY, JSON.stringify({
+      at: plan.at,
+      messages: tmPlanChatMessages.slice(-30)
+    }));
+  } catch (e) {}
+}
+function tmPlanChatReset() {
+  tmPlanChatMessages = [];
+  try { localStorage.removeItem(TM_PLAN_CHAT_KEY); } catch (e) {}
+}
+function tmPlanChatRender() {
+  const wrap = document.getElementById('tmPlanChat');
+  if (!wrap) return;
+  const plan = tmCurrentPlan();
+  wrap.style.display = plan ? 'block' : 'none';
+  if (!plan) return;
+  const log = document.getElementById('tmPlanChatLog');
+  const empty = document.getElementById('tmPlanChatEmpty');
+  if (!log) return;
+  log.querySelectorAll('.ai-chat-msg').forEach(el => el.remove());
+  if (empty) empty.hidden = tmPlanChatMessages.length > 0;
+  tmPlanChatMessages.forEach(m => {
+    const row = document.createElement('div');
+    row.className = 'ai-chat-msg ' + m.role + (m.error ? ' error' : '');
+    const bubble = document.createElement('div');
+    bubble.className = 'ai-chat-bubble';
+    bubble.innerHTML = formatAiChat(m.text);
+    row.appendChild(bubble);
+    log.appendChild(row);
+  });
+  log.scrollTop = log.scrollHeight;
+}
+function tmPlanChatContext() {
+  const plan = tmCurrentPlan();
+  return 'PLANO ATUAL:\n' + (plan ? plan.text : '') +
+    '\n\nHISTÓRICO E MEDIDAS:\n' + tmTrainingContext(tmWeekStats());
+}
+function tmPlanChatKeydown(event) {
+  if (event.key === 'Enter' && !event.shiftKey) {
+    event.preventDefault();
+    sendTmPlanChat();
+  }
+}
+function tmPlanChatAsk(text) {
+  if (tmPlanChatBusy) return;
+  const input = document.getElementById('tmPlanChatInput');
+  if (!input) return;
+  input.value = text;
+  aiChatAutoGrow(input);
+  sendTmPlanChat();
+}
+function tmPlanChatClear() {
+  if (!tmPlanChatMessages.length) return;
+  if (!confirm('Limpar esta conversa sobre o plano?')) return;
+  tmPlanChatReset();
+  tmPlanChatRender();
+}
+async function sendTmPlanChat(event) {
+  if (event) event.preventDefault();
+  if (tmPlanChatBusy) return;
+  const plan = tmCurrentPlan();
+  if (!plan) return;
+  const input = document.getElementById('tmPlanChatInput');
+  const sendBtn = document.getElementById('tmPlanChatSend');
+  const status = document.getElementById('tmPlanChatStatus');
+  const text = ((input && input.value) || '').trim();
+  if (!text) return;
+
+  tmPlanChatBusy = true;
+  if (sendBtn) sendBtn.disabled = true;
+  if (status) status.textContent = 'A pensar…';
+
+  tmPlanChatMessages.push({ role: 'user', text, at: Date.now() });
+  if (input) { input.value = ''; aiChatAutoGrow(input); }
+  tmPlanChatRender();
+  tmPlanChatSave();
+
+  try {
+    const history = tmPlanChatMessages.slice(-6)
+      .map(m => (m.role === 'user' ? 'Utilizador' : 'Treinador') + ': ' + m.text)
+      .join('\n\n');
+    const prompt = tmPlanChatContext() + '\n\nConversa até agora:\n' + history +
+      '\n\nResponde à última mensagem do utilizador. Se ele pedir alterações, diz de forma clara o que muda no plano.';
+    const reply = await callGemini(TM_PLAN_CHAT_SYSTEM, prompt, 1200, 'plan-chat');
+    const clean = String(reply || '').trim();
+    if (!clean) throw new Error('A IA devolveu uma resposta vazia.');
+    tmPlanChatMessages.push({ role: 'assistant', text: clean, at: Date.now() });
+  } catch (err) {
+    const message = (err && err.message) ? err.message : 'Erro de ligação.';
+    const textOut = message.includes('configurada')
+      ? '⚙️ ' + message
+      : 'Não consegui responder agora. ' + message;
+    tmPlanChatMessages.push({ role: 'assistant', text: textOut, error: true, at: Date.now() });
+  } finally {
+    tmPlanChatBusy = false;
+    if (sendBtn) sendBtn.disabled = false;
+    if (status) status.textContent = '';
+    tmPlanChatRender();
+    tmPlanChatSave();
+    if (input) input.focus();
+  }
+}
 function tmRenderSavedPlan() {
   const el = document.getElementById('tmPlanResponse');
   if (!el) return;
-  let p = null;
-  try { p = JSON.parse(localStorage.getItem(TM_PLAN_KEY) || 'null'); } catch (e) {}
-  if (!p || !p.text) return;
+  const p = tmCurrentPlan();
+  if (!p) { tmPlanChatRender(); return; }
   const when = p.at ? new Date(p.at) : null;
   const stamp = when && !isNaN(when) ? '\n\nGerado em ' + when.toLocaleString('pt-PT') + '.' : '';
   tmAiShow('tmPlanResponse', p.text + stamp);
+  tmPlanChatLoad();
+  tmPlanChatRender();
 }
 async function generateTreadmillCoach() {
   const btn = document.getElementById('tmCoachBtn');
@@ -8811,8 +8975,12 @@ async function generateTreadmillPlan() {
       'Contexto:\n' + tmTrainingContext(week) + '\n\nDatas dos próximos 7 dias: ' + dates.join(', ') + '.\nCria o plano.',
       1400
     );
-    if (tmSavePlan(text)) tmRenderSavedPlan();
-    else tmAiShow('tmPlanResponse', text);
+    if (tmSavePlan(text)) {
+      tmPlanChatReset();
+      tmRenderSavedPlan();
+    } else {
+      tmAiShow('tmPlanResponse', text);
+    }
   } catch (e) {
     tmAiShow('tmPlanResponse', tmAiError(e));
   } finally {
