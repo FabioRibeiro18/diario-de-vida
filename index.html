@@ -3070,9 +3070,19 @@ body.app-ready .skip-link { display: block; }
   </div>
   <div class="card">
     <div class="card-title">🤖 Inteligência Artificial</div>
-    <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Quatro providers com rotação automática de chaves. Modo <strong>Auto</strong> tenta todos em cadeia se um falhar.</p>
-    
-    <div style="margin-bottom:14px;">
+    <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">A IA incluída usa chaves geridas no servidor, sem chaves no teu dispositivo. Podes optar por usar as tuas próprias chaves.</p>
+
+    <div style="margin-bottom:14px;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;">
+      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Modo de IA</div>
+      <select id="aiModeSelect" onchange="changeAiMode()" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;">
+        <option value="app">✨ IA incluída (recomendado)</option>
+        <option value="byok">🔑 Usar as minhas chaves</option>
+      </select>
+      <div id="aiModeStatus" style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);line-height:1.5;"></div>
+      <div id="aiUsageBadge" style="margin-top:4px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--moss-l);"></div>
+    </div>
+
+    <div id="aiProviderField" style="margin-bottom:14px;">
       <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Provedor de IA</div>
       <select id="aiProviderSelect" onchange="changeAiProvider()" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;">
         <option value="auto">⚡ Auto (todos em cadeia — Recomendado)</option>
@@ -3742,7 +3752,7 @@ function _wf(id) {
   return isToday ? document.getElementById(id).value : ((DB[TODAY] || {})[id] || '');
 }
 // Preferências (lembretes, IA, conquistas) → guardadas também na conta
-var _CFG_MAP = { dvReminders: 'reminders', dvAiProvider: 'aiProvider', dvOpenRouterModel: 'openrouterModel', dvAchievements: 'achievements', dvPerfil: 'perfil', dvAvatar: 'avatar' };
+var _CFG_MAP = { dvReminders: 'reminders', dvAiMode: 'aiMode', dvAiProvider: 'aiProvider', dvOpenRouterModel: 'openrouterModel', dvAchievements: 'achievements', dvPerfil: 'perfil', dvAvatar: 'avatar' };
 function cfgSave(localKey, str) {
   try { localStorage.setItem(localKey, str); } catch (e) {}
   var ck = _CFG_MAP[localKey]; if (!ck) return Promise.resolve('local');
@@ -4704,17 +4714,80 @@ async function callGroqDirect(systemPrompt, userPrompt, maxTokens) {
   throw lastErr || new Error('Todas as chaves Groq falharam.');
 }
 
-// ── Dispatcher principal — cadeia de fallback automática ────────────────────
-async function callGemini(systemPrompt, userPrompt, maxTokens) {
-  const provider = getAiProvider();
+function getAiMode() {
+  return localStorage.getItem('dvAiMode') === 'byok' ? 'byok' : 'app';
+}
 
-  // Modo manual: usa apenas o provider selecionado
+function hasLocalAiKeys() {
+  return [getOpenRouterKeys(), getHFKeys(), getGeminiKeys(), getGroqKeys()]
+    .some(keys => keys.some(key => key && key.length > 10));
+}
+
+async function getAiAuthSession() {
+  if (!supabaseClient) return null;
+  try {
+    const result = await supabaseClient.auth.getSession();
+    return result && result.data ? result.data.session : null;
+  } catch(e) {
+    return null;
+  }
+}
+
+async function callAiProxy(systemPrompt, userPrompt, maxTokens, purpose) {
+  if (!supabaseClient) {
+    const err = new Error('Entra na conta para usar a IA incluída.');
+    err.proxyUnavailable = true;
+    throw err;
+  }
+  let result;
+  try {
+    result = await supabaseClient.functions.invoke('ai-proxy', {
+      body: {
+        systemPrompt: systemPrompt,
+        userPrompt: userPrompt,
+        maxTokens: maxTokens || 800,
+        purpose: purpose || 'app'
+      }
+    });
+  } catch(e) {
+    const err = new Error('Não foi possível contactar a IA incluída.');
+    err.proxyUnavailable = true;
+    throw err;
+  }
+  const error = result && result.error;
+  const data = result && result.data;
+  if (error) {
+    let message = '';
+    let status = 0;
+    try {
+      status = error.context && error.context.status ? error.context.status : 0;
+      if (error.context && typeof error.context.json === 'function') {
+        const body = await error.context.json();
+        message = body && body.error ? body.error : '';
+      }
+    } catch(e) {}
+    if (!message) message = error.message || 'IA indisponível.';
+    if (status === 401) message = 'Sessão expirada. Entra novamente para usar a IA incluída.';
+    if (status === 429) message = 'Limite diário de IA atingido. Tenta novamente amanhã.';
+    const err = new Error(message);
+    if (status === 404 || status >= 500 || /failed to send|not found/i.test(error.message || '')) {
+      err.proxyUnavailable = true;
+    }
+    throw err;
+  }
+  if (!data || !data.text) {
+    throw new Error((data && data.error) || 'Resposta vazia da IA.');
+  }
+  return data.text;
+}
+
+async function callAiWithLocalKeys(systemPrompt, userPrompt, maxTokens) {
+  const provider = getAiProvider();
   if (provider === 'openrouter') return await callOpenRouter(systemPrompt, userPrompt, maxTokens);
   if (provider === 'huggingface') return await callHuggingFace(systemPrompt, userPrompt, maxTokens);
   if (provider === 'gemini')      return await callGeminiDirect(systemPrompt, userPrompt, maxTokens);
   if (provider === 'groq')        return await callGroqDirect(systemPrompt, userPrompt, maxTokens);
 
-  // Modo 'auto': tenta todos em cadeia
   const chain = [
     { name: 'OpenRouter',    fn: () => callOpenRouter(systemPrompt, userPrompt, maxTokens) },
     { name: 'HuggingFace',  fn: () => callHuggingFace(systemPrompt, userPrompt, maxTokens) },
@@ -4732,6 +4805,29 @@ async function callGemini(systemPrompt, userPrompt, maxTokens) {
     }
   }
   throw lastErr || new Error('Todos os providers de IA falharam. Verifica as chaves em ⚙️ Configurações → IA.');
+}
+
+async function callGemini(systemPrompt, userPrompt, maxTokens, purpose) {
+  if (getAiMode() === 'app') {
+    const session = await getAiAuthSession();
+    if (session) {
+      try {
+        return await callAiProxy(systemPrompt, userPrompt, maxTokens, purpose);
+      } catch(e) {
+        if (e.proxyUnavailable && hasLocalAiKeys()) {
+          console.warn('[AI] IA incluída indisponível; a usar chaves locais.', e.message);
+          return await callAiWithLocalKeys(systemPrompt, userPrompt, maxTokens);
+        }
+        throw e;
+      }
+    }
+    if (hasLocalAiKeys()) {
+      console.warn('[AI] Sem sessão; a usar chaves locais.');
+      return await callAiWithLocalKeys(systemPrompt, userPrompt, maxTokens);
+    }
+    throw new Error('Entra na tua conta para usar a IA incluída, ou ativa as tuas chaves em ⚙️ Configurações → IA.');
+  }
+  return await callAiWithLocalKeys(systemPrompt, userPrompt, maxTokens);
 }
 
 // Compatibilidade — getGroqKey já definida acima
@@ -5747,7 +5843,7 @@ async function sendAiChat(event) {
       .join('\n\n');
     const context = aiChatContext();
     const prompt = (context ? context + '\n\n' : '') + 'Conversa até agora:\n' + history + '\n\nResponde à última mensagem do utilizador.';
-    const reply = await callGemini(AI_CHAT_SYSTEM, prompt, 1400);
+    const reply = await callGemini(AI_CHAT_SYSTEM, prompt, 1400, 'chat');
     const clean = String(reply || '').trim();
     if (!clean) throw new Error('A IA devolveu uma resposta vazia.');
     aiChatMessages.push({ role: 'assistant', text: clean, at: Date.now() });
@@ -9979,11 +10075,15 @@ function initSettingsPage() {
   const urlInput = document.getElementById('sheetsUrlSettingsInput');
   if (urlInput && sheetsUrl) urlInput.value = sheetsUrl;
 
-  // AI Provider & OpenRouter
+  // AI mode, provider & OpenRouter
+  const mode = getAiMode();
+  const modeSel = document.getElementById('aiModeSelect');
+  if (modeSel) modeSel.value = mode;
   const provider = getAiProvider();
   const providerSel = document.getElementById('aiProviderSelect');
   if (providerSel) providerSel.value = provider;
-  changeAiProvider();
+  applyAiModeUI();
+  if (mode === 'app') refreshAiUsage();
 
   const orKeysTextarea = document.getElementById('openrouterKeysSettingsInput');
   const orKeysBadge = document.getElementById('openrouterKeysBadge');
@@ -10067,10 +10167,101 @@ function initSettingsPage() {
   if (semHora) semHora.value = sem.hora || '09:00';
 }
 
+function changeAiMode() {
+  const sel = document.getElementById('aiModeSelect');
+  const val = sel && sel.value === 'byok' ? 'byok' : 'app';
+  cfgSave('dvAiMode', val);
+  applyAiModeUI();
+  if (val === 'app') refreshAiUsage();
+}
+
+function applyAiModeUI() {
+  const appMode = getAiMode() === 'app';
+  const field = document.getElementById('aiProviderField');
+  const status = document.getElementById('aiModeStatus');
+  const usage = document.getElementById('aiUsageBadge');
+  if (field) field.style.display = appMode ? 'none' : 'block';
+  if (status) {
+    status.textContent = appMode
+      ? '✨ Chaves geridas pela app. Não precisas de configurar nada.'
+      : '🔑 As chaves ficam apenas neste dispositivo.';
+  }
+  if (usage && !appMode) usage.textContent = '';
+  if (appMode) {
+    ['openrouterSettingsBox', 'groqSettingsBox', 'hfSettingsBox', 'geminiSettingsBox'].forEach(id => {
+      const box = document.getElementById(id);
+      if (box) box.style.display = 'none';
+    });
+  } else {
+    changeAiProvider();
+  }
+}
+
+async function refreshAiUsage() {
+  const el = document.getElementById('aiUsageBadge');
+  if (!el || getAiMode() !== 'app') return;
+  if (!supabaseClient) {
+    el.textContent = 'Entra na conta para usar a IA incluída.';
+    el.style.color = 'var(--muted)';
+    return;
+  }
+  const session = await getAiAuthSession();
+  if (!session) {
+    el.textContent = 'Entra na conta para usar a IA incluída.';
+    el.style.color = 'var(--muted)';
+    return;
+  }
+  el.textContent = '⏳ a verificar o limite diário…';
+  el.style.color = 'var(--muted)';
+  try {
+    const { data, error } = await supabaseClient.functions.invoke('ai-proxy', {
+      body: { action: 'status' }
+    });
+    if (error) {
+      let message = '';
+      let status = 0;
+      try {
+        status = error.context && error.context.status ? error.context.status : 0;
+        if (error.context && typeof error.context.json === 'function') {
+          const body = await error.context.json();
+          message = body && body.error ? body.error : '';
+        }
+      } catch(e) {}
+      if (status === 404) {
+        el.textContent = '⚠ IA incluída ainda não está publicada no servidor.';
+      } else {
+        el.textContent = '⚠ ' + (message || error.message || 'Limite indisponível.');
+      }
+      el.style.color = '#fbbf24';
+      return;
+    }
+    if (!data || data.available === false) {
+      el.textContent = '⚠ IA incluída ainda não está configurada no servidor.';
+      el.style.color = '#fbbf24';
+      return;
+    }
+    const used = Number(data.used) || 0;
+    const limit = Number(data.limit) || 0;
+    const remaining = Math.max(limit - used, 0);
+    el.textContent = `📊 Hoje: ${used}/${limit} pedidos · ${remaining} restantes`;
+    el.style.color = 'var(--moss-l)';
+  } catch(e) {
+    el.textContent = '⚠ Não foi possível verificar o limite da IA.';
+    el.style.color = '#fbbf24';
+  }
+}
+
 function changeAiProvider() {
   const sel = document.getElementById('aiProviderSelect');
   const val = sel ? sel.value : 'auto';
   cfgSave('dvAiProvider', val);
+  if (getAiMode() === 'app') {
+    ['openrouterSettingsBox', 'groqSettingsBox', 'hfSettingsBox', 'geminiSettingsBox'].forEach(id => {
+      const box = document.getElementById(id);
+      if (box) box.style.display = 'none';
+    });
+    return;
+  }
   const orBox     = document.getElementById('openrouterSettingsBox');
   const groqBox   = document.getElementById('groqSettingsBox');
   const hfBox     = document.getElementById('hfSettingsBox');
