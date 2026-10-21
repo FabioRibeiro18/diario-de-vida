@@ -4431,7 +4431,7 @@ const DEFAULT_HF_KEY          = '';
 const DEFAULT_GEMINI_KEY      = '';
 const GROQ_MODEL              = 'llama-3.3-70b-versatile';
 const HF_MODEL                = 'meta-llama/Llama-3.1-8B-Instruct';
-const GEMINI_MODEL            = 'gemini-2.0-flash';
+const GEMINI_MODEL            = 'gemini-3.8-flash';
 
 // ── Helpers round-robin persistente ───────────────────────────────────────
 function _getIdx(storageKey) {
@@ -4626,6 +4626,17 @@ async function callHuggingFace(systemPrompt, userPrompt, maxTokens) {
   throw lastErr || new Error('Todas as chaves Hugging Face falharam.');
 }
 
+function geminiResponseText(data) {
+  const parts = data && data.candidates && data.candidates[0] &&
+    data.candidates[0].content && data.candidates[0].content.parts;
+  if (!Array.isArray(parts)) return '';
+  return parts
+    .filter(part => part && part.thought !== true && typeof part.text === 'string')
+    .map(part => part.text)
+    .join('')
+    .trim();
+}
+
 async function callGeminiDirect(systemPrompt, userPrompt, maxTokens) {
   const keys = getGeminiKeys();
   if (!keys.length) throw new Error('Sem chaves Gemini.');
@@ -4642,13 +4653,16 @@ async function callGeminiDirect(systemPrompt, userPrompt, maxTokens) {
         body: JSON.stringify({
           system_instruction: { parts: [{ text: systemPrompt }] },
           contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
-          generationConfig: { maxOutputTokens: maxTokens || 800, temperature: 0.3 }
+          generationConfig: {
+            maxOutputTokens: maxTokens || 800,
+            thinkingConfig: { thinkingLevel: 'low' }
+          }
         })
       });
       if (response.ok) {
         localStorage.setItem('dvGeminiKeyIdx', String((idx + 1) % keys.length));
         const data = await response.json();
-        const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+        const text = geminiResponseText(data);
         if (!text) throw new Error('Resposta vazia Gemini');
         return text;
       }
