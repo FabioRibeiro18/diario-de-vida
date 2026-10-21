@@ -76,8 +76,8 @@ const PROVIDER_TIMEOUT_MS = readInt(
 );
 
 const DEFAULT_PROVIDER_ORDER: Provider[] = [
-  "openrouter",
   "gemini",
+  "openrouter",
   "groq",
   "huggingface",
 ];
@@ -86,7 +86,7 @@ const MODELS: Record<Provider, string> = {
   openrouter: Deno.env.get("OPENROUTER_MODEL") ||
     "nvidia/nemotron-3.5-lightning:free",
   huggingface: Deno.env.get("HF_MODEL") || "meta-llama/Llama-3.1-8B-Instruct",
-  gemini: Deno.env.get("GEMINI_MODEL") || "gemini-2.0-flash",
+  gemini: Deno.env.get("GEMINI_MODEL") || "gemini-3.8-flash",
   groq: Deno.env.get("GROQ_MODEL") || "llama-3.3-70b-versatile",
 };
 
@@ -412,6 +412,22 @@ async function callOpenAICompatible(
   return { text: text.trim(), provider, model };
 }
 
+function geminiResponseText(data: unknown): string {
+  const parts = (data as {
+    candidates?: Array<{
+      content?: { parts?: Array<{ text?: unknown; thought?: boolean }> };
+    }>;
+  })?.candidates?.[0]?.content?.parts;
+  if (!Array.isArray(parts)) return "";
+  return parts
+    .filter((part) =>
+      part && part.thought !== true && typeof part.text === "string"
+    )
+    .map((part) => part.text as string)
+    .join("")
+    .trim();
+}
+
 async function callGemini(
   key: string,
   systemPrompt: string,
@@ -428,12 +444,13 @@ async function callGemini(
     body: JSON.stringify({
       system_instruction: { parts: [{ text: systemPrompt }] },
       contents: [{ role: "user", parts: [{ text: userPrompt }] }],
-      generationConfig: { maxOutputTokens: maxTokens, temperature: 0.3 },
+      generationConfig: {
+        maxOutputTokens: maxTokens,
+        thinkingConfig: { thinkingLevel: "low" },
+      },
     }),
   });
-  const text = (data as {
-    candidates?: Array<{ content?: { parts?: Array<{ text?: unknown }> } }>;
-  })?.candidates?.[0]?.content?.parts?.[0]?.text;
+  const text = geminiResponseText(data);
   if (typeof text !== "string" || !text.trim()) {
     throw makeFailure("O Gemini devolveu uma resposta vazia.", 502);
   }
