@@ -46,6 +46,32 @@
 .tm-bar i{display:block;width:100%;border-radius:6px 6px 2px 2px;background:var(--moss);min-height:3px;transition:height .3s}
 .tm-bar:hover i{background:var(--moss-l)}
 .tm-bar.sel i{background:var(--moss-l);box-shadow:0 0 0 2px var(--moss-d)}
+.tmp-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:2px}
+.tmp-head-main{font-size:13px;color:var(--text)}
+.tmp-head-pct{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--moss-l)}
+.tmp-bar{height:8px;border-radius:999px;background:var(--surface);border:1px solid var(--border);overflow:hidden;margin:10px 0 12px}
+.tmp-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--moss-d),var(--moss-l));transition:width .4s}
+.tmp-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.tmp-stat{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:4px 9px}
+.tmp-list{display:flex;flex-direction:column;gap:8px}
+.tmp-day{display:flex;align-items:center;gap:12px;padding:11px 12px;border:1px solid var(--border);border-radius:12px;background:linear-gradient(180deg,var(--surface),var(--card));transition:transform .12s,border-color .12s,box-shadow .12s}
+.tmp-day.click{cursor:pointer}
+.tmp-day.click:hover{transform:translateY(-1px);border-color:var(--border2)}
+.tmp-day.done{border-color:rgba(45,212,191,.45)}
+.tmp-day.today{border-color:var(--moss);box-shadow:0 0 0 1px var(--moss-d)}
+.tmp-day.miss{border-color:rgba(244,114,182,.35);opacity:.9}
+.tmp-day.rest{opacity:.7}
+.tmp-date{flex:0 0 46px;text-align:center;border-radius:11px;background:var(--bg2);border:1px solid var(--border);padding:7px 0}
+.tmp-date b{display:block;font-family:'JetBrains Mono',monospace;font-size:16px;color:var(--text);line-height:1}
+.tmp-date span{display:block;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-top:3px}
+.tmp-info{flex:1;min-width:0}
+.tmp-title{font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tmp-stats{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
+.tmp-status{flex:0 0 auto;font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.5px;padding:5px 9px;border-radius:999px;border:1px solid var(--border);color:var(--text2);background:var(--surface)}
+.tmp-status.done{color:var(--moss-l);border-color:rgba(45,212,191,.5);background:rgba(45,212,191,.12)}
+.tmp-status.today{color:var(--moss-l);border-color:var(--moss);background:rgba(45,212,191,.18)}
+.tmp-status.miss{color:var(--rose);border-color:rgba(244,114,182,.4);background:rgba(244,114,182,.1)}
+.tmp-status.rest{color:var(--muted);background:transparent}
 .tm-bar.sel{color:var(--text)}
 .pf-bar{height:10px;border-radius:6px;background:var(--surface);border:1px solid var(--border);overflow:hidden;margin-top:14px}
 .pf-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--moss),var(--moss-l));transition:width .4s}
@@ -9180,6 +9206,19 @@ function tmParsePlan(text) {
   });
   return out;
 }
+function tmPlanLabel(it) {
+  if (it.rest) return 'Descanso';
+  let s = String(it.label || '');
+  if (it.date) s = s.split(it.date).join(' ');
+  s = s.replace(/\b(segunda|terça|terca|quarta|quinta|sexta|s[áa]bado|domingo)(-feira)?\b/gi, ' ');
+  s = s.replace(/\b\d{1,2}\/\d{1,2}\b/g, ' ');
+  s = s.replace(/\b\d+(?:[.,]\d+)?\s*km\s*\/?\s*h\b/gi, ' ');
+  s = s.replace(/\b\d+(?:[.,]\d+)?\s*km\b/gi, ' ');
+  s = s.replace(/\b\d+(?:[.,]\d+)?\s*(?:min\b|minuto\w*)/gi, ' ');
+  s = s.replace(/[:\-–—,;]+/g, ' ');
+  s = s.replace(/\s+/g, ' ').trim();
+  return s || 'Treino';
+}
 function tmRenderPlanCards() {
   const card = document.getElementById('tmPlanCard');
   const box = document.getElementById('tmPlanDays');
@@ -9190,45 +9229,54 @@ function tmRenderPlanCards() {
   if (!items.length) {
     card.style.display = 'none';
     box.innerHTML = '';
-    if (summary) summary.textContent = '';
+    if (summary) summary.innerHTML = '';
     return;
   }
   card.style.display = 'block';
-  let planned = 0, done = 0;
+  let planned = 0, done = 0, plannedKm = 0, plannedMin = 0;
   const rows = items.map(it => {
-    const trained = it.date && DB[it.date] &&
-      (parseFloat(DB[it.date].treadmillTime) > 0 || parseFloat(DB[it.date].treadmillDistance) > 0);
-    let status, color, badge;
-    if (it.rest) { status = 'descanso'; color = 'var(--muted)'; badge = '😌'; }
-    else if (trained) { status = 'feito'; color = 'var(--moss-l)'; badge = '✓'; }
-    else if (it.date === TODAY) { status = 'hoje'; color = 'var(--moss)'; badge = '→'; }
-    else if (it.date && it.date < TODAY) { status = 'falhado'; color = 'var(--rose)'; badge = '·'; }
-    else { status = 'previsto'; color = 'var(--text2)'; badge = '○'; }
-    if (!it.rest) { planned++; if (trained) done++; }
-    const parts = [];
-    if (it.distance) parts.push(it.distance + ' km');
-    if (it.minutes) parts.push(Math.round(it.minutes) + ' min');
-    if (it.speed) parts.push(it.speed.toFixed(1) + ' km/h');
-    const detail = it.rest ? 'descanso' : (parts.join(' · ') || 'sessão');
-    const dateLbl = it.date ? it.date.slice(8, 10) + '/' + it.date.slice(5, 7) : '';
+    const trained = !!(it.date && DB[it.date] &&
+      (parseFloat(DB[it.date].treadmillTime) > 0 || parseFloat(DB[it.date].treadmillDistance) > 0));
+    let cls = 'plan', status = 'previsto', badge = '•';
+    if (it.rest) { cls = 'rest'; status = 'descanso'; badge = '😌'; }
+    else if (trained) { cls = 'done'; status = 'feito'; badge = '✓'; }
+    else if (it.date === TODAY) { cls = 'today'; status = 'hoje'; badge = '▶'; }
+    else if (it.date && it.date < TODAY) { cls = 'miss'; status = 'falhado'; badge = '✕'; }
+    if (!it.rest) {
+      planned++;
+      if (trained) done++;
+      plannedKm += it.distance || 0;
+      plannedMin += it.minutes || 0;
+    }
+    const stats = [];
+    if (it.distance) stats.push('<span class="tmp-stat">' + it.distance + ' km</span>');
+    if (it.minutes) stats.push('<span class="tmp-stat">' + Math.round(it.minutes) + ' min</span>');
+    if (it.speed) stats.push('<span class="tmp-stat">' + it.speed.toFixed(1) + ' km/h</span>');
+    const statsHtml = it.rest ? '' :
+      '<div class="tmp-stats">' + (stats.join('') || '<span class="tmp-stat">sessão</span>') + '</div>';
+    const weekday = it.date ? tmDayName(it.date) : '';
+    const dayNum = it.date ? it.date.slice(8, 10) : '·';
     const clickable = !!(it.date && it.date <= TODAY);
-    return '<div' + (clickable ? ' onclick="tmSetDay(\'' + it.date + '\')"' : '') +
-      ' style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0 9px 10px;border-bottom:1px solid var(--border);border-left:3px solid ' + color + ';' + (clickable ? 'cursor:pointer;' : '') + '">' +
-      '<div style="min-width:0;">' +
-        '<div style="font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + tmEsc(it.label) + '</div>' +
-        '<div style="font-size:11px;color:var(--muted);">' + (dateLbl ? dateLbl + ' · ' : '') + detail + '</div>' +
-      '</div>' +
-      '<div style="font-family:\'JetBrains Mono\',monospace;font-size:10px;color:' + color + ';white-space:nowrap;">' + badge + ' ' + status + '</div>' +
+    return '<div class="tmp-day ' + cls + (clickable ? ' click' : '') + '"' +
+        (clickable ? ' onclick="tmSetDay(\'' + it.date + '\')"' : '') + '>' +
+      '<div class="tmp-date"><b>' + dayNum + '</b><span>' + (weekday || '—') + '</span></div>' +
+      '<div class="tmp-info"><div class="tmp-title">' + tmEsc(tmPlanLabel(it)) + '</div>' + statsHtml + '</div>' +
+      '<div class="tmp-status ' + cls + '">' + badge + ' ' + status + '</div>' +
     '</div>';
   }).join('');
   box.innerHTML = rows;
   if (summary) {
     const target = tmGetCriteria().targetKm;
-    const plannedKm = items.filter(i => !i.rest && i.distance).reduce((s, i) => s + i.distance, 0);
-    const bits = [];
-    if (planned) bits.push(done + ' de ' + planned + ' sessões cumpridas');
-    if (plannedKm) bits.push((Math.round(plannedKm * 10) / 10) + (target > 0 ? ' de ' + target : '') + ' km planeados');
-    summary.textContent = bits.join(' · ');
+    const pct = planned ? Math.round(done / planned * 100) : 0;
+    const head = planned
+      ? '<div class="tmp-head"><div class="tmp-head-main">' + done + ' de ' + planned + ' sessões cumpridas</div>' +
+        '<div class="tmp-head-pct">' + pct + '%</div></div>' +
+        '<div class="tmp-bar"><i style="width:' + pct + '%"></i></div>'
+      : '<div class="tmp-head"><div class="tmp-head-main">Semana de descanso</div></div>';
+    const chips = [];
+    if (plannedKm) chips.push('<span class="tmp-stat">' + (Math.round(plannedKm * 10) / 10) + (target > 0 ? ' de ' + target : '') + ' km planeados</span>');
+    if (plannedMin) chips.push('<span class="tmp-stat">' + Math.round(plannedMin) + ' min planeados</span>');
+    summary.innerHTML = head + (chips.length ? '<div class="tmp-chips">' + chips.join('') + '</div>' : '');
   }
 }
 async function generateTreadmillCoach() {
