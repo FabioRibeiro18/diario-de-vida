@@ -2779,6 +2779,20 @@ body.app-ready .skip-link { display: block; }
   </div>
 
   <div class="card">
+    <div class="card-title">estatísticas gerais</div>
+    <div class="mini-tiles">
+      <div class="mini-tile"><div class="mini-val" id="tmStatSessions">0</div><div class="mini-lbl">treinos</div></div>
+      <div class="mini-tile"><div class="mini-val" id="tmStatKm">0</div><div class="mini-lbl">km totais</div></div>
+      <div class="mini-tile"><div class="mini-val" id="tmStatMin">0</div><div class="mini-lbl">minutos</div></div>
+    </div>
+    <div class="mini-tiles" style="margin-top:10px;">
+      <div class="mini-tile"><div class="mini-val" id="tmStatBestSpeed">—</div><div class="mini-lbl">melhor km/h</div></div>
+      <div class="mini-tile"><div class="mini-val" id="tmStatLongest">—</div><div class="mini-lbl">treino mais longo</div></div>
+      <div class="mini-tile"><div class="mini-val" id="tmStatStreak">0</div><div class="mini-lbl">dias seguidos</div></div>
+    </div>
+  </div>
+
+  <div class="card">
     <div class="card-title">treinador IA</div>
     <div class="ai-panel" style="margin-bottom:12px;">
       <div class="ai-panel-label">análise dos últimos 7 dias</div>
@@ -2818,6 +2832,13 @@ body.app-ready .skip-link { display: block; }
       </div>
     </div>
     <div style="font-size:11px;color:var(--muted);line-height:1.6;margin-top:12px;">A IA usa o teu histórico local e o peso mais recente. Não substitui aconselhamento médico.</div>
+  </div>
+
+  <div class="card" id="tmPlanCard" style="display:none;">
+    <div class="card-title">plano da semana</div>
+    <div id="tmPlanSummary" style="font-size:12px;color:var(--muted);margin-bottom:10px;"></div>
+    <div id="tmPlanDays"></div>
+    <div style="font-size:11px;color:var(--muted);margin-top:10px;">Toca num dia passado ou de hoje para abrir o registo.</div>
   </div>
 
   <div class="card">
@@ -3125,7 +3146,7 @@ body.app-ready .skip-link { display: block; }
         <option value="auto">⚡ Auto (todos em cadeia — Recomendado)</option>
         <option value="openrouter">OpenRouter (Múltiplas IA's)</option>
         <option value="huggingface">Hugging Face (Llama 3.1)</option>
-        <option value="gemini">Google Gemini 2.0 Flash</option>
+        <option value="gemini">Google Gemini 3.8 Flash</option>
         <option value="groq">Groq (Llama 3.3)</option>
       </select>
     </div>
@@ -3220,6 +3241,11 @@ hf_... (2ª chave)" style="width:100%;background:var(--surface);border:1px solid
         <a href="https://aistudio.google.com/app/apikey" target="_blank" class="btn btn-secondary" style="font-size:11px;text-decoration:none;">🔑 Obter chave Gemini</a>
       </div>
       <div id="geminiSettingsStatus" style="font-family:'JetBrains Mono',monospace;font-size:10px;"></div>
+    </div>
+
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">
+      <button class="btn btn-secondary" onclick="clearByokKeys(true)" style="width:100%;font-size:11px;">🗑 Remover todas as minhas chaves guardadas</button>
+      <div id="aiClearKeysStatus" style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);line-height:1.5;">As chaves ficam apenas neste dispositivo e são apagadas ao terminar sessão. No modo de IA incluída não é preciso guardar chaves.</div>
     </div>
   </div>
   <div class="card">
@@ -8361,6 +8387,7 @@ async function onUserAuthenticated(user) {
   if (lastUser && user && user.id && lastUser !== user.id) {
     ['dvLifeDiary_v3', 'dvSheetsUrl', 'dvAvatar', 'dvSyncQueue', 'dvSyncMeta', 'diarioVida',
      'dvReminders', 'dvAiProvider', 'dvOpenRouterModel', 'dvAchievements', 'dvPerfil', 'dvTreadmillPlan', 'dvTreadmillPlanChat', 'dvAiChatHistory'].forEach(k => localStorage.removeItem(k));
+    clearByokKeys(false);
     localStorage.setItem('dvLastUserId', user.id);
     location.reload();
     return;
@@ -8419,6 +8446,7 @@ async function logout() {
     // Tudo confirmado na nuvem: limpa a cópia local para não ficar no dispositivo
     ['dvLifeDiary_v3', 'dvSheetsUrl', 'dvAvatar', 'dvSyncQueue', 'dvSyncMeta', 'diarioVida', 'dvLastUserId',
      'dvReminders', 'dvAiProvider', 'dvOpenRouterModel', 'dvAchievements', 'dvPerfil', 'dvTreadmillPlan', 'dvTreadmillPlanChat', 'dvAiChatHistory'].forEach(k => localStorage.removeItem(k));
+    clearByokKeys(false);
     location.reload();
     return;
   }
@@ -8636,6 +8664,39 @@ function tmRenderWeek() {
     return '<button type="button" class="tm-bar' + (d === sel ? ' sel' : '') + '" onclick="tmSetDay(\'' + d + '\')" title="' + p[2] + '/' + p[1] + ' · ' + km[i] + ' km">' +
            '<span>' + (km[i] > 0 ? km[i] : '') + '</span><i style="height:' + h + 'px"></i><span>' + wd + '</span></button>';
   }).join('');
+  tmRenderStats();
+  tmRenderPlanCards();
+}
+function tmPrevDate(d) {
+  const p = d.split('-').map(Number);
+  const dt = new Date(p[0], p[1] - 1, p[2] - 1);
+  return dt.getFullYear() + '-' + String(dt.getMonth() + 1).padStart(2, '0') + '-' + String(dt.getDate()).padStart(2, '0');
+}
+function tmComputeStats() {
+  const trained = d => DB[d] && (parseFloat(DB[d].treadmillTime) > 0 || parseFloat(DB[d].treadmillDistance) > 0);
+  const dates = Object.keys(DB).filter(d => /^\d{4}-\d{2}-\d{2}$/.test(d) && trained(d)).sort();
+  let km = 0, min = 0, bestSpeed = 0, longest = 0;
+  dates.forEach(d => {
+    const t = parseFloat(DB[d].treadmillTime) || 0;
+    const k = parseFloat(DB[d].treadmillDistance) || 0;
+    km += k; min += t;
+    if (t > 0 && k > 0) bestSpeed = Math.max(bestSpeed, k / (t / 60));
+    longest = Math.max(longest, t);
+  });
+  let streak = 0;
+  let cursor = trained(TODAY) ? TODAY : tmDateOffset(1);
+  while (trained(cursor)) { streak++; cursor = tmPrevDate(cursor); }
+  return { sessions: dates.length, km, min, bestSpeed, longest, streak };
+}
+function tmRenderStats() {
+  const s = tmComputeStats();
+  const txt = (id, v) => { const el = document.getElementById(id); if (el) el.textContent = v; };
+  txt('tmStatSessions', String(s.sessions));
+  txt('tmStatKm', String(Math.round(s.km * 10) / 10));
+  txt('tmStatMin', String(Math.round(s.min)));
+  txt('tmStatBestSpeed', s.bestSpeed ? s.bestSpeed.toFixed(1) : '—');
+  txt('tmStatLongest', s.longest ? Math.round(s.longest) + ' min' : '—');
+  txt('tmStatStreak', String(s.streak));
 }
 function initTreadmill() {
   const d = document.getElementById('tmDate');
@@ -9002,12 +9063,105 @@ function tmRenderSavedPlan() {
   const el = document.getElementById('tmPlanResponse');
   if (!el) return;
   const p = tmCurrentPlan();
-  if (!p) { tmPlanChatRender(); return; }
+  if (!p) { tmPlanChatRender(); tmRenderPlanCards(); return; }
   const when = p.at ? new Date(p.at) : null;
   const stamp = when && !isNaN(when) ? '\n\nGerado em ' + when.toLocaleString('pt-PT') + '.' : '';
   tmAiShow('tmPlanResponse', p.text + stamp);
   tmPlanChatLoad();
   tmPlanChatRender();
+  tmRenderPlanCards();
+}
+function tmEsc(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+function tmPlanWeekdayIndex(name) {
+  const n = String(name).toLowerCase();
+  if (n.startsWith('seg')) return 1;
+  if (n.startsWith('ter')) return 2;
+  if (n.startsWith('qua')) return 3;
+  if (n.startsWith('qui')) return 4;
+  if (n.startsWith('sex')) return 5;
+  if (n.startsWith('sáb') || n.startsWith('sab')) return 6;
+  if (n.startsWith('dom')) return 0;
+  return -1;
+}
+function tmPlanDateForWeekday(idx) {
+  const p = TODAY.split('-').map(Number);
+  for (let i = 0; i < 7; i++) {
+    const d = new Date(p[0], p[1] - 1, p[2] + i);
+    if (d.getDay() === idx) return localDateStr(d);
+  }
+  return null;
+}
+function tmParsePlan(text) {
+  if (!text) return [];
+  const out = [];
+  String(text).split(/\r?\n/).forEach(raw => {
+    const line = raw.trim().replace(/^[-*•]\s*/, '').replace(/^\d+[.)]\s*/, '');
+    if (!line) return;
+    const isRest = /descanso|repouso|folga/i.test(line);
+    const minMatch = line.match(/(\d+(?:[.,]\d+)?)\s*(?:min\b|minuto)/i);
+    const speedMatch = line.match(/(\d+(?:[.,]\d+)?)\s*km\s*\/?\s*h/i);
+    let date = null;
+    const iso = line.match(/(\d{4})-(\d{2})-(\d{2})/);
+    const dm = line.match(/\b(\d{1,2})\/(\d{1,2})\b/);
+    if (iso) {
+      date = iso[1] + '-' + iso[2] + '-' + iso[3];
+    } else if (dm) {
+      date = TODAY.slice(0, 4) + '-' + String(dm[2]).padStart(2, '0') + '-' + String(dm[1]).padStart(2, '0');
+    } else {
+      const wd = line.match(/\b(segunda|terça|terca|quarta|quinta|sexta|s[áa]bado|domingo)(?:-feira)?\b/i);
+      if (wd) { const idx = tmPlanWeekdayIndex(wd[1]); if (idx >= 0) date = tmPlanDateForWeekday(idx); }
+    }
+    const minutes = minMatch ? parseFloat(minMatch[1].replace(',', '.')) : null;
+    const speed = speedMatch ? parseFloat(speedMatch[1].replace(',', '.')) : null;
+    if (!date && minutes == null && speed == null && !isRest) return;
+    out.push({ label: line, date, minutes, speed, rest: isRest });
+  });
+  return out;
+}
+function tmRenderPlanCards() {
+  const card = document.getElementById('tmPlanCard');
+  const box = document.getElementById('tmPlanDays');
+  const summary = document.getElementById('tmPlanSummary');
+  if (!card || !box) return;
+  const plan = tmCurrentPlan();
+  const items = plan ? tmParsePlan(plan.text) : [];
+  if (!items.length) {
+    card.style.display = 'none';
+    box.innerHTML = '';
+    if (summary) summary.textContent = '';
+    return;
+  }
+  card.style.display = 'block';
+  let planned = 0, done = 0;
+  const rows = items.map(it => {
+    const trained = it.date && DB[it.date] &&
+      (parseFloat(DB[it.date].treadmillTime) > 0 || parseFloat(DB[it.date].treadmillDistance) > 0);
+    let status, color, badge;
+    if (it.rest) { status = 'descanso'; color = 'var(--muted)'; badge = '😌'; }
+    else if (trained) { status = 'feito'; color = 'var(--moss-l)'; badge = '✓'; }
+    else if (it.date === TODAY) { status = 'hoje'; color = 'var(--moss)'; badge = '→'; }
+    else if (it.date && it.date < TODAY) { status = 'falhado'; color = 'var(--rose)'; badge = '·'; }
+    else { status = 'previsto'; color = 'var(--text2)'; badge = '○'; }
+    if (!it.rest) { planned++; if (trained) done++; }
+    const parts = [];
+    if (it.minutes) parts.push(Math.round(it.minutes) + ' min');
+    if (it.speed) parts.push(it.speed.toFixed(1) + ' km/h');
+    const detail = it.rest ? 'descanso' : (parts.join(' · ') || 'sessão');
+    const dateLbl = it.date ? it.date.slice(8, 10) + '/' + it.date.slice(5, 7) : '';
+    const clickable = !!(it.date && it.date <= TODAY);
+    return '<div' + (clickable ? ' onclick="tmSetDay(\'' + it.date + '\')"' : '') +
+      ' style="display:flex;justify-content:space-between;align-items:center;gap:10px;padding:9px 0 9px 10px;border-bottom:1px solid var(--border);border-left:3px solid ' + color + ';' + (clickable ? 'cursor:pointer;' : '') + '">' +
+      '<div style="min-width:0;">' +
+        '<div style="font-size:13px;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">' + tmEsc(it.label) + '</div>' +
+        '<div style="font-size:11px;color:var(--muted);">' + (dateLbl ? dateLbl + ' · ' : '') + detail + '</div>' +
+      '</div>' +
+      '<div style="font-family:\'JetBrains Mono\',monospace;font-size:10px;color:' + color + ';white-space:nowrap;">' + badge + ' ' + status + '</div>' +
+    '</div>';
+  }).join('');
+  box.innerHTML = rows;
+  if (summary) summary.textContent = planned ? (done + ' de ' + planned + ' sessões cumpridas') : '';
 }
 async function generateTreadmillCoach() {
   const btn = document.getElementById('tmCoachBtn');
@@ -10842,10 +10996,26 @@ function importData(event) {
   reader.readAsText(file);
 }
 
+const BYOK_STORAGE_KEYS = [
+  'dvGeminiKey', 'dvGeminiKeys', 'dvGeminiKeyIdx',
+  'dvGroqKey', 'dvGroqKeys', 'dvGroqKeyIdx',
+  'dvOpenRouterKey', 'dvOpenRouterKeys', 'dvOpenRouterKeyIdx',
+  'dvHFKey', 'dvHFKeys', 'dvHFKeyIdx'
+];
+function clearByokKeys(showMsg) {
+  BYOK_STORAGE_KEYS.forEach(k => { try { localStorage.removeItem(k); } catch (e) {} });
+  if (showMsg) {
+    try { if (typeof initSettingsPage === 'function') initSettingsPage(); } catch (e) {}
+    const st = document.getElementById('aiClearKeysStatus');
+    if (st) st.textContent = '✓ Chaves removidas deste dispositivo.';
+    if (typeof showSavedBar === 'function') showSavedBar('Chaves de IA removidas', '');
+  }
+}
 function clearLocalData() {
   localStorage.removeItem(DB_KEY);
   localStorage.removeItem(AI_CHAT_KEY);
   Object.keys(_CFG_MAP).forEach(lk => localStorage.removeItem(lk));
+  clearByokKeys(false);
 }
 function clearAllData() {
   if (!confirm('Apagar TODOS os dados? Esta ação é irreversível.')) return;
