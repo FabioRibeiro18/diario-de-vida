@@ -2792,7 +2792,10 @@ body.app-ready .skip-link { display: block; }
       <div class="ai-chat-shell tm-plan-chat" id="tmPlanChat" style="display:none;">
         <div class="ai-chat-top">
           <div class="ai-chat-status"><span class="ai-chat-dot"></span> discutir o plano</div>
-          <button type="button" class="btn btn-secondary ai-chat-clear" onclick="tmPlanChatClear()">Limpar</button>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;">
+            <button type="button" class="btn btn-primary ai-chat-clear" id="tmPlanChatApply" onclick="tmPlanChatApply()" style="display:none;">Aplicar ajustes</button>
+            <button type="button" class="btn btn-secondary ai-chat-clear" onclick="tmPlanChatClear()">Limpar</button>
+          </div>
         </div>
         <div class="ai-chat-log" id="tmPlanChatLog" role="log" aria-live="polite" aria-label="Conversa sobre o plano">
           <div class="ai-chat-empty" id="tmPlanChatEmpty">
@@ -3786,12 +3789,16 @@ function _wf(id) {
   return isToday ? document.getElementById(id).value : ((DB[TODAY] || {})[id] || '');
 }
 // Preferências (lembretes, IA, conquistas) → guardadas também na conta
-var _CFG_MAP = { dvReminders: 'reminders', dvAiMode: 'aiMode', dvAiProvider: 'aiProvider', dvOpenRouterModel: 'openrouterModel', dvAchievements: 'achievements', dvPerfil: 'perfil', dvAvatar: 'avatar' };
+var _CFG_MAP = { dvReminders: 'reminders', dvAiMode: 'aiMode', dvAiProvider: 'aiProvider', dvOpenRouterModel: 'openrouterModel', dvAchievements: 'achievements', dvPerfil: 'perfil', dvAvatar: 'avatar', dvTreadmillPlan: 'treadmillPlan', dvTreadmillPlanChat: 'treadmillPlanChat' };
+var _CFG_JSON = { reminders: 1, achievements: 1, perfil: 1, avatar: 1, treadmillPlan: 1, treadmillPlanChat: 1 };
+function _cfgAt(value) {
+  return value && typeof value === 'object' && value.at ? (Date.parse(value.at) || 0) : 0;
+}
 function cfgSave(localKey, str) {
   try { localStorage.setItem(localKey, str); } catch (e) {}
   var ck = _CFG_MAP[localKey]; if (!ck) return Promise.resolve('local');
   var val = str;
-  if (ck === 'reminders' || ck === 'achievements' || ck === 'perfil' || ck === 'avatar') { try { val = JSON.parse(str); } catch (e) { val = str; } }
+  if (_CFG_JSON[ck]) { try { val = JSON.parse(str); } catch (e) { val = str; } }
   var patch = {}; patch[ck] = val;
   return SyncManager.saveConfig(patch);
 }
@@ -3806,13 +3813,22 @@ async function loadConfigFromCloud() {
     Object.keys(_CFG_MAP).forEach(function(lk) {
       var ck = _CFG_MAP[lk];
       if (cfg[ck] !== undefined && cfg[ck] !== null) {
+        if (ck === 'treadmillPlan' || ck === 'treadmillPlanChat') {
+          var localRaw = localStorage.getItem(lk), localVal = null;
+          try { localVal = JSON.parse(localRaw); } catch (e) {}
+          if (_cfgAt(localVal) > _cfgAt(cfg[ck])) {
+            push[ck] = localVal;
+            return;
+          }
+        }
         try { localStorage.setItem(lk, typeof cfg[ck] === 'string' ? cfg[ck] : JSON.stringify(cfg[ck])); } catch (e) {}
       } else {
         var lv = localStorage.getItem(lk);
-        if (lv != null) { try { push[ck] = (ck === 'reminders' || ck === 'achievements' || ck === 'perfil' || ck === 'avatar') ? JSON.parse(lv) : lv; } catch (e) {} }
+        if (lv != null) { try { push[ck] = _CFG_JSON[ck] ? JSON.parse(lv) : lv; } catch (e) {} }
       }
     });
     try { applyPerfilToForm(); } catch (e) {}
+    try { if (typeof tmRenderSavedPlan === 'function') tmRenderSavedPlan(); } catch (e) {}
     if (Object.keys(push).length) SyncManager.saveConfig(push);
   } catch (e) { console.error('Erro ao carregar preferências da conta:', e); }
 }
@@ -8344,7 +8360,7 @@ async function onUserAuthenticated(user) {
   const lastUser = localStorage.getItem('dvLastUserId');
   if (lastUser && user && user.id && lastUser !== user.id) {
     ['dvLifeDiary_v3', 'dvSheetsUrl', 'dvAvatar', 'dvSyncQueue', 'dvSyncMeta', 'diarioVida',
-     'dvReminders', 'dvAiProvider', 'dvOpenRouterModel', 'dvAchievements', 'dvPerfil', 'dvTreadmillPlan', 'dvAiChatHistory'].forEach(k => localStorage.removeItem(k));
+     'dvReminders', 'dvAiProvider', 'dvOpenRouterModel', 'dvAchievements', 'dvPerfil', 'dvTreadmillPlan', 'dvTreadmillPlanChat', 'dvAiChatHistory'].forEach(k => localStorage.removeItem(k));
     localStorage.setItem('dvLastUserId', user.id);
     location.reload();
     return;
@@ -8402,7 +8418,7 @@ async function logout() {
   if (hadSession) {
     // Tudo confirmado na nuvem: limpa a cópia local para não ficar no dispositivo
     ['dvLifeDiary_v3', 'dvSheetsUrl', 'dvAvatar', 'dvSyncQueue', 'dvSyncMeta', 'diarioVida', 'dvLastUserId',
-     'dvReminders', 'dvAiProvider', 'dvOpenRouterModel', 'dvAchievements', 'dvPerfil', 'dvTreadmillPlan', 'dvAiChatHistory'].forEach(k => localStorage.removeItem(k));
+     'dvReminders', 'dvAiProvider', 'dvOpenRouterModel', 'dvAchievements', 'dvPerfil', 'dvTreadmillPlan', 'dvTreadmillPlanChat', 'dvAiChatHistory'].forEach(k => localStorage.removeItem(k));
     location.reload();
     return;
   }
@@ -8716,6 +8732,7 @@ function renderTreadmillHistory() {
 const TM_PLAN_KEY = 'dvTreadmillPlan';
 const TM_PLAN_CHAT_KEY = 'dvTreadmillPlanChat';
 const TM_PLAN_CHAT_SYSTEM = 'És um treinador de corrida e fitness em Portugal. Estás a discutir com o utilizador o plano de passadeira que já foi gerado. Responde em PT-PT, de forma prática, calorosa e prudente. Usa o plano e o histórico fornecidos e não inventes dados. Podes propor ajustes ao plano quando o utilizador pedir, mantendo o aumento de volume semanal abaixo de 10% e respeitando dores ou limitações. Não faças diagnóstico médico; se houver dor persistente ou preocupante, recomenda avaliação profissional. Sê conciso: máximo 250 palavras, exceto quando apresentares um plano ajustado.';
+const TM_PLAN_REWRITE_SYSTEM = 'És um treinador de corrida e fitness em Portugal. Reescreve o plano de passadeira completo aplicando os ajustes pedidos na conversa. Responde em PT-PT. Mantém 3 a 5 sessões e dias de descanso. Para cada sessão indica apenas o dia/data, a duração em minutos e a velocidade em km/h. Não incluas distância, inclinação, RPE, aquecimento, arrefecimento, objetivo, justificações nem outros detalhes. Mantém o aumento do tempo total semanal abaixo de 10%. Não faças diagnóstico médico nem prometas resultados.';
 let tmPlanChatMessages = [];
 let tmPlanChatBusy = false;
 
@@ -8793,9 +8810,11 @@ function tmAiError(e) {
   const msg = e && e.message ? e.message : 'Erro de ligação';
   return msg.includes('configurada') ? '⚙️ ' + msg : '❌ ' + msg;
 }
-function tmSavePlan(text) {
+function tmSavePlan(text, at) {
+  const payload = { text, at: at || new Date().toISOString() };
   try {
-    localStorage.setItem(TM_PLAN_KEY, JSON.stringify({ text, at: new Date().toISOString() }));
+    localStorage.setItem(TM_PLAN_KEY, JSON.stringify(payload));
+    cfgSave(TM_PLAN_KEY, JSON.stringify(payload));
     return true;
   } catch (e) { return false; }
 }
@@ -8822,7 +8841,7 @@ function tmPlanChatSave() {
   const plan = tmCurrentPlan();
   if (!plan || !plan.at) return;
   try {
-    localStorage.setItem(TM_PLAN_CHAT_KEY, JSON.stringify({
+    cfgSave(TM_PLAN_CHAT_KEY, JSON.stringify({
       at: plan.at,
       messages: tmPlanChatMessages.slice(-30)
     }));
@@ -8830,7 +8849,11 @@ function tmPlanChatSave() {
 }
 function tmPlanChatReset() {
   tmPlanChatMessages = [];
+  const plan = tmCurrentPlan();
   try { localStorage.removeItem(TM_PLAN_CHAT_KEY); } catch (e) {}
+  if (plan && plan.at) {
+    try { SyncManager.saveConfig({ treadmillPlanChat: { at: plan.at, messages: [] } }); } catch (e) {}
+  }
 }
 function tmPlanChatRender() {
   const wrap = document.getElementById('tmPlanChat');
@@ -8840,9 +8863,14 @@ function tmPlanChatRender() {
   if (!plan) return;
   const log = document.getElementById('tmPlanChatLog');
   const empty = document.getElementById('tmPlanChatEmpty');
+  const apply = document.getElementById('tmPlanChatApply');
   if (!log) return;
   log.querySelectorAll('.ai-chat-msg').forEach(el => el.remove());
   if (empty) empty.hidden = tmPlanChatMessages.length > 0;
+  if (apply) {
+    apply.style.display = tmPlanChatMessages.length ? '' : 'none';
+    apply.disabled = tmPlanChatBusy;
+  }
   tmPlanChatMessages.forEach(m => {
     const row = document.createElement('div');
     row.className = 'ai-chat-msg ' + m.role + (m.error ? ' error' : '');
@@ -8878,6 +8906,52 @@ function tmPlanChatClear() {
   if (!confirm('Limpar esta conversa sobre o plano?')) return;
   tmPlanChatReset();
   tmPlanChatRender();
+}
+async function tmPlanChatApply() {
+  if (tmPlanChatBusy) return;
+  const plan = tmCurrentPlan();
+  if (!plan || !tmPlanChatMessages.length) return;
+  const applyBtn = document.getElementById('tmPlanChatApply');
+  const sendBtn = document.getElementById('tmPlanChatSend');
+  const status = document.getElementById('tmPlanChatStatus');
+
+  tmPlanChatBusy = true;
+  if (applyBtn) applyBtn.disabled = true;
+  if (sendBtn) sendBtn.disabled = true;
+  if (status) status.textContent = 'A aplicar os ajustes…';
+  tmPlanChatRender();
+
+  try {
+    const history = tmPlanChatMessages.slice(-6)
+      .map(m => (m.role === 'user' ? 'Utilizador' : 'Treinador') + ': ' + m.text)
+      .join('\n\n');
+    const prompt = tmPlanChatContext() + '\n\nConversa até agora:\n' + history +
+      '\n\nReescreve o plano completo com os ajustes pedidos. Responde apenas com o plano, sem introdução nem comentários.';
+    const reply = await callGemini(TM_PLAN_REWRITE_SYSTEM, prompt, 1400, 'plan-rewrite');
+    const clean = String(reply || '').trim();
+    if (!clean) throw new Error('A IA devolveu um plano vazio.');
+    if (!tmSavePlan(clean)) throw new Error('Não foi possível guardar o plano atualizado.');
+    tmPlanChatMessages.push({
+      role: 'assistant',
+      text: 'Plano atualizado com os ajustes da conversa.',
+      at: Date.now()
+    });
+    tmPlanChatSave();
+    tmRenderSavedPlan();
+  } catch (err) {
+    const message = (err && err.message) ? err.message : 'Erro de ligação.';
+    const textOut = message.includes('configurada')
+      ? '⚙️ ' + message
+      : 'Não consegui atualizar o plano. ' + message;
+    tmPlanChatMessages.push({ role: 'assistant', text: textOut, error: true, at: Date.now() });
+  } finally {
+    tmPlanChatBusy = false;
+    if (applyBtn) applyBtn.disabled = false;
+    if (sendBtn) sendBtn.disabled = false;
+    if (status) status.textContent = '';
+    tmPlanChatRender();
+    tmPlanChatSave();
+  }
 }
 async function sendTmPlanChat(event) {
   if (event) event.preventDefault();
@@ -8971,7 +9045,7 @@ async function generateTreadmillPlan() {
   }
   try {
     const text = await callGemini(
-      'És um treinador de corrida e fitness em Portugal. Cria um plano de passadeira para os próximos 7 dias, em PT-PT, adequado ao histórico e ao peso fornecidos. Inclui 3 a 5 sessões e dias de descanso. Para cada sessão indica: dia/data, objetivo, aquecimento, duração, distância aproximada, ritmo em km/h, inclinação, RPE de 1 a 10 e arrefecimento. Aumenta o volume no máximo 10% em relação à semana anterior. Não faças diagnóstico médico nem prometas resultados. Máximo 400 palavras.',
+      'És um treinador de corrida e fitness em Portugal. Cria um plano de passadeira para os próximos 7 dias, em PT-PT, adequado ao histórico e ao peso fornecidos. Inclui 3 a 5 sessões e dias de descanso. Para cada sessão indica apenas o dia/data, a duração em minutos e a velocidade em km/h. Não incluas distância, inclinação, RPE, aquecimento, arrefecimento, objetivo nem outros detalhes. Aumenta o tempo total no máximo 10% em relação à semana anterior. Não faças diagnóstico médico nem prometas resultados. Responde apenas com o plano, sem introdução nem comentários. Máximo 250 palavras.',
       'Contexto:\n' + tmTrainingContext(week) + '\n\nDatas dos próximos 7 dias: ' + dates.join(', ') + '.\nCria o plano.',
       1400
     );
@@ -10685,7 +10759,14 @@ async function saveSettingsReminders() {
 }
 
 function exportData() {
-  const data = { exportedAt: new Date().toISOString(), days: DB };
+  const config = {};
+  Object.keys(_CFG_MAP).forEach(lk => {
+    const ck = _CFG_MAP[lk];
+    const raw = localStorage.getItem(lk);
+    if (raw == null) return;
+    try { config[ck] = _CFG_JSON[ck] ? JSON.parse(raw) : raw; } catch (e) { config[ck] = raw; }
+  });
+  const data = { version: 2, exportedAt: new Date().toISOString(), days: DB, config };
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
@@ -10702,17 +10783,19 @@ function importData(event) {
   reader.onload = async function(e) {
     try {
       const parsed = JSON.parse(e.target.result);
-      const incomingDays = (parsed && typeof parsed === 'object' && parsed.days) ? parsed.days : parsed;
+      const incomingConfig = (parsed && typeof parsed === 'object' && parsed.config && typeof parsed.config === 'object') ? parsed.config : null;
+      const incomingDays = (parsed && typeof parsed === 'object' && parsed.days && typeof parsed.days === 'object') ? parsed.days : (incomingConfig ? {} : parsed);
       if (!incomingDays || typeof incomingDays !== 'object') {
         throw new Error('Ficheiro JSON não tem formato reconhecido.');
       }
 
       const validKeys = Object.keys(incomingDays).filter(k => /^\d{4}-\d{2}-\d{2}$/.test(k));
-      if (!validKeys.length) {
+      if (!validKeys.length && !incomingConfig) {
         throw new Error('Nenhum dia válido (formato AAAA-MM-DD) encontrado no ficheiro.');
       }
 
-      const doMerge = confirm(`Foram encontrados ${validKeys.length} dias no ficheiro de backup.\n\nClica em "OK" para JUNTAR aos teus dados existentes.\nClica em "Cancelar" para cancelar a importação.`);
+      const extra = incomingConfig ? '\n\nAs preferências, o perfil e o plano do backup também serão aplicados.' : '';
+      const doMerge = confirm(`Foram encontrados ${validKeys.length} dias no ficheiro de backup.${extra}\n\nClica em "OK" para JUNTAR aos teus dados existentes.\nClica em "Cancelar" para cancelar a importação.`);
       if (!doMerge) {
         event.target.value = '';
         return;
@@ -10723,13 +10806,29 @@ function importData(event) {
         DB[k] = incomingDays[k];
         count++;
       });
-      localStorage.setItem(DB_KEY, JSON.stringify(DB));
+      if (count) localStorage.setItem(DB_KEY, JSON.stringify(DB));
+
+      let cfgPatch = null;
+      if (incomingConfig) {
+        cfgPatch = {};
+        Object.keys(_CFG_MAP).forEach(lk => {
+          const ck = _CFG_MAP[lk];
+          if (incomingConfig[ck] === undefined) return;
+          const val = incomingConfig[ck];
+          try { localStorage.setItem(lk, typeof val === 'string' ? val : JSON.stringify(val)); } catch (e) {}
+          cfgPatch[ck] = val;
+        });
+      }
+
       if (st) st.innerHTML = '<span style="color:var(--moss-l);">⏳ ' + count + ' dias importados. A enviar para a nuvem…</span>';
-      const results = await Promise.all(validKeys.map(k => SyncManager.saveDay(k)));
+      const results = count ? await Promise.all(validKeys.map(k => SyncManager.saveDay(k))) : [];
+      if (cfgPatch && Object.keys(cfgPatch).length) {
+        try { await SyncManager.saveConfig(cfgPatch); } catch (e) {}
+      }
       const failed = results.filter(r => r !== 'cloud' && r !== 'local' && r !== 'none').length;
       const msgTxt = failed
         ? ('⚠ ' + count + ' dias importados neste dispositivo; ' + failed + ' ainda por enviar para a nuvem (vão ser enviados automaticamente).')
-        : ('✓ ' + count + ' dias importados e guardados' + (results.includes('cloud') ? ' na nuvem' : ' neste dispositivo'));
+        : ('✓ ' + count + ' dias e ' + (cfgPatch ? Object.keys(cfgPatch).length : 0) + ' preferências importados' + (results.includes('cloud') ? ' na nuvem' : ' neste dispositivo'));
       if (st) st.innerHTML = '<span style="color:' + (failed ? 'var(--rose)' : 'var(--sage-l)') + ';">' + msgTxt + ' A recarregar...</span>';
       showSavedBar(msgTxt, failed ? 'warn' : '');
       setTimeout(() => { location.reload(); }, failed ? 3000 : 1500);
@@ -10743,11 +10842,15 @@ function importData(event) {
   reader.readAsText(file);
 }
 
+function clearLocalData() {
+  localStorage.removeItem(DB_KEY);
+  localStorage.removeItem(AI_CHAT_KEY);
+  Object.keys(_CFG_MAP).forEach(lk => localStorage.removeItem(lk));
+}
 function clearAllData() {
   if (!confirm('Apagar TODOS os dados? Esta ação é irreversível.')) return;
   if (!confirm('Tens a certeza? Todos os registos serão eliminados permanentemente.')) return;
-  localStorage.removeItem(DB_KEY);
-  localStorage.removeItem(AI_CHAT_KEY);
+  clearLocalData();
   location.reload();
 }
 
