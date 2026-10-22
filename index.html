@@ -9096,7 +9096,7 @@ const TM_GOAL_LABELS = {
   distancia: 'preparar uma distância concreta'
 };
 const TM_PLAN_CHAT_SYSTEM = 'És um treinador de corrida e fitness em Portugal. Estás a discutir com o utilizador o plano de passadeira que já foi gerado. Responde em PT-PT, de forma prática, calorosa e prudente. Usa o plano e o histórico fornecidos e não inventes dados. O plano tem apenas distância e tempo por dia: quando propuseres alterações, usa só quilómetros e minutos, sem velocidade, inclinação, aquecimento, arrefecimento nem justificações longas. Podes propor ajustes ao plano quando o utilizador pedir, mantendo o aumento de volume semanal abaixo de 10% e respeitando dores ou limitações. Não faças diagnóstico médico; se houver dor persistente ou preocupante, recomenda avaliação profissional. Sê conciso: máximo 200 palavras, exceto quando apresentares um plano ajustado.';
-const TM_PLAN_REWRITE_SYSTEM = 'És um treinador de corrida em Portugal. Reescreve o plano de passadeira completo aplicando os ajustes pedidos na conversa e respeitando os critérios do utilizador. Responde em PT-PT com exatamente 7 linhas, uma por dia, no formato "AAAA-MM-DD: X km, Y min" ou "AAAA-MM-DD: Descanso". Não escrevas mais nada: sem títulos, listas, introdução, velocidade, inclinação, RPE, aquecimento, arrefecimento, objetivo nem justificações. Respeita o número de sessões e os dias de descanso indicados nos critérios. Aproxima o total semanal da distância-alvo, se estiver definida. Não aumentes o tempo total semanal mais de 10%. Não faças diagnóstico médico nem prometas resultados.';
+const TM_PLAN_REWRITE_SYSTEM = 'És um treinador de corrida em Portugal. Reescreve o plano de passadeira completo aplicando os ajustes pedidos na conversa e respeitando os critérios do utilizador. Responde em PT-PT com exatamente 7 linhas, uma por dia, no formato "AAAA-MM-DD: X km, Y min" ou "AAAA-MM-DD: Descanso". Não escrevas mais nada: sem títulos, listas, introdução, velocidade, inclinação, RPE, aquecimento, arrefecimento, objetivo nem justificações. Não repitas dias nem uses datas passadas. Respeita o número de sessões e os dias de descanso indicados nos critérios. Aproxima o total semanal da distância-alvo, se estiver definida. Não aumentes o tempo total semanal mais de 10%. Não faças diagnóstico médico nem prometas resultados.';
 let tmPlanChatMessages = [];
 let tmPlanChatBusy = false;
 
@@ -9417,7 +9417,12 @@ async function tmPlanChatApply() {
     const history = tmPlanChatMessages.slice(-6)
       .map(m => (m.role === 'user' ? 'Utilizador' : 'Treinador') + ': ' + m.text)
       .join('\n\n');
+    const planDates = tmParsePlan(plan.text).map(it => it.date);
+    const datesLine = planDates.length === 7
+      ? planDates.join(', ')
+      : Array.from({ length: 7 }, (_, i) => tmFutureDate(i + 1)).join(', ');
     const prompt = tmPlanChatContext() + '\n\nConversa até agora:\n' + history +
+      '\n\nDatas válidas (uma vez cada, sem datas passadas): ' + datesLine + '.' +
       '\n\nReescreve o plano completo com os ajustes pedidos. Responde apenas com o plano, sem introdução nem comentários.';
     const reply = await callGemini(TM_PLAN_REWRITE_SYSTEM, prompt, 1400, 'plan-rewrite');
     const clean = String(reply || '').trim();
@@ -9543,7 +9548,14 @@ function tmParsePlan(text) {
     if (iso) {
       date = iso[1] + '-' + iso[2] + '-' + iso[3];
     } else if (dm) {
-      date = TODAY.slice(0, 4) + '-' + String(dm[2]).padStart(2, '0') + '-' + String(dm[1]).padStart(2, '0');
+      const mm = String(dm[2]).padStart(2, '0'), dd = String(dm[1]).padStart(2, '0');
+      const y = Number(TODAY.slice(0, 4));
+      const base = new Date(TODAY + 'T00:00:00');
+      let cand = y + '-' + mm + '-' + dd;
+      const diff = (new Date(cand + 'T00:00:00') - base) / 86400000;
+      if (diff > 183) cand = (y - 1) + '-' + mm + '-' + dd;
+      else if (diff < -183) cand = (y + 1) + '-' + mm + '-' + dd;
+      date = cand;
     } else {
       const wd = line.match(/\b(segunda|terça|terca|quarta|quinta|sexta|s[áa]bado|domingo)(?:-feira)?\b/i);
       if (wd) { const idx = tmPlanWeekdayIndex(wd[1]); if (idx >= 0) date = tmPlanDateForWeekday(idx); }
@@ -9563,7 +9575,25 @@ function tmParsePlan(text) {
     if (it.minutes != null) last.minutes = Math.max(last.minutes || 0, it.minutes);
     if (it.speed != null) last.speed = Math.max(last.speed || 0, it.speed);
   });
-  return dated;
+  const lo = tmDateOffset(14), hi = tmFutureDate(14);
+  const byDate = {};
+  dated.forEach(it => {
+    if (it.date < lo || it.date > hi) return;
+    const cur = byDate[it.date];
+    if (!cur) { byDate[it.date] = it; return; }
+    if ((it.distance || 0) > (cur.distance || 0)) cur.distance = it.distance;
+    if ((it.minutes || 0) > (cur.minutes || 0)) cur.minutes = it.minutes;
+    if (it.rest && !cur.distance && !cur.minutes) cur.rest = true;
+  });
+  let list = Object.keys(byDate).map(d => byDate[d]);
+  if (list.length > 7) {
+    const sorted = list.slice().sort((a, b) => a.date.localeCompare(b.date));
+    const idx = sorted.findIndex(it => it.date >= TODAY);
+    const start = idx < 0 ? sorted.length - 7 : Math.max(0, Math.min(idx, sorted.length - 7));
+    const keep = new Set(sorted.slice(start, start + 7).map(it => it.date));
+    list = list.filter(it => keep.has(it.date));
+  }
+  return list;
 }
 function tmPlanLabel(it) {
   return it.rest ? 'Descanso' : 'Treino';
@@ -9678,8 +9708,8 @@ async function generateTreadmillPlan() {
   }
   try {
     const text = await callGemini(
-      'És um treinador de corrida em Portugal. Cria um plano de passadeira para os próximos 7 dias, em PT-PT. Responde com exatamente 7 linhas, uma por dia, na ordem das datas fornecidas. Cada linha tem de seguir este formato: "AAAA-MM-DD: X km, Y min" ou "AAAA-MM-DD: Descanso". Não escrevas mais nada: sem títulos, listas, introdução, conclusão, velocidade, inclinação, aquecimento, arrefecimento, RPE, objetivo nem justificações. Respeita o número de sessões e os dias de descanso indicados nos critérios. Se houver distância-alvo semanal, aproxima o total das sessões desse valor. Não aumentes o tempo total semanal mais de 10% em relação à semana anterior. Não faças diagnóstico médico nem prometas resultados.',
-      'Critérios do utilizador:\n' + tmCriteriaText() + '\n\nContexto:\n' + tmTrainingContext(week) + '\n\nDatas dos próximos 7 dias: ' + dates.join(', ') + '.\nCria o plano com apenas distância e tempo.',
+      'És um treinador de corrida em Portugal. Cria um plano de passadeira para os próximos 7 dias, em PT-PT. Responde com exatamente 7 linhas, uma por dia, na ordem das datas fornecidas. Cada linha tem de seguir este formato: "AAAA-MM-DD: X km, Y min" ou "AAAA-MM-DD: Descanso". Não escrevas mais nada: sem títulos, listas, introdução, conclusão, velocidade, inclinação, aquecimento, arrefecimento, RPE, objetivo nem justificações. Não repitas dias nem uses datas passadas. Respeita o número de sessões e os dias de descanso indicados nos critérios. Se houver distância-alvo semanal, aproxima o total das sessões desse valor. Não aumentes o tempo total semanal mais de 10% em relação à semana anterior. Não faças diagnóstico médico nem prometas resultados.',
+      'Critérios do utilizador:\n' + tmCriteriaText() + '\n\nContexto:\n' + tmTrainingContext(week) + '\n\nDatas dos próximos 7 dias: ' + dates.join(', ') + '.\nUsa exatamente estas datas no formato AAAA-MM-DD, uma vez cada; não inventes, repitas nem uses datas passadas.\nCria o plano com apenas distância e tempo.',
       1400
     );
     if (tmSavePlan(text)) {
