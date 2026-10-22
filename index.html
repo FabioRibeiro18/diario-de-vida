@@ -78,6 +78,10 @@
 .tm-ach{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:var(--surface);font-size:11px;color:var(--muted);opacity:.55}
 .tm-ach.on{border-color:rgba(45,212,191,.5);color:var(--text2);background:rgba(45,212,191,.12);opacity:1}
 .tm-do{flex:0 0 auto;padding:5px 10px;border-radius:999px;border:1px solid var(--moss);background:rgba(45,212,191,.14);color:var(--moss-l);font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer}
+.tm-rest-days{display:flex;gap:6px;flex-wrap:wrap}
+.tm-rest{padding:7px 11px;border-radius:999px;border:1px solid var(--border);background:var(--bg);color:var(--text2);font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer;transition:border-color .12s,color .12s,background .12s}
+.tm-rest:hover{border-color:var(--border2)}
+.tm-rest.on{border-color:var(--moss);background:rgba(45,212,191,.14);color:var(--moss-l)}
 .tm-goal-row{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;color:var(--text2)}
 .tm-goal-row+.pf-bar{margin-top:8px}
 .tm-goal-row.mt{margin-top:16px}
@@ -2890,6 +2894,19 @@ body.app-ready .skip-link { display: block; }
           <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Distância-alvo (km/semana)</div>
           <input type="number" id="tmPlanTargetKm" min="0" step="0.5" placeholder="ex: 20" oninput="tmSaveCriteria()" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;">
         </div>
+      </div>
+      <div style="margin-bottom:12px;">
+        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Dias de descanso</div>
+        <div class="tm-rest-days" id="tmRestDays" role="group" aria-label="Dias de descanso">
+          <button type="button" class="tm-rest" data-day="1" onclick="tmToggleRestDay(1)">Seg</button>
+          <button type="button" class="tm-rest" data-day="2" onclick="tmToggleRestDay(2)">Ter</button>
+          <button type="button" class="tm-rest" data-day="3" onclick="tmToggleRestDay(3)">Qua</button>
+          <button type="button" class="tm-rest" data-day="4" onclick="tmToggleRestDay(4)">Qui</button>
+          <button type="button" class="tm-rest" data-day="5" onclick="tmToggleRestDay(5)">Sex</button>
+          <button type="button" class="tm-rest" data-day="6" onclick="tmToggleRestDay(6)">Sáb</button>
+          <button type="button" class="tm-rest" data-day="0" onclick="tmToggleRestDay(0)">Dom</button>
+        </div>
+        <div id="tmCriteriaHint" style="font-size:10px;color:var(--muted);margin-top:6px;"></div>
       </div>
       <button class="btn btn-primary" id="tmPlanBtn" onclick="generateTreadmillPlan()" style="width:100%;">🗓️ Gerar plano semanal</button>
       <div class="ai-response" id="tmPlanResponse" aria-live="polite"></div>
@@ -9073,7 +9090,7 @@ const TM_GOAL_LABELS = {
   distancia: 'preparar uma distância concreta'
 };
 const TM_PLAN_CHAT_SYSTEM = 'És um treinador de corrida e fitness em Portugal. Estás a discutir com o utilizador o plano de passadeira que já foi gerado. Responde em PT-PT, de forma prática, calorosa e prudente. Usa o plano e o histórico fornecidos e não inventes dados. O plano tem apenas distância e tempo por dia: quando propuseres alterações, usa só quilómetros e minutos, sem velocidade, inclinação, aquecimento, arrefecimento nem justificações longas. Podes propor ajustes ao plano quando o utilizador pedir, mantendo o aumento de volume semanal abaixo de 10% e respeitando dores ou limitações. Não faças diagnóstico médico; se houver dor persistente ou preocupante, recomenda avaliação profissional. Sê conciso: máximo 200 palavras, exceto quando apresentares um plano ajustado.';
-const TM_PLAN_REWRITE_SYSTEM = 'És um treinador de corrida em Portugal. Reescreve o plano de passadeira completo aplicando os ajustes pedidos na conversa e respeitando os critérios do utilizador. Responde em PT-PT com exatamente 7 linhas, uma por dia, no formato "AAAA-MM-DD: X km, Y min" ou "AAAA-MM-DD: Descanso". Não escrevas mais nada: sem títulos, listas, introdução, velocidade, inclinação, RPE, aquecimento, arrefecimento, objetivo nem justificações. Mantém 3 a 5 sessões e dias de descanso. Aproxima o total semanal da distância-alvo, se estiver definida. Não aumentes o tempo total semanal mais de 10%. Não faças diagnóstico médico nem prometas resultados.';
+const TM_PLAN_REWRITE_SYSTEM = 'És um treinador de corrida em Portugal. Reescreve o plano de passadeira completo aplicando os ajustes pedidos na conversa e respeitando os critérios do utilizador. Responde em PT-PT com exatamente 7 linhas, uma por dia, no formato "AAAA-MM-DD: X km, Y min" ou "AAAA-MM-DD: Descanso". Não escrevas mais nada: sem títulos, listas, introdução, velocidade, inclinação, RPE, aquecimento, arrefecimento, objetivo nem justificações. Respeita o número de sessões e os dias de descanso indicados nos critérios. Aproxima o total semanal da distância-alvo, se estiver definida. Não aumentes o tempo total semanal mais de 10%. Não faças diagnóstico médico nem prometas resultados.';
 let tmPlanChatMessages = [];
 let tmPlanChatBusy = false;
 
@@ -9164,8 +9181,18 @@ function tmCompactPlan(text) {
     return bits.length ? it.date + ': ' + bits.join(', ') : '';
   }).filter(Boolean).join('\n');
 }
+function tmEnforceRestDays(text) {
+  const rest = tmGetCriteria().restDays;
+  if (!rest.length) return text;
+  return String(text || '').split(/\r?\n/).map(line => {
+    const m = line.match(/^(\d{4})-(\d{2})-(\d{2}):/);
+    if (!m) return line;
+    const day = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3])).getDay();
+    return rest.indexOf(day) >= 0 ? m[1] + '-' + m[2] + '-' + m[3] + ': Descanso' : line;
+  }).join('\n');
+}
 function tmSavePlan(text, at) {
-  const payload = { text: tmCompactPlan(text), at: at || new Date().toISOString() };
+  const payload = { text: tmEnforceRestDays(tmCompactPlan(text)), at: at || new Date().toISOString() };
   try {
     localStorage.setItem(TM_PLAN_KEY, JSON.stringify(payload));
     cfgSave(TM_PLAN_KEY, JSON.stringify(payload));
@@ -9182,18 +9209,50 @@ function tmGetCriteria() {
   try {
     const c = JSON.parse(localStorage.getItem(TM_CRITERIA_KEY) || '{}');
     const goal = Object.prototype.hasOwnProperty.call(TM_GOAL_LABELS, c.goal) ? c.goal : 'manter';
-    return { goal, targetKm: parseFloat(c.targetKm) > 0 ? parseFloat(c.targetKm) : 0 };
-  } catch (e) { return { goal: 'manter', targetKm: 0 }; }
+    const restDays = Array.isArray(c.restDays)
+      ? c.restDays.map(Number).filter(n => Number.isInteger(n) && n >= 0 && n <= 6).filter((n, i, a) => a.indexOf(n) === i).slice(0, 5)
+      : [];
+    return { goal, targetKm: parseFloat(c.targetKm) > 0 ? parseFloat(c.targetKm) : 0, restDays };
+  } catch (e) { return { goal: 'manter', targetKm: 0, restDays: [] }; }
 }
 function tmSaveCriteria() {
   const goalEl = document.getElementById('tmPlanGoal');
   const kmEl = document.getElementById('tmPlanTargetKm');
   const goal = goalEl && TM_GOAL_LABELS[goalEl.value] ? goalEl.value : 'manter';
   const targetKm = kmEl ? (parseFloat(kmEl.value) || 0) : 0;
-  const payload = { goal, targetKm, at: new Date().toISOString() };
+  const box = document.getElementById('tmRestDays');
+  const restDays = box
+    ? Array.from(box.querySelectorAll('.tm-rest.on')).map(b => Number(b.getAttribute('data-day'))).filter(n => n >= 0 && n <= 6)
+    : tmGetCriteria().restDays;
+  const payload = { goal, targetKm, restDays, at: new Date().toISOString() };
   try { localStorage.setItem(TM_CRITERIA_KEY, JSON.stringify(payload)); } catch (e) {}
   cfgSave(TM_CRITERIA_KEY, JSON.stringify(payload));
+  tmUpdateCriteriaHint();
   tmRenderPlanCards();
+}
+function tmToggleRestDay(day) {
+  const box = document.getElementById('tmRestDays');
+  if (!box) return;
+  const btn = box.querySelector('.tm-rest[data-day="' + Number(day) + '"]');
+  if (!btn) return;
+  if (!btn.classList.contains('on') && box.querySelectorAll('.tm-rest.on').length >= 5) {
+    alert('Deixa pelo menos 2 dias de treino. Remove um dia de descanso primeiro.');
+    return;
+  }
+  btn.classList.toggle('on');
+  tmSaveCriteria();
+}
+function tmUpdateCriteriaHint() {
+  const hint = document.getElementById('tmCriteriaHint');
+  if (!hint) return;
+  const c = tmGetCriteria();
+  if (!c.restDays.length) {
+    hint.textContent = 'Sem descanso fixo: a IA escolhe 3 a 5 sessões e os dias de descanso.';
+    return;
+  }
+  const names = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
+  const days = c.restDays.slice().sort((a, b) => a - b).map(d => names[d]);
+  hint.textContent = (7 - c.restDays.length) + ' sessões · descanso: ' + days.join(', ') + '.';
 }
 function tmLoadCriteriaForm() {
   const c = tmGetCriteria();
@@ -9201,6 +9260,10 @@ function tmLoadCriteriaForm() {
   const kmEl = document.getElementById('tmPlanTargetKm');
   if (goalEl) goalEl.value = c.goal;
   if (kmEl) kmEl.value = c.targetKm > 0 ? c.targetKm : '';
+  document.querySelectorAll('#tmRestDays .tm-rest').forEach(btn => {
+    btn.classList.toggle('on', c.restDays.indexOf(Number(btn.getAttribute('data-day'))) >= 0);
+  });
+  tmUpdateCriteriaHint();
 }
 function tmCriteriaText() {
   const c = tmGetCriteria();
@@ -9208,6 +9271,15 @@ function tmCriteriaText() {
   lines.push(c.targetKm > 0
     ? 'Distância-alvo: ' + c.targetKm + ' km no total da semana (aproxima o total das sessões deste valor).'
     : 'Distância-alvo: não definida (escolhe um valor razoável para a semana).');
+  const names = ['domingo', 'segunda', 'terça', 'quarta', 'quinta', 'sexta', 'sábado'];
+  if (c.restDays.length) {
+    const days = c.restDays.slice().sort((a, b) => a - b).map(d => names[d]);
+    lines.push('Dias de descanso: ' + days.join(', ') + '. Não incluas treino nesses dias.');
+    lines.push('Sessões de treino: exatamente ' + (7 - c.restDays.length) + '.');
+  } else {
+    lines.push('Dias de descanso: à escolha do treinador (pelo menos 2).');
+    lines.push('Sessões de treino: 3 a 5.');
+  }
   return lines.join('\n');
 }
 function tmPlanChatLoad() {
@@ -9597,7 +9669,7 @@ async function generateTreadmillPlan() {
   }
   try {
     const text = await callGemini(
-      'És um treinador de corrida em Portugal. Cria um plano de passadeira para os próximos 7 dias, em PT-PT. Responde com exatamente 7 linhas, uma por dia, na ordem das datas fornecidas. Cada linha tem de seguir este formato: "AAAA-MM-DD: X km, Y min" ou "AAAA-MM-DD: Descanso". Não escrevas mais nada: sem títulos, listas, introdução, conclusão, velocidade, inclinação, aquecimento, arrefecimento, RPE, objetivo nem justificações. Inclui 3 a 5 sessões e usa "Descanso" nos restantes dias. Se houver distância-alvo semanal, aproxima o total das sessões desse valor. Não aumentes o tempo total semanal mais de 10% em relação à semana anterior. Não faças diagnóstico médico nem prometas resultados.',
+      'És um treinador de corrida em Portugal. Cria um plano de passadeira para os próximos 7 dias, em PT-PT. Responde com exatamente 7 linhas, uma por dia, na ordem das datas fornecidas. Cada linha tem de seguir este formato: "AAAA-MM-DD: X km, Y min" ou "AAAA-MM-DD: Descanso". Não escrevas mais nada: sem títulos, listas, introdução, conclusão, velocidade, inclinação, aquecimento, arrefecimento, RPE, objetivo nem justificações. Respeita o número de sessões e os dias de descanso indicados nos critérios. Se houver distância-alvo semanal, aproxima o total das sessões desse valor. Não aumentes o tempo total semanal mais de 10% em relação à semana anterior. Não faças diagnóstico médico nem prometas resultados.',
       'Critérios do utilizador:\n' + tmCriteriaText() + '\n\nContexto:\n' + tmTrainingContext(week) + '\n\nDatas dos próximos 7 dias: ' + dates.join(', ') + '.\nCria o plano com apenas distância e tempo.',
       1400
     );
