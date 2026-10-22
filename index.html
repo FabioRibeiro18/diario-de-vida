@@ -9419,7 +9419,7 @@ function tmRenderSavedPlan() {
   if (!p) { tmPlanChatRender(); tmRenderPlanCards(); return; }
   const when = p.at ? new Date(p.at) : null;
   const stamp = when && !isNaN(when) ? '\n\nGerado em ' + when.toLocaleString('pt-PT') + '.' : '';
-  tmAiShow('tmPlanResponse', tmCompactPlan(p.text) + stamp);
+  tmAiShow('tmPlanResponse', tmPlanPrettyText(p.text) + stamp);
   tmPlanChatLoad();
   tmPlanChatRender();
   tmRenderPlanCards();
@@ -9488,19 +9488,17 @@ function tmParsePlan(text) {
   return dated;
 }
 function tmPlanLabel(it) {
-  if (it.rest) return 'Descanso';
-  let s = String(it.label || '');
-  if (it.date) s = s.split(it.date).join(' ');
-  s = s.replace(/\b(segunda|terça|terca|quarta|quinta|sexta|s[áa]bado|domingo)(-feira)?\b/gi, ' ');
-  s = s.replace(/\b\d{1,2}\/\d{1,2}\b/g, ' ');
-  s = s.replace(/\b\d+(?:[.,]\d+)?\s*km\s*\/?\s*h\b/gi, ' ');
-  s = s.replace(/\b\d+(?:[.,]\d+)?\s*km\b/gi, ' ');
-  s = s.replace(/\b\d+(?:[.,]\d+)?\s*(?:min\b|minuto\w*)/gi, ' ');
-  s = s.replace(/\b(aquecimento|arrefecimento|alongamento|mobilidade|nota|notas|observa[çc][ãa]o|observa[çc][õo]es)\b/gi, ' ');
-  s = s.replace(/\b(corrida|caminhada|treino|sess[ãa]o|sess[õo]es)\b/gi, ' ');
-  s = s.replace(/[:\-–—,;]+/g, ' ');
-  s = s.replace(/\s+/g, ' ').trim();
-  return s || 'Treino';
+  return it.rest ? 'Descanso' : 'Treino';
+}
+function tmPlanPrettyText(text) {
+  const compact = tmCompactPlan(text);
+  return compact.split(/\r?\n/).map(line => {
+    const m = line.match(/^(\d{4})-(\d{2})-(\d{2}):\s*(.+)$/);
+    if (!m) return line;
+    const date = m[1] + '-' + m[2] + '-' + m[3];
+    const rest = /descanso/i.test(m[4]);
+    return tmDayName(date) + ' ' + m[3] + '/' + m[2] + ' · ' + (rest ? 'Descanso' : m[4]);
+  }).join('\n');
 }
 function tmRenderPlanCards() {
   const card = document.getElementById('tmPlanCard');
