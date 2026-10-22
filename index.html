@@ -8909,8 +8909,10 @@ function tmRenderRecords() {
   txt('tmRecDays', String(r.days));
 }
 function tmWeeklyGoals() {
-  const week = tmWeekStats();
-  const items = tmCurrentPlan() ? tmParsePlan(tmCurrentPlan().text).filter(it => !it.rest && (it.distance || it.minutes)) : [];
+  const week = tmCurrentWeekStats();
+  const items = tmCurrentPlan()
+    ? tmParsePlan(tmCurrentPlan().text).filter(it => !it.rest && (it.distance || it.minutes) && tmInCurrentWeek(it.date))
+    : [];
   const target = tmGetCriteria().targetKm;
   const plannedKm = items.reduce((s, it) => s + (it.distance || 0), 0);
   return {
@@ -9128,20 +9130,32 @@ function tmFutureDate(n) {
   d.setDate(d.getDate() + n);
   return localDateStr(d);
 }
-function tmWeekStats() {
-  const days = [];
-  for (let i = 6; i >= 0; i--) {
-    const date = tmDateOffset(i);
+function tmWeekStart(dateStr) {
+  const p = (dateStr || TODAY).split('-').map(Number);
+  const d = new Date(p[0], p[1] - 1, p[2]);
+  d.setDate(d.getDate() - d.getDay());
+  return localDateStr(d);
+}
+function tmWeekEnd(dateStr) {
+  const p = tmWeekStart(dateStr).split('-').map(Number);
+  return localDateStr(new Date(p[0], p[1] - 1, p[2] + 6));
+}
+function tmInCurrentWeek(dateStr) {
+  if (!dateStr) return false;
+  return dateStr >= tmWeekStart(TODAY) && dateStr <= tmWeekEnd(TODAY);
+}
+function tmStatsForDates(dates) {
+  const days = dates.map(date => {
     const d = DB[date] || {};
     const time = parseFloat(d.treadmillTime) || 0;
     const dist = parseFloat(d.treadmillDistance) || 0;
     const incl = parseFloat(d.treadmillIncline) || 0;
-    days.push({
+    return {
       date, time, dist, incl,
       speed: time > 0 && dist > 0 ? dist / (time / 60) : 0,
       kcal: tmKcal(time, dist, incl)
-    });
-  }
+    };
+  });
   const active = days.filter(d => d.time > 0 || d.dist > 0);
   const totalTime = active.reduce((s, d) => s + d.time, 0);
   const totalDist = active.reduce((s, d) => s + d.dist, 0);
@@ -9151,6 +9165,19 @@ function tmWeekStats() {
     days, active, totalTime, totalDist, totalKcal, avgIncl,
     avgSpeed: totalTime > 0 ? totalDist / (totalTime / 60) : 0
   };
+}
+function tmWeekStats() {
+  const dates = [];
+  for (let i = 6; i >= 0; i--) dates.push(tmDateOffset(i));
+  return tmStatsForDates(dates);
+}
+function tmCurrentWeekStats() {
+  const p = tmWeekStart(TODAY).split('-').map(Number);
+  const dates = [];
+  for (let i = 0; i < 7; i++) {
+    dates.push(localDateStr(new Date(p[0], p[1] - 1, p[2] + i)));
+  }
+  return tmStatsForDates(dates);
 }
 function tmTrainingContext(week) {
   const lw = latestWeightEntry();
@@ -9375,9 +9402,9 @@ function tmPlanChatContext() {
 }
 function tmPlanExecutionText() {
   const plan = tmCurrentPlan();
-  const items = plan ? tmParsePlan(plan.text).filter(it => it.rest || it.distance || it.minutes) : [];
-  if (!items.length) return 'PLANO VS EXECUÇÃO: sem plano guardado.';
-  const lines = ['PLANO VS EXECUÇÃO:'];
+  const items = plan ? tmParsePlan(plan.text).filter(it => (it.rest || it.distance || it.minutes) && tmInCurrentWeek(it.date)) : [];
+  if (!items.length) return 'PLANO VS EXECUÇÃO: sem dias do plano nesta semana.';
+  const lines = ['PLANO VS EXECUÇÃO: semana atual (domingo a sábado)'];
   let planned = 0, done = 0, plannedKm = 0, doneKm = 0;
   items.forEach(it => {
     if (it.rest) { lines.push('- ' + (it.date || 'sem data') + ': descanso'); return; }
@@ -9515,6 +9542,12 @@ async function sendTmPlanChat(event) {
     if (input) input.focus();
   }
 }
+function tmCurrentWeekPlanText(text) {
+  return tmCompactPlan(text).split(/\r?\n/).filter(line => {
+    const m = line.match(/^(\d{4})-(\d{2})-(\d{2}):/);
+    return m && tmInCurrentWeek(m[1] + '-' + m[2] + '-' + m[3]);
+  }).join('\n');
+}
 function tmRenderSavedPlan() {
   const el = document.getElementById('tmPlanResponse');
   if (!el) return;
@@ -9522,7 +9555,8 @@ function tmRenderSavedPlan() {
   if (!p) { tmPlanChatRender(); tmRenderPlanCards(); return; }
   const when = p.at ? new Date(p.at) : null;
   const stamp = when && !isNaN(when) ? '\n\nGerado em ' + when.toLocaleString('pt-PT') + '.' : '';
-  tmAiShow('tmPlanResponse', tmPlanPrettyText(p.text) + stamp);
+  const weekText = tmCurrentWeekPlanText(p.text);
+  tmAiShow('tmPlanResponse', (weekText ? tmPlanPrettyText(weekText) : 'Sem dias do plano nesta semana (domingo a sábado).') + stamp);
   tmPlanChatLoad();
   tmPlanChatRender();
   tmRenderPlanCards();
@@ -9634,11 +9668,18 @@ function tmRenderPlanCards() {
   const summary = document.getElementById('tmPlanSummary');
   if (!card || !box) return;
   const plan = tmCurrentPlan();
-  const items = plan ? tmParsePlan(plan.text).filter(it => it.rest || it.distance || it.minutes) : [];
+  const allItems = plan ? tmParsePlan(plan.text).filter(it => it.rest || it.distance || it.minutes) : [];
+  const items = allItems.filter(it => tmInCurrentWeek(it.date));
   if (!items.length) {
-    card.style.display = 'none';
-    box.innerHTML = '';
-    if (summary) summary.innerHTML = '';
+    if (allItems.length) {
+      card.style.display = 'block';
+      box.innerHTML = '<div style="color:var(--muted);font-size:13px;">Não há dias do plano nesta semana (domingo a sábado).</div>';
+      if (summary) summary.innerHTML = '';
+    } else {
+      card.style.display = 'none';
+      box.innerHTML = '';
+      if (summary) summary.innerHTML = '';
+    }
     return;
   }
   card.style.display = 'block';
@@ -9688,6 +9729,8 @@ function tmRenderPlanCards() {
         '<div class="tmp-bar"><i style="width:' + pct + '%"></i></div>'
       : '<div class="tmp-head"><div class="tmp-head-main">Semana de descanso</div></div>';
     const chips = [];
+    const ws = tmWeekStart(TODAY), we = tmWeekEnd(TODAY);
+    chips.push('<span class="tmp-stat">semana ' + ws.slice(8, 10) + '/' + ws.slice(5, 7) + '–' + we.slice(8, 10) + '/' + we.slice(5, 7) + '</span>');
     if (plannedKm) chips.push('<span class="tmp-stat">' + (Math.round(plannedKm * 10) / 10) + (target > 0 ? ' de ' + target : '') + ' km planeados</span>');
     if (plannedMin) chips.push('<span class="tmp-stat">' + Math.round(plannedMin) + ' min planeados</span>');
     summary.innerHTML = head + (chips.length ? '<div class="tmp-chips">' + chips.join('') + '</div>' : '');
