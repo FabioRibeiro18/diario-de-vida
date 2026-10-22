@@ -53,21 +53,27 @@
 .tmp-bar i{display:block;height:100%;background:linear-gradient(90deg,var(--moss-d),var(--moss-l));transition:width .4s}
 .tmp-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
 .tmp-stat{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--text2);background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:4px 9px}
-.tmp-list{display:flex;flex-direction:column;gap:8px}
-.tmp-day{display:flex;align-items:center;gap:12px;padding:11px 12px;border:1px solid var(--border);border-radius:12px;background:linear-gradient(180deg,var(--surface),var(--card));transition:transform .12s,border-color .12s,box-shadow .12s}
+.tmp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.tmp-day{position:relative;display:flex;flex-direction:column;gap:12px;padding:14px;border:1px solid var(--border);border-radius:16px;background:linear-gradient(160deg,var(--surface),var(--card));transition:transform .12s,border-color .12s,box-shadow .12s;min-height:150px}
 .tmp-day.click{cursor:pointer}
-.tmp-day.click:hover{transform:translateY(-1px);border-color:var(--border2)}
-.tmp-day.done{border-color:rgba(45,212,191,.45)}
-.tmp-day.today{border-color:var(--moss);box-shadow:0 0 0 1px var(--moss-d)}
+.tmp-day.click:hover{transform:translateY(-2px);border-color:var(--border2);box-shadow:0 12px 26px rgba(0,0,0,.22)}
+.tmp-day.done{border-color:rgba(45,212,191,.45);background:linear-gradient(160deg,rgba(45,212,191,.08),var(--card))}
+.tmp-day.today{border-color:var(--moss);background:linear-gradient(160deg,rgba(45,212,191,.14),var(--card));box-shadow:0 0 0 1px var(--moss-d),0 12px 26px rgba(0,0,0,.2)}
 .tmp-day.miss{border-color:rgba(244,114,182,.35);opacity:.9}
-.tmp-day.rest{opacity:.7}
-.tmp-date{flex:0 0 46px;text-align:center;border-radius:11px;background:var(--bg2);border:1px solid var(--border);padding:7px 0}
-.tmp-date b{display:block;font-family:'JetBrains Mono',monospace;font-size:16px;color:var(--text);line-height:1}
-.tmp-date span{display:block;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-top:3px}
-.tmp-info{flex:1;min-width:0}
-.tmp-title{font-size:12px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tmp-day.rest{opacity:.72}
+.tmp-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
+.tmp-date{flex:0 0 auto;text-align:left;background:none;border:0;padding:0}
+.tmp-date b{display:block;font-family:'JetBrains Mono',monospace;font-size:24px;color:var(--text);line-height:1}
+.tmp-date span{display:block;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-top:4px}
+.tmp-info{flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:5px;min-width:0}
+.tmp-title{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);white-space:normal}
+.tmp-metrics{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
+.tmp-metric{display:flex;align-items:baseline;gap:4px}
+.tmp-metric b{font-family:'JetBrains Mono',monospace;font-size:23px;color:var(--text);line-height:1}
+.tmp-metric span{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)}
+.tmp-metric.rest b{color:var(--muted)}
 .tmp-stats{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-.tmp-status{flex:0 0 auto;font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.5px;padding:5px 9px;border-radius:999px;border:1px solid var(--border);color:var(--text2);background:var(--surface)}
+.tmp-status{flex:0 0 auto;font-family:'JetBrains Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.4px;padding:4px 8px;border-radius:999px;border:1px solid var(--border);color:var(--text2);background:var(--surface);white-space:nowrap}
 .tmp-status.done{color:var(--moss-l);border-color:rgba(45,212,191,.5);background:rgba(45,212,191,.12)}
 .tmp-status.today{color:var(--moss-l);border-color:var(--moss);background:rgba(45,212,191,.18)}
 .tmp-status.miss{color:var(--rose);border-color:rgba(244,114,182,.4);background:rgba(244,114,182,.1)}
@@ -77,7 +83,7 @@
 .pf-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--moss),var(--moss-l));transition:width .4s}
 .tm-ach{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:var(--surface);font-size:11px;color:var(--muted);opacity:.55}
 .tm-ach.on{border-color:rgba(45,212,191,.5);color:var(--text2);background:rgba(45,212,191,.12);opacity:1}
-.tm-do{flex:0 0 auto;padding:5px 10px;border-radius:999px;border:1px solid var(--moss);background:rgba(45,212,191,.14);color:var(--moss-l);font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer}
+.tm-do{width:100%;text-align:center;padding:8px 10px;border-radius:10px;border:1px solid var(--moss);background:rgba(45,212,191,.14);color:var(--moss-l);font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer}
 .tm-rest-days{display:flex;gap:6px;flex-wrap:wrap}
 .tm-rest{padding:7px 11px;border-radius:999px;border:1px solid var(--border);background:var(--bg);color:var(--text2);font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer;transition:border-color .12s,color .12s,background .12s}
 .tm-rest:hover{border-color:var(--border2)}
@@ -2945,7 +2951,7 @@ body.app-ready .skip-link { display: block; }
   <div class="card" id="tmPlanCard" style="display:none;">
     <div class="card-title">plano da semana</div>
     <div id="tmPlanSummary" style="font-size:12px;color:var(--muted);margin-bottom:10px;"></div>
-    <div id="tmPlanDays"></div>
+    <div id="tmPlanDays" class="tmp-grid"></div>
     <div style="font-size:11px;color:var(--muted);margin-top:10px;">Toca num dia passado ou de hoje para abrir o registo.</div>
   </div>
 
@@ -9601,20 +9607,23 @@ function tmRenderPlanCards() {
       plannedKm += it.distance || 0;
       plannedMin += it.minutes || 0;
     }
-    const stats = [];
-    if (it.distance) stats.push('<span class="tmp-stat">' + it.distance + ' km</span>');
-    if (it.minutes) stats.push('<span class="tmp-stat">' + Math.round(it.minutes) + ' min</span>');
-    const statsHtml = it.rest ? '' :
-      '<div class="tmp-stats">' + (stats.join('') || '<span class="tmp-stat">sessão</span>') + '</div>';
+    const metrics = [];
+    if (it.distance) metrics.push('<div class="tmp-metric"><b>' + it.distance + '</b> <span>km</span></div>');
+    if (it.minutes) metrics.push('<div class="tmp-metric"><b>' + Math.round(it.minutes) + '</b> <span>min</span></div>');
+    const statsHtml = it.rest
+      ? '<div class="tmp-metrics"><div class="tmp-metric rest"><b>—</b></div></div>'
+      : '<div class="tmp-metrics">' + (metrics.join('') || '<div class="tmp-metric rest"><b>—</b> <span>livre</span></div>') + '</div>';
     const weekday = it.date ? tmDayName(it.date) : '';
     const dayNum = it.date ? it.date.slice(8, 10) : '·';
     const clickable = !!(it.date && it.date <= TODAY);
     const canComplete = !!(it.date && it.date <= TODAY && !trained);
     return '<div class="tmp-day ' + cls + (clickable ? ' click' : '') + '"' +
         (clickable ? ' onclick="tmSetDay(\'' + it.date + '\')"' : '') + '>' +
-      '<div class="tmp-date"><b>' + dayNum + '</b><span>' + (weekday || '—') + '</span></div>' +
+      '<div class="tmp-top">' +
+        '<div class="tmp-date"><b>' + dayNum + '</b><span>' + (weekday || '—') + '</span></div>' +
+        '<div class="tmp-status ' + cls + '">' + badge + ' ' + status + '</div>' +
+      '</div>' +
       '<div class="tmp-info"><div class="tmp-title">' + tmEsc(tmPlanLabel(it)) + '</div>' + statsHtml + '</div>' +
-      '<div class="tmp-status ' + cls + '">' + badge + ' ' + status + '</div>' +
       (canComplete ? '<button type="button" class="tm-do" title="Registar esta sessão com os valores do plano" onclick="event.stopPropagation();tmCompletePlanned(\'' + it.date + '\',' + (it.distance || 0) + ',' + (it.minutes || 0) + ')">Concluir</button>' : '') +
     '</div>';
   }).join('');
