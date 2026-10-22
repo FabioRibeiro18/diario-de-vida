@@ -8868,7 +8868,7 @@ function tmRenderRecords() {
 }
 function tmWeeklyGoals() {
   const week = tmWeekStats();
-  const items = tmCurrentPlan() ? tmParsePlan(tmCurrentPlan().text).filter(it => !it.rest) : [];
+  const items = tmCurrentPlan() ? tmParsePlan(tmCurrentPlan().text).filter(it => !it.rest && (it.distance || it.minutes)) : [];
   const target = tmGetCriteria().targetKm;
   const plannedKm = items.reduce((s, it) => s + (it.distance || 0), 0);
   return {
@@ -9072,8 +9072,8 @@ const TM_GOAL_LABELS = {
   ritmo: 'melhorar ritmo e velocidade',
   distancia: 'preparar uma distância concreta'
 };
-const TM_PLAN_CHAT_SYSTEM = 'És um treinador de corrida e fitness em Portugal. Estás a discutir com o utilizador o plano de passadeira que já foi gerado. Responde em PT-PT, de forma prática, calorosa e prudente. Usa o plano e o histórico fornecidos e não inventes dados. Podes propor ajustes ao plano quando o utilizador pedir, mantendo o aumento de volume semanal abaixo de 10% e respeitando dores ou limitações. Não faças diagnóstico médico; se houver dor persistente ou preocupante, recomenda avaliação profissional. Sê conciso: máximo 250 palavras, exceto quando apresentares um plano ajustado.';
-const TM_PLAN_REWRITE_SYSTEM = 'És um treinador de corrida e fitness em Portugal. Reescreve o plano de passadeira completo aplicando os ajustes pedidos na conversa e respeitando os critérios do utilizador. Responde em PT-PT. Mantém 3 a 5 sessões e dias de descanso. Para cada sessão indica apenas o dia/data, a distância em km, o tempo em minutos e a velocidade em km/h, coerentes entre si (velocidade = distância ÷ tempo). Não incluas inclinação, RPE, aquecimento, arrefecimento, objetivo, justificações nem outros detalhes. Aproxima o total semanal da distância-alvo, se estiver definida. Não aumentes o tempo total semanal mais de 10%. Não faças diagnóstico médico nem prometas resultados.';
+const TM_PLAN_CHAT_SYSTEM = 'És um treinador de corrida e fitness em Portugal. Estás a discutir com o utilizador o plano de passadeira que já foi gerado. Responde em PT-PT, de forma prática, calorosa e prudente. Usa o plano e o histórico fornecidos e não inventes dados. O plano tem apenas distância e tempo por dia: quando propuseres alterações, usa só quilómetros e minutos, sem velocidade, inclinação, aquecimento, arrefecimento nem justificações longas. Podes propor ajustes ao plano quando o utilizador pedir, mantendo o aumento de volume semanal abaixo de 10% e respeitando dores ou limitações. Não faças diagnóstico médico; se houver dor persistente ou preocupante, recomenda avaliação profissional. Sê conciso: máximo 200 palavras, exceto quando apresentares um plano ajustado.';
+const TM_PLAN_REWRITE_SYSTEM = 'És um treinador de corrida em Portugal. Reescreve o plano de passadeira completo aplicando os ajustes pedidos na conversa e respeitando os critérios do utilizador. Responde em PT-PT com exatamente 7 linhas, uma por dia, no formato "AAAA-MM-DD: X km, Y min" ou "AAAA-MM-DD: Descanso". Não escrevas mais nada: sem títulos, listas, introdução, velocidade, inclinação, RPE, aquecimento, arrefecimento, objetivo nem justificações. Mantém 3 a 5 sessões e dias de descanso. Aproxima o total semanal da distância-alvo, se estiver definida. Não aumentes o tempo total semanal mais de 10%. Não faças diagnóstico médico nem prometas resultados.';
 let tmPlanChatMessages = [];
 let tmPlanChatBusy = false;
 
@@ -9151,8 +9151,21 @@ function tmAiError(e) {
   const msg = e && e.message ? e.message : 'Erro de ligação';
   return msg.includes('configurada') ? '⚙️ ' + msg : '❌ ' + msg;
 }
+function tmCompactPlan(text) {
+  const src = String(text || '');
+  const items = tmParsePlan(src).filter(it => it.date);
+  const sessions = items.filter(it => !it.rest && (it.distance || it.minutes));
+  if (sessions.length < 3) return src;
+  return items.map(it => {
+    if (it.rest) return it.date + ': Descanso';
+    const bits = [];
+    if (it.distance) bits.push((Math.round(it.distance * 10) / 10) + ' km');
+    if (it.minutes) bits.push(Math.round(it.minutes) + ' min');
+    return bits.length ? it.date + ': ' + bits.join(', ') : '';
+  }).filter(Boolean).join('\n');
+}
 function tmSavePlan(text, at) {
-  const payload = { text, at: at || new Date().toISOString() };
+  const payload = { text: tmCompactPlan(text), at: at || new Date().toISOString() };
   try {
     localStorage.setItem(TM_PLAN_KEY, JSON.stringify(payload));
     cfgSave(TM_PLAN_KEY, JSON.stringify(payload));
@@ -9258,13 +9271,13 @@ function tmPlanChatRender() {
 function tmPlanChatContext() {
   const plan = tmCurrentPlan();
   return 'CRITÉRIOS:\n' + tmCriteriaText() +
-    '\n\nPLANO ATUAL:\n' + (plan ? plan.text : '') +
+    '\n\nPLANO ATUAL:\n' + (plan ? tmCompactPlan(plan.text) : '') +
     '\n\n' + tmPlanExecutionText() +
     '\n\nHISTÓRICO E MEDIDAS:\n' + tmTrainingContext(tmWeekStats());
 }
 function tmPlanExecutionText() {
   const plan = tmCurrentPlan();
-  const items = plan ? tmParsePlan(plan.text) : [];
+  const items = plan ? tmParsePlan(plan.text).filter(it => it.rest || it.distance || it.minutes) : [];
   if (!items.length) return 'PLANO VS EXECUÇÃO: sem plano guardado.';
   const lines = ['PLANO VS EXECUÇÃO:'];
   let planned = 0, done = 0, plannedKm = 0, doneKm = 0;
@@ -9272,7 +9285,7 @@ function tmPlanExecutionText() {
     if (it.rest) { lines.push('- ' + (it.date || 'sem data') + ': descanso'); return; }
     planned++;
     plannedKm += it.distance || 0;
-    const pl = [it.distance ? it.distance + ' km' : '', it.minutes ? Math.round(it.minutes) + ' min' : '', it.speed ? it.speed.toFixed(1) + ' km/h' : ''].filter(Boolean).join(', ');
+    const pl = [it.distance ? it.distance + ' km' : '', it.minutes ? Math.round(it.minutes) + ' min' : ''].filter(Boolean).join(', ');
     const d = it.date ? DB[it.date] : null;
     const t = d ? (parseFloat(d.treadmillTime) || 0) : 0;
     const k = d ? (parseFloat(d.treadmillDistance) || 0) : 0;
@@ -9406,7 +9419,7 @@ function tmRenderSavedPlan() {
   if (!p) { tmPlanChatRender(); tmRenderPlanCards(); return; }
   const when = p.at ? new Date(p.at) : null;
   const stamp = when && !isNaN(when) ? '\n\nGerado em ' + when.toLocaleString('pt-PT') + '.' : '';
-  tmAiShow('tmPlanResponse', p.text + stamp);
+  tmAiShow('tmPlanResponse', tmCompactPlan(p.text) + stamp);
   tmPlanChatLoad();
   tmPlanChatRender();
   tmRenderPlanCards();
@@ -9440,9 +9453,12 @@ function tmParsePlan(text) {
     const line = raw.trim().replace(/^[-*•]\s*/, '').replace(/^\d+[.)]\s*/, '');
     if (!line) return;
     const isRest = /descanso|repouso|folga/i.test(line);
-    const minMatch = line.match(/(\d+(?:[.,]\d+)?)\s*(?:min\b|minuto)/i);
-    const speedMatch = line.match(/(\d+(?:[.,]\d+)?)\s*km\s*\/?\s*h/i);
-    const distMatch = line.match(/(\d+(?:[.,]\d+)?)\s*km(?!\s*\/?\s*h)/i);
+    const nums = re => (line.match(re) || [])
+      .map(x => parseFloat(String(x).replace(/[^\d.,]/g, '').replace(',', '.')))
+      .filter(n => !isNaN(n));
+    const mins = nums(/(\d+(?:[.,]\d+)?)\s*(?:min\b|minuto)/gi);
+    const speeds = nums(/(\d+(?:[.,]\d+)?)\s*km\s*\/?\s*h/gi);
+    const dists = nums(/(\d+(?:[.,]\d+)?)\s*km(?!\s*\/?\s*h)/gi);
     let date = null;
     const iso = line.match(/(\d{4})-(\d{2})-(\d{2})/);
     const dm = line.match(/\b(\d{1,2})\/(\d{1,2})\b/);
@@ -9454,13 +9470,22 @@ function tmParsePlan(text) {
       const wd = line.match(/\b(segunda|terça|terca|quarta|quinta|sexta|s[áa]bado|domingo)(?:-feira)?\b/i);
       if (wd) { const idx = tmPlanWeekdayIndex(wd[1]); if (idx >= 0) date = tmPlanDateForWeekday(idx); }
     }
-    const minutes = minMatch ? parseFloat(minMatch[1].replace(',', '.')) : null;
-    const speed = speedMatch ? parseFloat(speedMatch[1].replace(',', '.')) : null;
-    const distance = distMatch ? parseFloat(distMatch[1].replace(',', '.')) : null;
+    const minutes = mins.length ? Math.max.apply(null, mins) : null;
+    const speed = speeds.length ? Math.max.apply(null, speeds) : null;
+    const distance = dists.length ? Math.max.apply(null, dists) : null;
     if (!date && minutes == null && speed == null && distance == null && !isRest) return;
     out.push({ label: line, date, minutes, speed, distance, rest: isRest });
   });
-  return out;
+  const dated = [];
+  out.forEach(it => {
+    if (it.date) { dated.push(it); return; }
+    const last = dated.length ? dated[dated.length - 1] : null;
+    if (!last || it.rest) return;
+    if (it.distance != null) last.distance = Math.max(last.distance || 0, it.distance);
+    if (it.minutes != null) last.minutes = Math.max(last.minutes || 0, it.minutes);
+    if (it.speed != null) last.speed = Math.max(last.speed || 0, it.speed);
+  });
+  return dated;
 }
 function tmPlanLabel(it) {
   if (it.rest) return 'Descanso';
@@ -9471,6 +9496,8 @@ function tmPlanLabel(it) {
   s = s.replace(/\b\d+(?:[.,]\d+)?\s*km\s*\/?\s*h\b/gi, ' ');
   s = s.replace(/\b\d+(?:[.,]\d+)?\s*km\b/gi, ' ');
   s = s.replace(/\b\d+(?:[.,]\d+)?\s*(?:min\b|minuto\w*)/gi, ' ');
+  s = s.replace(/\b(aquecimento|arrefecimento|alongamento|mobilidade|nota|notas|observa[çc][ãa]o|observa[çc][õo]es)\b/gi, ' ');
+  s = s.replace(/\b(corrida|caminhada|treino|sess[ãa]o|sess[õo]es)\b/gi, ' ');
   s = s.replace(/[:\-–—,;]+/g, ' ');
   s = s.replace(/\s+/g, ' ').trim();
   return s || 'Treino';
@@ -9481,7 +9508,7 @@ function tmRenderPlanCards() {
   const summary = document.getElementById('tmPlanSummary');
   if (!card || !box) return;
   const plan = tmCurrentPlan();
-  const items = plan ? tmParsePlan(plan.text) : [];
+  const items = plan ? tmParsePlan(plan.text).filter(it => it.rest || it.distance || it.minutes) : [];
   if (!items.length) {
     card.style.display = 'none';
     box.innerHTML = '';
@@ -9507,7 +9534,6 @@ function tmRenderPlanCards() {
     const stats = [];
     if (it.distance) stats.push('<span class="tmp-stat">' + it.distance + ' km</span>');
     if (it.minutes) stats.push('<span class="tmp-stat">' + Math.round(it.minutes) + ' min</span>');
-    if (it.speed) stats.push('<span class="tmp-stat">' + it.speed.toFixed(1) + ' km/h</span>');
     const statsHtml = it.rest ? '' :
       '<div class="tmp-stats">' + (stats.join('') || '<span class="tmp-stat">sessão</span>') + '</div>';
     const weekday = it.date ? tmDayName(it.date) : '';
@@ -9573,8 +9599,8 @@ async function generateTreadmillPlan() {
   }
   try {
     const text = await callGemini(
-      'És um treinador de corrida e fitness em Portugal. Cria um plano de passadeira para os próximos 7 dias, em PT-PT, adequado ao histórico, ao peso e aos critérios do utilizador. Inclui 3 a 5 sessões e dias de descanso. Para cada sessão indica apenas o dia/data, a distância em km, o tempo em minutos e a velocidade em km/h, coerentes entre si (velocidade = distância ÷ tempo). Não incluas inclinação, RPE, aquecimento, arrefecimento, objetivo nem outros detalhes. Se houver distância-alvo semanal, aproxima o total das sessões desse valor. Não aumentes o tempo total semanal mais de 10% em relação à semana anterior. Não faças diagnóstico médico nem prometas resultados. Responde apenas com o plano, sem introdução nem comentários. Máximo 250 palavras.',
-      'Critérios do utilizador:\n' + tmCriteriaText() + '\n\nContexto:\n' + tmTrainingContext(week) + '\n\nDatas dos próximos 7 dias: ' + dates.join(', ') + '.\nCria o plano.',
+      'És um treinador de corrida em Portugal. Cria um plano de passadeira para os próximos 7 dias, em PT-PT. Responde com exatamente 7 linhas, uma por dia, na ordem das datas fornecidas. Cada linha tem de seguir este formato: "AAAA-MM-DD: X km, Y min" ou "AAAA-MM-DD: Descanso". Não escrevas mais nada: sem títulos, listas, introdução, conclusão, velocidade, inclinação, aquecimento, arrefecimento, RPE, objetivo nem justificações. Inclui 3 a 5 sessões e usa "Descanso" nos restantes dias. Se houver distância-alvo semanal, aproxima o total das sessões desse valor. Não aumentes o tempo total semanal mais de 10% em relação à semana anterior. Não faças diagnóstico médico nem prometas resultados.',
+      'Critérios do utilizador:\n' + tmCriteriaText() + '\n\nContexto:\n' + tmTrainingContext(week) + '\n\nDatas dos próximos 7 dias: ' + dates.join(', ') + '.\nCria o plano com apenas distância e tempo.',
       1400
     );
     if (tmSavePlan(text)) {
@@ -10217,7 +10243,7 @@ function scheduleReminders() {
   const tr = prefs.treino || { enabled: true, hora: '18:00' };
   if (tr.enabled !== false && !tmReminderSentToday('treino')) {
     const plan = tmCurrentPlan();
-    const items = plan ? tmParsePlan(plan.text) : [];
+    const items = plan ? tmParsePlan(plan.text).filter(it => it.rest || it.distance || it.minutes) : [];
     const todayItem = items.find(it => it.date === TODAY && !it.rest);
     const done = DB[TODAY] && (parseFloat(DB[TODAY].treadmillTime) > 0 || parseFloat(DB[TODAY].treadmillDistance) > 0);
     if (todayItem && !done) {
@@ -10244,7 +10270,6 @@ function tmPlanReminderText(it) {
   const bits = [];
   if (it.distance) bits.push(it.distance + ' km');
   if (it.minutes) bits.push(Math.round(it.minutes) + ' min');
-  if (it.speed) bits.push(it.speed.toFixed(1) + ' km/h');
   return bits.length ? 'Hoje: ' + bits.join(' · ') + '.' : 'Tens uma sessão planeada para hoje.';
 }
 setInterval(scheduleReminders, 60000);
