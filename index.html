@@ -2206,6 +2206,9 @@ body.app-ready .skip-link { display: block; }
     <div class="nav-item" onclick="showSection('treadmill',this)">
       <span class="nav-icon">🏃</span> Passadeira
     </div>
+    <div class="nav-item" onclick="showSection('plan',this)">
+      <span class="nav-icon">🗓️</span> Plano
+    </div>
     <div class="nav-item" onclick="showSection('profile',this)">
       <span class="nav-icon">👤</span> Perfil
     </div>
@@ -2843,37 +2846,16 @@ body.app-ready .skip-link { display: block; }
   </div>
 
   <div class="card">
-    <div class="card-title">objetivos da semana</div>
-    <div class="tm-goal-row"><span id="tmGoalSessionsLbl">0 / 3 treinos</span><span class="tm-goal-pct" id="tmGoalSessionsPct">0%</span></div>
-    <div class="pf-bar"><i id="tmGoalSessionsBar"></i></div>
-    <div class="tm-goal-row mt"><span id="tmGoalKmLbl">0 / 0 km</span><span class="tm-goal-pct" id="tmGoalKmPct">0%</span></div>
-    <div class="pf-bar"><i id="tmGoalKmBar"></i></div>
-    <div class="tm-trend" style="margin-top:14px;">🔥 <span id="tmGoalStreak">0</span> dias seguidos · melhor sequência: <span id="tmGoalBestStreak">0</span></div>
+    <div class="card-title">treinos registados</div>
+    <div id="tmHistory"></div>
   </div>
+</div>
 
-  <div class="card">
-    <div class="card-title">conquistas</div>
-    <div id="tmAchievements" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">evolução semanal</div>
-    <div class="tm-week-bars" id="tmWeekBars"></div>
-    <div class="tm-trend" id="tmWeekTrend"></div>
-  </div>
-
-  <div class="card">
-    <div class="card-title">recordes pessoais</div>
-    <div class="mini-tiles">
-      <div class="mini-tile"><div class="mini-val" id="tmRecSpeed">—</div><div class="mini-lbl">melhor km/h</div></div>
-      <div class="mini-tile"><div class="mini-val" id="tmRecKm">—</div><div class="mini-lbl">mais km num treino</div></div>
-      <div class="mini-tile"><div class="mini-val" id="tmRecLongest">—</div><div class="mini-lbl">treino mais longo</div></div>
-    </div>
-    <div class="mini-tiles" style="margin-top:10px;">
-      <div class="mini-tile"><div class="mini-val" id="tmRecWeek">—</div><div class="mini-lbl">maior semana (km)</div></div>
-      <div class="mini-tile"><div class="mini-val" id="tmRecSessions">0</div><div class="mini-lbl">treinos totais</div></div>
-      <div class="mini-tile"><div class="mini-val" id="tmRecDays">0</div><div class="mini-lbl">dias com treino</div></div>
-    </div>
+<!-- ▸ PLANO & PROGRESSO -->
+<div class="section" id="section-plan">
+  <div class="section-header">
+    <div class="section-title">Plano & <em>Progresso</em></div>
+    <div class="section-sub">plano semanal, evolução e conquistas</div>
   </div>
 
   <div class="card">
@@ -2954,12 +2936,43 @@ body.app-ready .skip-link { display: block; }
     <div id="tmPlanDays" class="tmp-grid"></div>
     <div style="font-size:11px;color:var(--muted);margin-top:10px;">Toca num dia passado ou de hoje para abrir o registo.</div>
   </div>
+</div>
 
   <div class="card">
-    <div class="card-title">treinos registados</div>
-    <div id="tmHistory"></div>
+    <div class="card-title">objetivos da semana</div>
+    <div class="tm-goal-row"><span id="tmGoalSessionsLbl">0 / 3 treinos</span><span class="tm-goal-pct" id="tmGoalSessionsPct">0%</span></div>
+    <div class="pf-bar"><i id="tmGoalSessionsBar"></i></div>
+    <div class="tm-goal-row mt"><span id="tmGoalKmLbl">0 / 0 km</span><span class="tm-goal-pct" id="tmGoalKmPct">0%</span></div>
+    <div class="pf-bar"><i id="tmGoalKmBar"></i></div>
+    <div class="tm-trend" style="margin-top:14px;">🔥 <span id="tmGoalStreak">0</span> dias seguidos · melhor sequência: <span id="tmGoalBestStreak">0</span></div>
   </div>
-</div>
+
+  <div class="card">
+    <div class="card-title">conquistas</div>
+    <div id="tmAchievements" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">evolução semanal</div>
+    <div class="tm-week-bars" id="tmWeekBars"></div>
+    <div class="tm-trend" id="tmWeekTrend"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">recordes pessoais</div>
+    <div class="mini-tiles">
+      <div class="mini-tile"><div class="mini-val" id="tmRecSpeed">—</div><div class="mini-lbl">melhor km/h</div></div>
+      <div class="mini-tile"><div class="mini-val" id="tmRecKm">—</div><div class="mini-lbl">mais km num treino</div></div>
+      <div class="mini-tile"><div class="mini-val" id="tmRecLongest">—</div><div class="mini-lbl">treino mais longo</div></div>
+    </div>
+    <div class="mini-tiles" style="margin-top:10px;">
+      <div class="mini-tile"><div class="mini-val" id="tmRecWeek">—</div><div class="mini-lbl">maior semana (km)</div></div>
+      <div class="mini-tile"><div class="mini-val" id="tmRecSessions">0</div><div class="mini-lbl">treinos totais</div></div>
+      <div class="mini-tile"><div class="mini-val" id="tmRecDays">0</div><div class="mini-lbl">dias com treino</div></div>
+    </div>
+  </div>
+
+
 
 <!-- ▸ PERFIL -->
 <div class="section" id="section-profile">
@@ -8724,6 +8737,12 @@ function tmDateOffset(n) {
 function tmSetDay(date) {
   document.getElementById('tmDate').value = date;
   loadTreadmillDay();
+  const section = document.getElementById('section-treadmill');
+  if (section && !section.classList.contains('active')) {
+    showSection('treadmill', navBySection('treadmill'));
+    const field = document.getElementById('tmDate');
+    if (field && field.closest('.card')) field.closest('.card').scrollIntoView({ block: 'start', behavior: 'smooth' });
+  }
 }
 function tmUpdateChips() {
   const cur = document.getElementById('tmDate').value;
@@ -9179,6 +9198,7 @@ function tmCompactPlan(text) {
   const items = tmParsePlan(src).filter(it => it.date);
   const sessions = items.filter(it => !it.rest && (it.distance || it.minutes));
   if (sessions.length < 3) return src;
+  items.sort((a, b) => a.date.localeCompare(b.date));
   return items.map(it => {
     if (it.rest) return it.date + ': Descanso';
     const bits = [];
@@ -9648,6 +9668,7 @@ function tmRenderPlanCards() {
     const clickable = !!(it.date && it.date <= TODAY);
     const canComplete = !!(it.date && it.date <= TODAY && !trained);
     return '<div class="tmp-day ' + cls + (clickable ? ' click' : '') + '"' +
+        (it.date ? ' data-date="' + it.date + '"' : '') +
         (clickable ? ' onclick="tmSetDay(\'' + it.date + '\')"' : '') + '>' +
       '<div class="tmp-top">' +
         '<div class="tmp-date"><b>' + dayNum + '</b><span>' + (weekday || '—') + '</span></div>' +
@@ -10352,7 +10373,8 @@ function scheduleReminders() {
   const tr = prefs.treino || { enabled: true, hora: '18:00' };
   if (tr.enabled !== false && !tmReminderSentToday('treino')) {
     const plan = tmCurrentPlan();
-    const items = plan ? tmParsePlan(plan.text).filter(it => it.rest || it.distance || it.minutes) : [];
+  const items = plan ? tmParsePlan(plan.text).filter(it => it.rest || it.distance || it.minutes) : [];
+  items.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
     const todayItem = items.find(it => it.date === TODAY && !it.rest);
     const done = DB[TODAY] && (parseFloat(DB[TODAY].treadmillTime) > 0 || parseFloat(DB[TODAY].treadmillDistance) > 0);
     if (todayItem && !done) {
