@@ -64,7 +64,7 @@
 .tmp-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
 .tmp-date{flex:0 0 auto;text-align:left;background:none;border:0;padding:0}
 .tmp-date b{display:block;font-family:'JetBrains Mono',monospace;font-size:24px;color:var(--text);line-height:1}
-.tmp-date span{display:block;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-top:4px}
+.tmp-date span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-top:4px}
 .tmp-info{flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:5px;min-width:0}
 .tmp-title{font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);white-space:normal}
 .tmp-metrics{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
@@ -73,7 +73,7 @@
 .tmp-metric span{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)}
 .tmp-metric.rest b{color:var(--muted)}
 .tmp-stats{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-.tmp-status{flex:0 0 auto;font-family:'JetBrains Mono',monospace;font-size:8px;text-transform:uppercase;letter-spacing:.4px;padding:4px 8px;border-radius:999px;border:1px solid var(--border);color:var(--text2);background:var(--surface);white-space:nowrap}
+.tmp-status{flex:0 0 auto;font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.4px;padding:4px 8px;border-radius:999px;border:1px solid var(--border);color:var(--text2);background:var(--surface);white-space:nowrap}
 .tmp-status.done{color:var(--moss-l);border-color:rgba(var(--accent-rgb),.5);background:rgba(var(--accent-rgb),.12)}
 .tmp-status.today{color:var(--moss-l);border-color:var(--moss);background:rgba(var(--accent-rgb),.18)}
 .tmp-status.miss{color:var(--rose);border-color:rgba(244,114,182,.4);background:rgba(244,114,182,.1)}
@@ -83,17 +83,19 @@
 .pf-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--moss),var(--moss-l));transition:width .4s}
 .tm-ach{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px dashed var(--border);background:var(--surface);font-size:11px;color:var(--muted)}
 .tm-ach.on{border-style:solid;border-color:rgba(var(--accent-rgb),.5);color:var(--text2);background:rgba(var(--accent-rgb),.12)}
-.tm-do{width:100%;text-align:center;padding:8px 10px;border-radius:10px;border:1px solid var(--moss);background:rgba(var(--accent-rgb),.14);color:var(--moss-l);font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer}
+.tm-do{width:100%;text-align:center;padding:8px 10px;border-radius:10px;border:1px solid var(--moss);background:rgba(var(--accent-rgb),.14);color:var(--moss-l);font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer}
 .tm-rest-days{display:flex;gap:6px;flex-wrap:wrap}
 .tm-rest{padding:7px 11px;border-radius:999px;border:1px solid var(--border);background:var(--bg);color:var(--text2);font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer;transition:border-color .12s,color .12s,background .12s}
 .tm-rest:hover{border-color:var(--border2)}
 .tm-rest.on{border-color:var(--moss);background:rgba(var(--accent-rgb),.14);color:var(--moss-l)}
+.reset-bank-btn { min-height: 24px; }
+#tmDate { min-height: 24px; }
 .tm-goal-row{display:flex;justify-content:space-between;align-items:baseline;font-size:12px;color:var(--text2)}
 .tm-goal-row+.pf-bar{margin-top:8px}
 .tm-goal-row.mt{margin-top:16px}
 .tm-goal-pct{font-family:'JetBrains Mono',monospace;color:var(--moss-l)}
 .tm-week-bars{display:flex;align-items:flex-end;gap:6px;height:110px;margin-top:16px}
-.tm-week-bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;height:100%;color:var(--muted);font-size:9px}
+.tm-week-bar{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:5px;height:100%;color:var(--muted);font-size:10px}
 .tm-week-bar i{display:block;width:100%;border-radius:6px 6px 2px 2px;background:var(--moss);min-height:3px;transition:height .3s}
 .tm-week-bar.cur{color:var(--text)}
 .tm-week-bar.cur i{background:var(--moss-l);box-shadow:0 0 0 2px var(--moss-d)}
@@ -228,7 +230,7 @@ body::after {
 }
 .top-header-author {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
+  font-size: 10px;
   color: var(--muted);
   margin-left: 12px;
   white-space: nowrap;
@@ -265,7 +267,7 @@ body::after {
 
 .logo-sub {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
+  font-size: 10px;
   color: var(--sage);
   letter-spacing: 2px;
   text-transform: uppercase;
@@ -310,7 +312,7 @@ body::after {
 
 .water-sidebar-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
+  font-size: 10px;
   color: var(--sage);
   letter-spacing: 1.5px;
   text-transform: uppercase;
@@ -339,7 +341,7 @@ body::after {
 
 .water-next-alert {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
+  font-size: 10px;
   color: var(--sage);
   margin-top: 6px;
   opacity: 0.7;
@@ -353,7 +355,7 @@ body::after {
 
 .motivation-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
+  font-size: 10px;
   color: var(--sage);
   letter-spacing: 1.5px;
   text-transform: uppercase;
@@ -370,7 +372,7 @@ body::after {
 
 .motivation-author {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
+  font-size: 10px;
   color: var(--sage);
   margin-top: 6px;
   letter-spacing: 0.5px;
@@ -413,7 +415,8 @@ button.nav-item {
   color: var(--moss-l);
 }
 
-.nav-icon { font-size: 16px; width: 20px; text-align: center; }
+.nav-icon { display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; flex: 0 0 20px; }
+.nav-icon svg { width: 18px; height: 18px; display: block; }
 
 .sidebar-bottom {
   padding: 16px 20px;
@@ -720,7 +723,7 @@ button.nav-item {
 
 .water-mini { margin-bottom: 18px; }
 .water-mini-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 14px; flex-wrap: wrap; margin-bottom: 12px; }
-.water-mini-kicker { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--sky); }
+.water-mini-kicker { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--sky); }
 .water-mini-title { font-family: 'Source Serif 4', serif; font-size: 24px; font-weight: 300; color: var(--text); line-height: 1.2; margin-top: 2px; }
 .water-mini-count { display: flex; align-items: baseline; gap: 4px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--muted); }
 .water-mini-count strong { font-family: 'Source Serif 4', serif; font-size: 30px; font-weight: 300; color: var(--sky); line-height: 1; }
@@ -733,7 +736,7 @@ button.nav-item {
 /* ── AI CHAT ── */
 .ai-chat-shell { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow); padding: 16px; }
 .ai-chat-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
-.ai-chat-status { display: flex; align-items: center; gap: 7px; font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--moss-l); }
+.ai-chat-status { display: flex; align-items: center; gap: 7px; font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1.2px; text-transform: uppercase; color: var(--moss-l); }
 .ai-chat-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--sage); box-shadow: 0 0 0 3px rgba(var(--accent-rgb),0.12); }
 .ai-chat-clear { font-size: 10px; padding: 6px 10px; }
 .ai-chat-log { min-height: 320px; max-height: 50vh; overflow-y: auto; padding: 12px; border: 1px solid var(--border); border-radius: 12px; background: rgba(0,0,0,0.10); scroll-behavior: smooth; }
@@ -757,7 +760,7 @@ button.nav-item {
 .ai-chat-input { flex: 1; min-height: 44px; max-height: 140px; resize: none; padding: 11px 13px; border: 1px solid var(--border2); border-radius: 10px; background: var(--surface); color: var(--text); font-family: 'Lora', serif; font-size: 13px; line-height: 1.5; outline: none; }
 .ai-chat-input:focus { border-color: var(--moss); }
 .ai-chat-send { flex: 0 0 auto; min-height: 44px; padding: 0 18px; font-size: 12px; }
-.ai-chat-hint { margin-top: 7px; font-family: 'JetBrains Mono', monospace; font-size: 8.5px; color: var(--faint); letter-spacing: 0.2px; }
+.ai-chat-hint { margin-top: 7px; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--faint); letter-spacing: 0.2px; }
 .ai-chat-status-msg { min-height: 15px; margin-top: 6px; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); }
 .tm-plan-chat { margin-top: 12px; padding: 12px; }
 .tm-plan-chat .ai-chat-top { margin-bottom: 8px; }
@@ -866,7 +869,7 @@ button.nav-item {
 
 .ai-panel-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
+  font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 2px;
   color: var(--moss-l);
@@ -948,7 +951,7 @@ button.nav-item {
 
 .stat-tile-icon { font-size: 20px; margin-bottom: 8px; }
 .stat-tile-val { font-family: 'Source Serif 4', serif; font-size: 22px; font-weight: 300; color: var(--moss-l); }
-.stat-tile-name { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 3px; }
+.stat-tile-name { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-top: 3px; }
 
 /* ── PESAGEM SEMANAL ── */
 .weekly-weight-card {
@@ -963,10 +966,10 @@ button.nav-item {
 .weekly-weight-card[data-status="atrasada"]::before { background: linear-gradient(90deg, var(--clay), var(--amber, #f59e0b), transparent); }
 .weekly-weight-card[data-status="em falta"]::before { background: linear-gradient(90deg, var(--muted), var(--sand), transparent); }
 .weekly-weight-head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; flex-wrap: wrap; }
-.weekly-weight-kicker { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--moss-l); }
+.weekly-weight-kicker { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--moss-l); }
 .weekly-weight-status, .weekly-weight-page-status {
   display: inline-flex; align-items: center; gap: 5px; margin-top: 6px; padding: 3px 9px; border-radius: 999px;
-  font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: .8px; text-transform: uppercase;
+  font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: .8px; text-transform: uppercase;
   border: 1px solid var(--border2); color: var(--text2); background: var(--surface);
 }
 .weekly-weight-status[data-status="feita"], .weekly-weight-page-status[data-status="feita"] { color: var(--moss-l); border-color: rgba(var(--accent-rgb),.35); background: rgba(var(--accent-rgb),.08); }
@@ -985,7 +988,7 @@ button.nav-item {
 .weight-history-row:last-child { border-bottom: none; }
 .weight-history-row.current { background: rgba(var(--accent-rgb),.04); margin: 0 -8px; padding-left: 8px; padding-right: 8px; border-radius: 6px; }
 .weight-history-week { font-size: 13px; color: var(--text); }
-.weight-history-sub { font-family: 'JetBrains Mono', monospace; font-size: 9.5px; color: var(--muted); margin-top: 3px; }
+.weight-history-sub { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); margin-top: 3px; }
 .weight-history-value { text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 12px; color: var(--text2); white-space: nowrap; }
 .weight-extra { color: var(--sand); text-transform: uppercase; letter-spacing: .5px; }
 .weight-diff { display: block; margin-top: 3px; font-size: 10px; color: var(--muted); }
@@ -1025,7 +1028,7 @@ button.nav-item {
 .mood-option span {
   display: block;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
+  font-size: 10px;
   color: var(--muted);
   text-align: center;
   margin-top: 4px;
@@ -1180,7 +1183,7 @@ input[type="range"]::-webkit-slider-thumb {
 
 .lock-header h3 { font-family: 'Lora', serif; font-size: 15px; color: var(--text2); font-weight: 400; }
 .lock-icon { font-size: 16px; }
-.lock-reveal { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--faint); letter-spacing: 1px; margin-left: auto; }
+.lock-reveal { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--faint); letter-spacing: 1px; margin-left: auto; }
 
 .intimate-content { display: none; }
 .intimate-content.revealed { display: block; animation: fadeIn 0.3s ease; }
@@ -1250,7 +1253,7 @@ input[type="range"]::-webkit-slider-thumb {
 
 .integration-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
+  font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 2px;
   color: var(--sky);
@@ -1371,7 +1374,7 @@ canvas { display:block; width:100% !important; max-width:100%; }
 }
 .stat-kpi-label {
   font-family:'JetBrains Mono',monospace;
-  font-size:9px;text-transform:uppercase;letter-spacing:1.5px;
+  font-size:10px;text-transform:uppercase;letter-spacing:1.5px;
   color:var(--muted);margin-bottom:6px;
 }
 .stat-kpi-val {
@@ -1380,7 +1383,7 @@ canvas { display:block; width:100% !important; max-width:100%; }
 }
 .stat-kpi-sub {
   font-family:'JetBrains Mono',monospace;
-  font-size:9px;color:var(--muted);margin-top:3px;
+  font-size:10px;color:var(--muted);margin-top:3px;
 }
 .stat-kpi-trend {
   font-family:'JetBrains Mono',monospace;
@@ -1392,7 +1395,7 @@ canvas { display:block; width:100% !important; max-width:100%; }
 }
 .stats-summary-label {
   font-family:'JetBrains Mono',monospace;
-  font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);
+  font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);
 }
 .stats-summary-val {
   font-family:'Source Serif 4',serif;
@@ -1410,14 +1413,12 @@ canvas { display:block; width:100% !important; max-width:100%; }
 .cal-day {
   width:14px;height:14px;
   border-radius:2px;
-  cursor:pointer;
-  transition:transform 0.1s;
+  cursor:default;
   position:relative;
 }
-.cal-day:hover { transform:scale(1.3); z-index:10; }
 .cal-day-label {
   font-family:'JetBrains Mono',monospace;
-  font-size:8px;color:var(--muted);
+  font-size:10px;color:var(--muted);
   height:14px;display:flex;align-items:center;
 }
 
@@ -1488,7 +1489,7 @@ canvas { display:block; width:100% !important; max-width:100%; }
 .sync-badge {
   display: inline-flex; align-items: center; gap: 5px;
   padding: 3px 10px; border-radius: 20px;
-  font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  font-family: 'JetBrains Mono', monospace; font-size: 10px;
 }
 .sync-badge-ok  { background: rgba(90,110,74,0.1);  color: var(--moss);  border: 1px solid rgba(90,110,74,0.2); }
 .sync-badge-err { background: rgba(180,80,80,0.08);  color: #b44;        border: 1px solid rgba(180,80,80,0.15); }
@@ -1568,7 +1569,7 @@ canvas { display:block; width:100% !important; max-width:100%; }
 }
 .goal-counter-title {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
+  font-size: 10px;
   text-transform: uppercase;
   letter-spacing: 2px;
   color: var(--moss);
@@ -1627,7 +1628,7 @@ canvas { display:block; width:100% !important; max-width:100%; }
 }
 .goal-milestone {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
+  font-size: 10px;
   padding: 4px 10px;
   border-radius: 20px;
   border: 1px solid var(--border);
@@ -1686,14 +1687,14 @@ canvas { display:block; width:100% !important; max-width:100%; }
   width: 16px; height: 16px;
   background: var(--moss);
   border-radius: 50%;
-  font-size: 9px;
+  font-size: 10px;
   color: #0a0d13;
   display: flex; align-items: center; justify-content: center;
   border: 1.5px solid var(--card);
 }
 .flow-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 9px;
+  font-size: 10px;
   color: var(--muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -1861,7 +1862,7 @@ canvas { display:block; width:100% !important; max-width:100%; }
 .mascot-side { flex: 1; min-width: 0; position: relative; z-index: 1; }
 .mascot-name-row { display: flex; align-items: baseline; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
 .mascot-name { font-family: 'Source Serif 4', serif; font-size: 20px; font-weight: 300; color: var(--moss-l); }
-.mascot-stage-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--sand); }
+.mascot-stage-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--sand); }
 .mascot-bubble {
   position: relative; background: var(--surface); border: 1px solid var(--border2);
   border-radius: 12px; padding: 11px 14px; font-size: 13px; line-height: 1.6;
@@ -1872,7 +1873,7 @@ canvas { display:block; width:100% !important; max-width:100%; }
   background: var(--surface); border-left: 1px solid var(--border2); border-bottom: 1px solid var(--border2);
   transform: rotate(45deg);
 }
-.mascot-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; font-family: 'JetBrains Mono', monospace; font-size: 9.5px; color: var(--muted); letter-spacing: 0.3px; }
+.mascot-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 0.3px; }
 .mascot-dot { opacity: 0.45; }
 @keyframes mascotBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2.5px); } }
 @keyframes mascotSway { 0%,100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
@@ -1895,13 +1896,13 @@ canvas { display:block; width:100% !important; max-width:100%; }
   .overview-mascot { padding: 14px; gap: 12px; align-items: flex-start; }
   .overview-mascot .mascot-stage { width: 76px; height: 76px; }
   .overview-mascot .mascot-bubble { font-size: 12px; padding: 9px 11px; }
-  .overview-mascot .mascot-meta { font-size: 9px; }
+  .overview-mascot .mascot-meta { font-size: 10px; }
 }
 
 .mascot-settings { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
 .mascot-stage-settings { width: 120px; height: 120px; }
 .mascot-settings-fields { flex: 1; min-width: 220px; }
-.mascot-label { font-family: 'JetBrains Mono', monospace; font-size: 9px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.mascot-label { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
 .mascot-swatches { display: flex; gap: 8px; flex-wrap: wrap; }
 .mascot-swatch {
   width: 28px; height: 28px; border-radius: 8px; border: 2px solid transparent;
@@ -1942,7 +1943,7 @@ body.app-ready .skip-link { display: block; }
   margin-left: auto; padding: 4px 10px; border-radius: 999px;
   border: 1px dashed var(--border2); background: transparent;
   color: var(--muted); font-family: 'JetBrains Mono', monospace;
-  font-size: 9px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
+  font-size: 10px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
   min-height: 24px; display: inline-flex; align-items: center; justify-content: center;
 }
 .mascot-customize:hover { color: var(--moss-l); border-color: var(--moss); }
@@ -1997,6 +1998,16 @@ body.app-ready .skip-link { display: block; }
   .mascot-bubble::before { top: 14px; }
   .mascot-settings { gap: 12px; }
   .mascot-stage-settings { width: 96px; height: 96px; }
+  button, .btn { min-height: 44px; min-width: 44px; }
+  .mascot-customize, .onboarding-dismiss, .onboarding-step { min-height: 44px; min-width: 44px; }
+  .reset-bank-btn, #tmDate { min-height: 44px; }
+  label[for="remEnabledSettings"], label[for="remPesoEnabledSettings"], label[for="remTreinoEnabledSettings"] {
+    display: inline-flex; align-items: center; min-height: 44px;
+  }
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  select, textarea { min-height: 44px; }
+  .mascot-check { min-height: 44px; }
+  .mascot-swatch { width: 44px; height: 44px; }
 }
 
 /* ── PREFERÊNCIAS DE APARÊNCIA (fonte + cor) ── */
@@ -2057,7 +2068,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
 
     <!-- Email input -->
     <div style="margin-bottom:12px;text-align:left;">
-      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:1px;">Email</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:1px;">Email</div>
       <input
         id="authEmail"
         type="email"
@@ -2085,7 +2096,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
 
     <!-- Password input -->
     <div style="margin-bottom:12px;text-align:left;">
-      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:1px;">Palavra-passe</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:1px;">Palavra-passe</div>
       <div style="position:relative;">
         <input
           id="authPassword"
@@ -2117,7 +2128,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
 
     <!-- Confirm Password (hidden in login tab) -->
     <div id="authConfirmBox" style="margin-bottom:16px;text-align:left;display:none;">
-      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:1px;">Confirmar Palavra-passe</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:5px;text-transform:uppercase;letter-spacing:1px;">Confirmar Palavra-passe</div>
       <input
         id="authConfirmPassword"
         type="password"
@@ -2176,7 +2187,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
       </button>
     </div>
 
-    <p style="margin-top:14px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--faint);line-height:1.5;">
+    <p style="margin-top:14px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--faint);line-height:1.5;">
       🔒 Dados sincronizados e encriptados via Supabase
     </p>
   </div>
@@ -2201,65 +2212,65 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
     <div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--moss-l);max-width:150px;" id="sidebarUserBox">
       👤 <span id="sidebarUserEmail">A carregar...</span>
     </div>
-    <button type="button" onclick="logout()" title="Terminar Sessão" style="background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:4px 6px;min-width:24px;min-height:24px;">🚪</button>
+    <button type="button" onclick="logout()" title="Terminar sessão" aria-label="Terminar sessão" style="background:transparent;border:none;color:var(--muted);cursor:pointer;padding:4px 6px;min-width:24px;min-height:24px;display:inline-flex;align-items:center;justify-content:center;"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v9"/><path d="M6.4 6.4a8 8 0 1 0 11.2 0"/></svg></button>
   </div>
   <div id="syncBadge" onclick="SyncManager.retryNow()" title="Estado da sincronização" style="padding:6px 18px;border-bottom:1px solid rgba(255,255,255,0.07);font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);cursor:pointer;">☁ …</div>
 
   <div style="padding:10px 18px;border-bottom:1px solid rgba(255,255,255,0.07);">
-    <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">🔥 calorias</div>
+    <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">🔥 calorias</div>
     <div style="display:grid;grid-template-columns:1fr auto;gap:2px 8px;align-items:center;">
-      <span style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);">consumidas</span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);">consumidas</span>
       <span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:var(--amber);text-align:right;" id="sbCalIn">0</span>
-      <span style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);">gastas</span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);">gastas</span>
       <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--sage);text-align:right;" id="sbCalBMR">—</span>
-      <span style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);">exercício</span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);">exercício</span>
       <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--moss-l);text-align:right;" id="sbCalExercise">0</span>
-      <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(255,255,255,0.6);padding-top:4px;border-top:1px solid rgba(255,255,255,0.07);">balanço</span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(255,255,255,0.6);padding-top:4px;border-top:1px solid rgba(255,255,255,0.07);">balanço</span>
       <span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;text-align:right;padding-top:4px;border-top:1px solid rgba(255,255,255,0.07);" id="sbCalBalance">—</span>
     </div>
   </div>
 
   <nav class="sidebar-nav" id="sidebarNav">
     <button type="button" class="nav-item active" aria-current="page" onclick="showSection('overview',this)">
-      <span class="nav-icon">🌿</span> Resumo
+      <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg></span> Resumo
     </button>
     <button type="button" class="nav-item" onclick="showSection('ai',this)">
-      <span class="nav-icon">💬</span> Chat IA
+      <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.6 8.6 0 0 1-3.9-.9L3 21l1.9-5.1a8.4 8.4 0 1 1 16.1-4.4Z"/></svg></span> Chat IA
     </button>
     <button type="button" class="nav-item" onclick="showSection('weight',this)">
-      <span class="nav-icon">⚖️</span> Peso
+      <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M7 21h10"/><path d="m16 16 3-8 3 8a6 6 0 0 1-6 0Z"/><path d="m2 16 3-8 3 8a6 6 0 0 1-6 0Z"/></svg></span> Peso
     </button>
     <button type="button" class="nav-item" onclick="showSection('meals',this)">
-      <span class="nav-icon">🍽️</span> Refeições
+      <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v7a3 3 0 0 0 3 3V2"/><path d="M7 12v10"/><path d="M17 2c-2 0-3 2-3 5v5h4V2"/><path d="M18 12v10"/></svg></span> Refeições
     </button>
 
     <button type="button" class="nav-item" onclick="showSection('work',this)">
-      <span class="nav-icon">💼</span> Trabalho
+      <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M3 12h18"/></svg></span> Trabalho
     </button>
     <button type="button" class="nav-item" onclick="showSection('treadmill',this)">
-      <span class="nav-icon">🏃</span> Passadeira
+      <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></span> Passadeira
     </button>
     <button type="button" class="nav-item" onclick="showSection('plan',this)">
-      <span class="nav-icon">🗓️</span> Plano
+      <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span> Plano
     </button>
     <button type="button" class="nav-item" onclick="showSection('profile',this)">
-      <span class="nav-icon">👤</span> Perfil
+      <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg></span> Perfil
     </button>
 
     <button type="button" class="nav-item" id="navCompeticao" style="display:none" onclick="showSection('competition',this)">
-      <span class="nav-icon">🏆</span> Competição
+      <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4a3 3 0 0 0 3 5M17 6h3a3 3 0 0 1-3 5"/></svg></span> Competição
     </button>
     <button type="button" class="nav-item" id="navCompAdmin" style="display:none" onclick="showSection('compadmin',this)">
-      <span class="nav-icon">⚙️</span> Gerir competição
+      <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3"/><path d="M1 14h6M9 8h6M17 16h6"/></svg></span> Gerir competição
     </button>
     <button type="button" class="nav-item" onclick="showSection('last5',this)">
-      <span class="nav-icon">📅</span> Últimos 5 Dias
+      <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg></span> Últimos 5 Dias
     </button>
     <button type="button" class="nav-item" onclick="showSection('stats',this)">
-      <span class="nav-icon">📈</span> Estatísticas
+      <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span> Estatísticas
     </button>
     <button type="button" class="nav-item" onclick="showSection('settings',this)">
-      <span class="nav-icon">⚙️</span> Configurações
+      <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg></span> Configurações
     </button>
   </nav>
 
@@ -2278,7 +2289,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
 
 <!-- ══ MAIN CONTENT ══ -->
 <div class="top-header">
-  <button id="mobileMenuBtn" class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Abrir Menu" aria-expanded="false" aria-controls="appSidebar">☰</button>
+  <button id="mobileMenuBtn" class="mobile-menu-btn" onclick="toggleMobileMenu()" aria-label="Abrir menu" aria-expanded="false" aria-controls="appSidebar"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
   <div class="top-header-quote" id="topQuote"></div>
   <div class="top-header-author" id="topAuthor"></div>
 </div>
@@ -2333,7 +2344,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
       <button type="button" class="onboarding-step" onclick="document.getElementById('waterMini').scrollIntoView({behavior:'smooth',block:'center'})">&#128167; Água</button>
       <button type="button" class="onboarding-step" onclick="showSection('meals', navBySection('meals'))">&#127869; Refeição</button>
       <button type="button" class="onboarding-step" onclick="showSection('weight', navBySection('weight'))">&#9878; Peso</button>
-      <button type="button" class="onboarding-step" onclick="showSection('journal', navBySection('journal'))">&#128211; Diário</button>
+      <button type="button" class="onboarding-step" onclick="showSection('overview', navBySection('overview'))">&#128211; Diário</button>
     </div>
   </div>
 
@@ -2614,7 +2625,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
 
       <!-- Entrada -->
       <div style="flex:1;min-width:130px;background:var(--surface);border:2px solid var(--border);border-radius:12px;padding:14px 16px;transition:border-color 0.2s;" id="workStartCard">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px;">🟢 Entrada</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px;">🟢 Entrada</div>
         <input type="text" id="workStart" placeholder="HH:MM" maxlength="5" oninput="fmtTime(this)" onchange="calcWorkHours();markWorkEntry()"
           style="width:100%;background:none;border:none;outline:none;font-family:'Source Serif 4',serif;font-size:28px;font-weight:300;color:var(--moss-l);cursor:pointer;">
         <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:6px;" id="workStartLabel">— não registado —</div>
@@ -2625,7 +2636,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
 
       <!-- Saída -->
       <div style="flex:1;min-width:130px;background:var(--surface);border:2px solid var(--border);border-radius:12px;padding:14px 16px;transition:border-color 0.2s;" id="workEndCard">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px;">🔴 Saída</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px;">🔴 Saída</div>
         <input type="text" id="workEnd" placeholder="HH:MM" maxlength="5" oninput="fmtTime(this)" onchange="calcWorkHours();markWorkExit()"
           style="width:100%;background:none;border:none;outline:none;font-family:'Source Serif 4',serif;font-size:28px;font-weight:300;color:var(--rose,#c06060);cursor:pointer;">
         <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:6px;" id="workEndLabel">— não registado —</div>
@@ -2636,26 +2647,26 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
 
       <!-- Almoço -->
       <div style="flex:1;min-width:130px;background:var(--surface);border:2px solid var(--border);border-radius:12px;padding:14px 16px;transition:border-color 0.2s;" id="lunchCard">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px;">☕ Almoço</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px;">☕ Almoço</div>
         <div style="display:flex;gap:8px;align-items:center;margin-bottom:6px;">
           <div>
-            <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--faint);margin-bottom:2px;">INÍCIO</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--faint);margin-bottom:2px;">INÍCIO</div>
             <input type="text" id="lunchStart" placeholder="HH:MM" maxlength="5" oninput="fmtTime(this)" onchange="calcWorkHours()"
               style="background:none;border:none;outline:none;font-family:'Source Serif 4',serif;font-size:18px;font-weight:300;color:var(--amber);width:80px;cursor:pointer;">
           </div>
           <span style="color:var(--faint);font-size:16px;margin-top:8px;">→</span>
           <div>
-            <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--faint);margin-bottom:2px;">FIM</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--faint);margin-bottom:2px;">FIM</div>
             <input type="text" id="lunchEnd" placeholder="HH:MM" maxlength="5" oninput="fmtTime(this)" onchange="calcWorkHours()"
               style="background:none;border:none;outline:none;font-family:'Source Serif 4',serif;font-size:18px;font-weight:300;color:var(--amber);width:80px;cursor:pointer;">
           </div>
         </div>
         <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:8px;" id="lunchDurLabel">— não registado —</div>
         <div style="display:flex;gap:6px;">
-          <button onclick="stampLunchStart()" style="flex:1;padding:5px 4px;background:rgba(184,144,80,0.1);border:1px solid rgba(184,144,80,0.3);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--amber);cursor:pointer;" onmouseover="this.style.background='rgba(184,144,80,0.2)'" onmouseout="this.style.background='rgba(184,144,80,0.1)'">
+          <button onclick="stampLunchStart()" style="flex:1;padding:5px 4px;background:rgba(184,144,80,0.1);border:1px solid rgba(184,144,80,0.3);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--amber);cursor:pointer;" onmouseover="this.style.background='rgba(184,144,80,0.2)'" onmouseout="this.style.background='rgba(184,144,80,0.1)'">
             ⏱ Início
           </button>
-          <button onclick="stampLunchEnd()" style="flex:1;padding:5px 4px;background:rgba(184,144,80,0.1);border:1px solid rgba(184,144,80,0.3);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--amber);cursor:pointer;" onmouseover="this.style.background='rgba(184,144,80,0.2)'" onmouseout="this.style.background='rgba(184,144,80,0.1)'">
+          <button onclick="stampLunchEnd()" style="flex:1;padding:5px 4px;background:rgba(184,144,80,0.1);border:1px solid rgba(184,144,80,0.3);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--amber);cursor:pointer;" onmouseover="this.style.background='rgba(184,144,80,0.2)'" onmouseout="this.style.background='rgba(184,144,80,0.1)'">
             ⏱ Fim
           </button>
         </div>
@@ -2671,22 +2682,22 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
       </div>
       <div style="display:flex;gap:16px;flex-wrap:wrap;">
         <div style="background:rgba(90,110,74,0.07);border:1px solid rgba(90,110,74,0.2);border-radius:10px;padding:10px 14px;flex:1;min-width:120px;">
-          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--moss);margin-bottom:4px;">🎯 Saída ideal (8h)</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--moss);margin-bottom:4px;">🎯 Saída ideal (8h)</div>
           <div style="font-family:'Source Serif 4',serif;font-size:22px;font-weight:300;color:var(--moss-l);" id="idealExit">—</div>
         </div>
         <div style="background:rgba(184,144,80,0.07);border:1px solid rgba(184,144,80,0.2);border-radius:10px;padding:10px 14px;flex:1;min-width:120px;" id="overtimeCard">
-          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--amber);margin-bottom:4px;">⏱ Overtime hoje</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--amber);margin-bottom:4px;">⏱ Overtime hoje</div>
           <div style="font-family:'Source Serif 4',serif;font-size:22px;font-weight:300;color:var(--amber);" id="overtimeVal">—</div>
         </div>
         <div style="background:rgba(96,165,250,0.07);border:1px solid rgba(96,165,250,0.2);border-radius:10px;padding:10px 14px;flex:1;min-width:120px;">
-          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--sky);margin-bottom:4px;">📊 Banco de horas</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--sky);margin-bottom:4px;">📊 Banco de horas</div>
           <div style="font-family:'Source Serif 4',serif;font-size:22px;font-weight:300;" id="overtimeAccum">—</div>
-          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-top:4px;" id="overtimeAccumDays"></div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:4px;" id="overtimeAccumDays"></div>
         </div>
       </div>
       <div style="margin-top:10px;display:flex;gap:8px;align-items:center;">
-        <button onclick="resetOvertimeBank()" style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:4px 10px;min-height:32px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);cursor:pointer;letter-spacing:0.5px;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">↺ Resetar banco</button>
-        <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--faint);">acumula desde o primeiro registo</span>
+        <button class="reset-bank-btn" onclick="resetOvertimeBank()" style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);cursor:pointer;letter-spacing:0.5px;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">↺ Resetar banco</button>
+        <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--faint);">acumula desde o primeiro registo</span>
       </div>
     </div>
   </div>
@@ -2715,7 +2726,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
   <div class="card" style="padding:0;overflow:hidden;">
     <div style="padding:16px 18px 12px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);">
       <div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:4px;">banco de horas</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:4px;">banco de horas</div>
         <div style="display:flex;align-items:baseline;gap:8px;">
           <span style="font-family:'Source Serif 4',serif;font-size:26px;font-weight:300;" id="calOtTotal">—</span>
           <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);" id="calOtDays"></span>
@@ -2730,26 +2741,26 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
 
     <!-- Legenda -->
     <div style="padding:10px 18px 6px;display:flex;gap:14px;flex-wrap:wrap;">
-      <div style="display:flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);">
+      <div style="display:flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);">
         <div style="width:10px;height:10px;border-radius:3px;background:rgba(var(--accent-rgb),0.25);border:1px solid rgba(var(--accent-rgb),0.5);"></div> overtime
       </div>
-      <div style="display:flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);">
+      <div style="display:flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);">
         <div style="width:10px;height:10px;border-radius:3px;background:rgba(248,113,113,0.2);border:1px solid rgba(248,113,113,0.4);"></div> em falta
       </div>
-      <div style="display:flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);">
+      <div style="display:flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);">
         <div style="width:10px;height:10px;border-radius:3px;background:rgba(100,116,139,0.15);border:1px dashed var(--border);"></div> sem registo
       </div>
     </div>
 
     <!-- Dias da semana -->
     <div style="display:grid;grid-template-columns:repeat(7,1fr);padding:0 12px;gap:3px;margin-bottom:2px;">
-      <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--faint);text-align:center;padding:4px 0;">SEG</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--faint);text-align:center;padding:4px 0;">TER</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--faint);text-align:center;padding:4px 0;">QUA</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--faint);text-align:center;padding:4px 0;">QUI</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--faint);text-align:center;padding:4px 0;">SEX</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--faint);text-align:center;padding:4px 0;">SÁB</div>
-      <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--faint);text-align:center;padding:4px 0;">DOM</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--faint);text-align:center;padding:4px 0;">SEG</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--faint);text-align:center;padding:4px 0;">TER</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--faint);text-align:center;padding:4px 0;">QUA</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--faint);text-align:center;padding:4px 0;">QUI</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--faint);text-align:center;padding:4px 0;">SEX</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--faint);text-align:center;padding:4px 0;">SÁB</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--faint);text-align:center;padding:4px 0;">DOM</div>
     </div>
 
     <!-- Grid do calendário -->
@@ -2783,7 +2794,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
       <button type="button" class="tm-chip" id="tmChip0" onclick="tmSetDay(tmDateOffset(0))">Hoje</button>
       <button type="button" class="tm-chip" id="tmChip1" onclick="tmSetDay(tmDateOffset(1))">Ontem</button>
       <button type="button" class="tm-chip" id="tmChip2" onclick="tmSetDay(tmDateOffset(2))">Anteontem</button>
-      <input type="date" id="tmDate" onchange="loadTreadmillDay()" aria-label="Dia do treino" style="margin-left:auto;max-width:170px;min-height:32px;">
+      <input type="date" id="tmDate" onchange="loadTreadmillDay()" aria-label="Dia do treino" style="margin-left:auto;max-width:170px;">
     </div>
 
     <div class="tm-stage" id="tmStage" aria-hidden="true">
@@ -2902,7 +2913,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
       <div class="ai-panel-label">plano dos próximos 7 dias</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
         <div style="flex:1 1 170px;">
-          <label for="tmPlanGoal" style="display:block;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Objetivo</label>
+          <label for="tmPlanGoal" style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Objetivo</label>
           <select id="tmPlanGoal" onchange="tmSaveCriteria()" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;">
             <option value="manter">Manter a forma</option>
             <option value="perder">Perder peso</option>
@@ -2912,12 +2923,12 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
           </select>
         </div>
         <div style="flex:1 1 170px;">
-          <label for="tmPlanTargetKm" style="display:block;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Distância-alvo (km/semana)</label>
+          <label for="tmPlanTargetKm" style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Distância-alvo (km/semana)</label>
           <input type="number" id="tmPlanTargetKm" min="0" step="0.5" placeholder="ex: 20" oninput="tmSaveCriteria()" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;">
         </div>
       </div>
       <div style="margin-bottom:12px;">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Dias de descanso</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Dias de descanso</div>
         <div class="tm-rest-days" id="tmRestDays" role="group" aria-label="Dias de descanso">
           <button type="button" class="tm-rest" data-day="1" onclick="tmToggleRestDay(1)">Seg</button>
           <button type="button" class="tm-rest" data-day="2" onclick="tmToggleRestDay(2)">Ter</button>
@@ -3119,7 +3130,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
     <div class="goal-progress-track">
       <div class="goal-progress-fill" id="gcBar" style="width:0%"></div>
     </div>
-    <div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:4px;">
+    <div style="display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:4px;">
       <span>102.1 kg (início)</span>
       <span id="gcCurrentWeight">—</span>
       <span>75 kg (meta)</span>
@@ -3149,7 +3160,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
         <button type="button" class="ex-filter-btn" id="weightModeDay" onclick="setWeightChartMode('day')" aria-pressed="false">Diário</button>
       </div>
     </div>
-    <canvas id="chart-weight" height="200"></canvas>
+    <canvas id="chart-weight" height="200" role="img" aria-label="Gráfico de evolução do peso" aria-describedby="stats-weight-summary"></canvas>
     <div style="margin-top:10px;display:flex;gap:16px;flex-wrap:wrap;" id="stats-weight-summary"></div>
   </div>
 
@@ -3157,7 +3168,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
   <!-- CALORIES chart -->
   <div class="card" id="card-cal-chart">
     <div class="card-title">🍽️ calorias diárias</div>
-    <canvas id="chart-calories" height="200"></canvas>
+    <canvas id="chart-calories" height="200" role="img" aria-label="Gráfico de calorias diárias" aria-describedby="stats-cal-summary"></canvas>
     <div style="margin-top:10px;display:flex;gap:16px;flex-wrap:wrap;" id="stats-cal-summary"></div>
   </div>
 
@@ -3170,13 +3181,13 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
     <p style="font-size:11px;color:var(--muted);font-style:italic;margin-bottom:14px;">Cada quadrado é um dia. Quanto mais escuro, mais dados registaste.</p>
     <div id="activity-calendar" style="overflow-x:auto;"></div>
     <div style="display:flex;align-items:center;gap:6px;margin-top:12px;">
-      <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);">menos</span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);">menos</span>
       <div style="width:12px;height:12px;border-radius:2px;background:var(--bg2);border:1px solid var(--border);"></div>
       <div style="width:12px;height:12px;border-radius:2px;background:var(--sage-l);"></div>
       <div style="width:12px;height:12px;border-radius:2px;background:var(--sage);"></div>
       <div style="width:12px;height:12px;border-radius:2px;background:var(--moss-l);"></div>
       <div style="width:12px;height:12px;border-radius:2px;background:var(--moss-d);"></div>
-      <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);">mais</span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);">mais</span>
     </div>
   </div>
 
@@ -3293,7 +3304,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
     <div class="card-title">☁️ Google Sheets</div>
     <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Os teus dados sincronizam automaticamente ao guardar. 1 linha por dia, atualizada a cada gravação.</p>
     <div style="margin-bottom:14px;">
-      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">URL do Apps Script</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">URL do Apps Script</div>
       <div style="display:flex;gap:8px;">
         <input type="text" id="sheetsUrlSettingsInput" placeholder="https://script.google.com/macros/s/..." style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;outline:none;">
         <button class="btn btn-primary" onclick="saveSettingsSheetsUrl()" style="white-space:nowrap;">Guardar</button>
@@ -3305,7 +3316,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
       <button onclick="clearSheetsUrl()" style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:6px 14px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);cursor:pointer;">🗑 Remover URL</button>
     </div>
     <div style="padding:14px;background:var(--surface);border-radius:10px;border:1px solid var(--border);">
-      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--moss-l);margin-bottom:8px;letter-spacing:1px;">COMO CONFIGURAR</div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--moss-l);margin-bottom:8px;letter-spacing:1px;">COMO CONFIGURAR</div>
       <div style="font-size:12px;color:var(--muted);line-height:1.8;">
         1. Google Sheets → <strong style="color:var(--text2);">Extensões → Apps Script</strong><br>
         2. Cola o ficheiro <code style="background:var(--bg);padding:1px 6px;border-radius:3px;font-size:11px;">google-apps-script.js</code><br>
@@ -3320,7 +3331,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
     <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">A IA incluída usa chaves geridas no servidor, sem chaves no teu dispositivo. Podes optar por usar as tuas próprias chaves.</p>
 
     <div style="margin-bottom:14px;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;">
-      <label for="aiModeSelect" style="display:block;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Modo de IA</label>
+      <label for="aiModeSelect" style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Modo de IA</label>
       <select id="aiModeSelect" onchange="changeAiMode()" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;">
         <option value="app">✨ IA incluída (recomendado)</option>
         <option value="byok">🔑 Usar as minhas chaves</option>
@@ -3330,7 +3341,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
     </div>
 
     <div id="aiProviderField" style="margin-bottom:14px;">
-      <label for="aiProviderSelect" style="display:block;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Provedor de IA</label>
+      <label for="aiProviderSelect" style="display:block;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Provedor de IA</label>
       <select id="aiProviderSelect" onchange="changeAiProvider()" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;">
         <option value="auto">⚡ Auto (todos em cadeia — Recomendado)</option>
         <option value="openrouter">OpenRouter (Múltiplas IA's)</option>
@@ -3343,7 +3354,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
     <!-- OpenRouter Box -->
     <div id="openrouterSettingsBox">
       <div style="margin-bottom:14px;">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Chaves API OpenRouter <span style="color:var(--moss);">(uma por linha — rotação automática)</span></div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Chaves API OpenRouter <span style="color:var(--moss);">(uma por linha — rotação automática)</span></div>
         <textarea id="openrouterKeysSettingsInput" rows="4" placeholder="sk-or-v1-...
 sk-or-v1-... (2ª chave)
 sk-or-v1-... (3ª chave)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;outline:none;resize:vertical;letter-spacing:0.5px;line-height:1.6;"></textarea>
@@ -3355,7 +3366,7 @@ sk-or-v1-... (3ª chave)" style="width:100%;background:var(--surface);border:1px
       </div>
       
       <div style="margin-bottom:14px;">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Modelo de IA</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Modelo de IA</div>
         <select id="openrouterModelSelect" onchange="handleModelSelectChange()" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;">
           <option value="nvidia/nemotron-3.5-lightning:free">NVIDIA Nemotron 3.5 Lightning (Gratuito - Rápido)</option>
           <option value="google/gemma-4-31b-it:free">Google Gemma 4 31B (Gratuito)</option>
@@ -3367,7 +3378,7 @@ sk-or-v1-... (3ª chave)" style="width:100%;background:var(--surface);border:1px
       </div>
 
       <div id="customModelBox" style="margin-bottom:14px;display:none;">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Identificador do Modelo Personalizado</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Identificador do Modelo Personalizado</div>
         <input type="text" id="customModelInput" placeholder="ex: mistralai/mistral-7b-instruct:free" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;outline:none;">
       </div>
 
@@ -3380,7 +3391,7 @@ sk-or-v1-... (3ª chave)" style="width:100%;background:var(--surface);border:1px
     <!-- Groq Box -->
     <div id="groqSettingsBox" style="display:none;">
       <div style="margin-bottom:14px;">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Chaves API Groq <span style="color:var(--moss);">(uma por linha — rotação automática)</span></div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Chaves API Groq <span style="color:var(--moss);">(uma por linha — rotação automática)</span></div>
         <textarea id="groqKeysSettingsInput" rows="4" placeholder="gsk_...
 gsk_... (2ª chave)
 gsk_... (3ª chave)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;outline:none;resize:vertical;letter-spacing:0.5px;line-height:1.6;"></textarea>
@@ -3399,7 +3410,7 @@ gsk_... (3ª chave)" style="width:100%;background:var(--surface);border:1px soli
     <!-- Hugging Face Box -->
     <div id="hfSettingsBox" style="display:none;">
       <div style="margin-bottom:14px;">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Chaves API Hugging Face <span style="color:var(--moss);">(uma por linha — rotação automática)</span></div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Chaves API Hugging Face <span style="color:var(--moss);">(uma por linha — rotação automática)</span></div>
         <textarea id="hfKeysSettingsInput" rows="4" placeholder="hf_...
 hf_... (2ª chave)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;outline:none;resize:vertical;letter-spacing:0.5px;line-height:1.6;"></textarea>
         <div style="display:flex;gap:8px;margin-top:8px;">
@@ -3417,7 +3428,7 @@ hf_... (2ª chave)" style="width:100%;background:var(--surface);border:1px solid
     <!-- Gemini Box -->
     <div id="geminiSettingsBox" style="display:none;">
       <div style="margin-bottom:14px;">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Chaves API Google Gemini <span style="color:var(--moss);">(uma por linha — rotação automática)</span></div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Chaves API Google Gemini <span style="color:var(--moss);">(uma por linha — rotação automática)</span></div>
         <textarea id="geminiKeysSettingsInput" rows="4" placeholder="AIza...
  (2ª chave)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:11px;outline:none;resize:vertical;letter-spacing:0.5px;line-height:1.6;"></textarea>
         <div style="display:flex;gap:8px;margin-top:8px;">
@@ -3445,12 +3456,12 @@ hf_... (2ª chave)" style="width:100%;background:var(--surface);border:1px solid
       <label for="remEnabledSettings" style="font-size:13px;color:var(--text);">Ativar lembretes</label>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:16px;">
-      <div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:6px;">🌅 MANHÃ</div><input type="text" id="remManhaSettings" placeholder="08:00" maxlength="5" oninput="fmtTime(this)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;outline:none;"></div>
-      <div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:6px;">🍽️ ALMOÇO</div><input type="text" id="remAlmocoSettings" placeholder="13:00" maxlength="5" oninput="fmtTime(this)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;outline:none;"></div>
-      <div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:6px;">🌙 NOITE</div><input type="text" id="remNoiteSettings" placeholder="22:00" maxlength="5" oninput="fmtTime(this)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;outline:none;"></div>
-      <div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:6px;">⚖️ PESAGEM · HORA</div><input type="text" id="remPesoHoraSettings" placeholder="09:00" maxlength="5" aria-label="Hora da pesagem semanal" oninput="fmtTime(this)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;outline:none;"></div>
-      <div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:6px;">⚖️ PESAGEM · DIA</div><select id="remPesoDiaSettings" aria-label="Dia da pesagem semanal" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;"><option value="0">Domingo</option><option value="1">Segunda</option><option value="2">Terça</option><option value="3">Quarta</option><option value="4">Quinta</option><option value="5">Sexta</option><option value="6">Sábado</option></select></div>
-      <div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:6px;">🏃 TREINO · HORA</div><input type="text" id="remTreinoHoraSettings" placeholder="18:00" maxlength="5" aria-label="Hora do lembrete de treino" oninput="fmtTime(this)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;outline:none;"></div>
+      <div><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:6px;">🌅 MANHÃ</div><input type="text" id="remManhaSettings" placeholder="08:00" maxlength="5" oninput="fmtTime(this)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;outline:none;"></div>
+      <div><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:6px;">🍽️ ALMOÇO</div><input type="text" id="remAlmocoSettings" placeholder="13:00" maxlength="5" oninput="fmtTime(this)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;outline:none;"></div>
+      <div><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:6px;">🌙 NOITE</div><input type="text" id="remNoiteSettings" placeholder="22:00" maxlength="5" oninput="fmtTime(this)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;outline:none;"></div>
+      <div><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:6px;">⚖️ PESAGEM · HORA</div><input type="text" id="remPesoHoraSettings" placeholder="09:00" maxlength="5" aria-label="Hora da pesagem semanal" oninput="fmtTime(this)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;outline:none;"></div>
+      <div><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:6px;">⚖️ PESAGEM · DIA</div><select id="remPesoDiaSettings" aria-label="Dia da pesagem semanal" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;"><option value="0">Domingo</option><option value="1">Segunda</option><option value="2">Terça</option><option value="3">Quarta</option><option value="4">Quinta</option><option value="5">Sexta</option><option value="6">Sábado</option></select></div>
+      <div><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:6px;">🏃 TREINO · HORA</div><input type="text" id="remTreinoHoraSettings" placeholder="18:00" maxlength="5" aria-label="Hora do lembrete de treino" oninput="fmtTime(this)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;outline:none;"></div>
     </div>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
       <input type="checkbox" id="remPesoEnabledSettings" style="width:24px;height:24px;accent-color:var(--moss);">
@@ -3468,15 +3479,15 @@ hf_... (2ª chave)" style="width:100%;background:var(--surface);border:1px solid
     <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Altera a tua palavra-passe de acesso. O hash é guardado com segurança no teu dispositivo.</p>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:14px;">
       <div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;">Palavra-passe atual</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;">Palavra-passe atual</div>
         <input type="password" id="currentPwdSettings" placeholder="••••••••" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;">
       </div>
       <div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;">Nova palavra-passe</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;">Nova palavra-passe</div>
         <input type="password" id="newPwdSettings" placeholder="mínimo 4 caracteres" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;">
       </div>
       <div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;">Confirmar nova</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-bottom:6px;text-transform:uppercase;">Confirmar nova</div>
         <input type="password" id="confirmPwdSettings" placeholder="repetir nova palavra-passe" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;">
       </div>
     </div>
@@ -3609,7 +3620,7 @@ hf_... (2ª chave)" style="width:100%;background:var(--surface);border:1px solid
 
     <div style="margin-top:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
       <button class="btn btn-secondary" onclick="closeSyncModal()" style="font-size:12px;">Fechar</button>
-      <span id="currentSyncUrl" style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);"></span>
+      <span id="currentSyncUrl" style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);"></span>
     </div>
   </div>
 </div>
@@ -4283,7 +4294,7 @@ function renderDailyRoutine() {
         <div class="ex-card-body">
           <div class="ex-card-name">${ex.name}</div>
           <div class="ex-card-qty">${r.steps}</div>
-          <div style="margin-top:4px;"><span class="tag tag-amber" style="font-size:9px;">⏱ ${ex.dur}</span></div>
+          <div style="margin-top:4px;"><span class="tag tag-amber" style="font-size:10px;">⏱ ${ex.dur}</span></div>
         </div>
       </div>
     `;
@@ -4423,18 +4434,29 @@ function toggleMobileMenu(force) {
     if (bd) bd.classList.remove('active');
   }
   const btn = document.getElementById('mobileMenuBtn');
-  if (btn) btn.setAttribute('aria-expanded', String(nextState));
+  if (btn) {
+    btn.setAttribute('aria-expanded', String(nextState));
+    btn.setAttribute('aria-label', nextState ? 'Fechar menu' : 'Abrir menu');
+  }
 }
 
-function showSection(id, el) {
+function showSection(id, el, fromHistory) {
+  const target = document.getElementById('section-' + id);
+  if (!target) return;
   if (window.innerWidth <= 768) {
     toggleMobileMenu(false);
   }
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  const target = document.getElementById('section-' + id);
-  if (target) target.classList.add('active');
+  target.classList.add('active');
   document.querySelectorAll('.nav-item').forEach(n => { n.classList.remove('active'); n.removeAttribute('aria-current'); });
-  if (el) { el.classList.add('active'); el.setAttribute('aria-current', 'page'); }
+  const navEl = el || (typeof navBySection === 'function' ? navBySection(id) : null);
+  if (navEl) { navEl.classList.add('active'); navEl.setAttribute('aria-current', 'page'); }
+  if (!fromHistory) {
+    const hash = '#' + id;
+    if (location.hash !== hash) {
+      try { history.pushState(null, '', hash); } catch (e) { location.hash = id; }
+    }
+  }
   if (id === 'overview') updateOverview();
   if (id === 'stats') { setTimeout(renderAllCharts, 60); updateGoalCounter(); }
   if (id === 'weight') { renderWeightHistory(); renderWeeklyWeight(); }
@@ -4442,6 +4464,20 @@ function showSection(id, el) {
   const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   window.scrollTo({ top: 0, behavior: reduce ? 'auto' : 'smooth' });
 }
+
+function applyHashSection() {
+  const id = decodeURIComponent((location.hash || '').replace(/^#\/?/, ''));
+  if (!id) {
+    showSection('overview', navBySection('overview'), true);
+    return true;
+  }
+  if (!document.getElementById('section-' + id)) return false;
+  showSection(id, navBySection(id), true);
+  return true;
+}
+
+window.addEventListener('popstate', applyHashSection);
+window.addEventListener('hashchange', applyHashSection);
 
 // ═══════════════════════════════════════════════════════════════════
 // RESTORE FIELDS
@@ -5778,17 +5814,17 @@ function renderWorkCalendar() {
     if (isWeekend) {
       bg     = 'background:transparent;';
       border = 'border:1px dashed rgba(100,116,139,0.12);';
-      label  = `<span style="font-size:8px;color:var(--muted);">${day}</span>`;
+      label  = `<span style="font-size:10px;color:var(--muted);">${day}</span>`;
     } else if (isBefore) {
       // Antes da data de início — mostrar como inativo
       bg     = 'background:rgba(30,40,55,0.4);';
       border = 'border:1px solid rgba(100,116,139,0.1);';
-      label  = `<span style="font-size:8px;color:var(--muted);">${day}</span>`;
+      label  = `<span style="font-size:10px;color:var(--muted);">${day}</span>`;
     } else if (!data) {
       // Sem registo (dia útil)
       bg     = 'background:rgba(51,65,85,0.5);';
       border = 'border:1px dashed rgba(100,116,139,0.3);';
-      label  = `<span style="font-size:8px;color:var(--muted);">${day}</span>`;
+      label  = `<span style="font-size:10px;color:var(--muted);">${day}</span>`;
     } else {
       const ot    = data.ot;
       const otH   = Math.floor(Math.abs(ot)/60);
@@ -5806,9 +5842,9 @@ function renderWorkCalendar() {
         bg     = `background:rgba(var(--accent-rgb),${alpha});`;
         border = `border:1px solid rgba(var(--accent-rgb),${0.4 + intensity*0.5});`;
         label  = `
-          <span style="font-size:8px;color:#fff;font-weight:600;">${day}</span>
+          <span style="font-size:10px;color:#fff;font-weight:600;">${day}</span>
           <span style="font-size:10px;font-weight:800;color:var(--moss-l);font-family:'JetBrains Mono',monospace;">${otTxt}</span>
-          <span style="font-size:7px;color:rgba(255,255,255,0.6);font-family:'JetBrains Mono',monospace;">${wTxt}</span>
+          <span style="font-size:10px;color:rgba(255,255,255,0.6);font-family:'JetBrains Mono',monospace;">${wTxt}</span>
         `;
       } else if (ot < 0) {
         // Vermelho escuro → vivo conforme intensidade
@@ -5817,17 +5853,17 @@ function renderWorkCalendar() {
         bg     = `background:rgba(153,27,27,${alpha});`;
         border = `border:1px solid rgba(248,113,113,${0.4 + intensity*0.5});`;
         label  = `
-          <span style="font-size:8px;color:#fff;font-weight:600;">${day}</span>
+          <span style="font-size:10px;color:#fff;font-weight:600;">${day}</span>
           <span style="font-size:10px;font-weight:800;color:#fca5a5;font-family:'JetBrains Mono',monospace;">${otTxt}</span>
-          <span style="font-size:7px;color:rgba(255,255,255,0.6);font-family:'JetBrains Mono',monospace;">${wTxt}</span>
+          <span style="font-size:10px;color:rgba(255,255,255,0.6);font-family:'JetBrains Mono',monospace;">${wTxt}</span>
         `;
       } else {
         bg     = 'background:rgba(var(--accent-rgb),0.2);';
         border = 'border:1px solid rgba(var(--accent-rgb),0.35);';
         label  = `
-          <span style="font-size:8px;color:#fff;font-weight:600;">${day}</span>
+          <span style="font-size:10px;color:#fff;font-weight:600;">${day}</span>
           <span style="font-size:10px;font-weight:800;color:var(--moss-l);font-family:'JetBrains Mono',monospace;">8:00 ✓</span>
-          <span style="font-size:7px;color:rgba(255,255,255,0.6);font-family:'JetBrains Mono',monospace;">${wTxt}</span>
+          <span style="font-size:10px;color:rgba(255,255,255,0.6);font-family:'JetBrains Mono',monospace;">${wTxt}</span>
         `;
       }
     }
@@ -5858,9 +5894,9 @@ function renderWorkCalendar() {
     const wh    = Math.floor(w.worked/60), wm = w.worked%60;
     weekHtml += `
       <div style="flex:0 0 auto;background:${bg};border:${bord};border-radius:10px;padding:8px 14px;min-width:110px;">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:rgba(255,255,255,0.4);margin-bottom:4px;text-transform:uppercase;letter-spacing:1px;">SEM ${wk.split('-W')[1]}</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(255,255,255,0.4);margin-bottom:4px;text-transform:uppercase;letter-spacing:1px;">SEM ${wk.split('-W')[1]}</div>
         <div style="font-family:'JetBrains Mono',monospace;font-size:16px;font-weight:800;color:${col};">${otTxt}</div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(255,255,255,0.45);margin-top:2px;">${wh}h${wm?wm+'m':''} · ${w.days}d</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:rgba(255,255,255,0.45);margin-top:2px;">${wh}h${wm?wm+'m':''} · ${w.days}d</div>
       </div>`;
   });
   if (weekDiv) weekDiv.innerHTML = weekHtml || `<span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--faint);padding:8px;">sem registos este mês</span>`;
@@ -6905,12 +6941,12 @@ function renderActivityCalendar() {
       ? monthNames[firstValid.month]
       : '';
     if(firstValid && firstValid.day <= 7 && firstValid.month !== lastMonth) lastMonth = firstValid.month;
-    html += `<div style="height:14px;font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);white-space:nowrap;">${monthLabel}</div>`;
+    html += `<div style="height:14px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);white-space:nowrap;">${monthLabel}</div>`;
     w.forEach(day => {
       if(!day) { html += '<div class="cal-day" style="background:transparent;"></div>'; return; }
       const bg = getCalColor(day.score);
       const title = day.date + (day.hasData ? ' · '+day.score+' dados' : ' · sem registo');
-      html += `<div class="cal-day" style="background:${bg};" title="${title}" onclick="jumpToDate('${day.date}')"></div>`;
+      html += `<div class="cal-day" style="background:${bg};" title="${title}" role="img" aria-label="${title}"></div>`;
     });
     html += '</div>';
   });
@@ -6934,11 +6970,6 @@ function getCalColor(score) {
   if(score<=4)  return 'var(--sage)';
   if(score<=6)  return 'var(--moss-l)';
   return 'var(--moss-d)';
-}
-
-function jumpToDate(dateStr) {
-  // Just show a tooltip — future feature
-  console.log('Date:', dateStr, DB[dateStr]);
 }
 
 // ── SUMMARY STATS ─────────────────────────────────────────────────
@@ -10558,10 +10589,10 @@ function renderTrends() {
     return `<div style="background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px 16px;display:flex;align-items:center;gap:12px;">
       <span style="font-size:22px;">${m.icon}</span>
       <div style="flex:1;">
-        <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">${m.label}</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;">${m.label}</div>
         <div style="font-size:18px;color:var(--text);">${val}${curr!==null?'<span style="font-size:11px;color:var(--muted);"> '+m.unit+'</span>':''}</div>
       </div>
-      <div style="text-align:right;">${arrow}<div style="font-size:9px;color:var(--faint);font-family:'JetBrains Mono',monospace;">vs sem. ant.</div></div>
+      <div style="text-align:right;">${arrow}<div style="font-size:10px;color:var(--faint);font-family:'JetBrains Mono',monospace;">vs sem. ant.</div></div>
     </div>`;
   }).join('');
 }
@@ -10609,7 +10640,7 @@ function checkWeightLoss(kg) {
 function showAchievementToast(a) {
   const t = document.createElement('div');
   t.style.cssText = 'position:fixed;bottom:80px;right:20px;background:var(--card);border:1px solid var(--moss);border-radius:14px;padding:14px 18px;z-index:9999;box-shadow:0 8px 32px rgba(0,0,0,0.5);display:flex;align-items:center;gap:12px;';
-  t.innerHTML = `<span style="font-size:28px;">${a.icon}</span><div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--moss-l);letter-spacing:1px;">CONQUISTA</div><div style="font-size:14px;color:var(--text);">${a.title}</div></div>`;
+  t.innerHTML = `<span style="font-size:28px;">${a.icon}</span><div><div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--moss-l);letter-spacing:1px;">CONQUISTA</div><div style="font-size:14px;color:var(--text);">${a.title}</div></div>`;
   document.body.appendChild(t);
   setTimeout(()=>t.remove(), 4000);
 }
@@ -10635,7 +10666,7 @@ function renderAchievements() {
       <span style="font-size:26px;filter:${done?'none':'grayscale(1)'};">${a.icon}</span>
       <div><div style="font-size:13px;color:${done?'var(--text)':'var(--muted)'};">${a.title}</div>
       <div style="font-size:11px;color:var(--muted);">${a.desc}</div>
-      ${done?'<div style="font-size:9px;color:var(--moss-l);font-family:\'JetBrains Mono\',monospace;margin-top:3px;">✓ desbloqueada</div>':''}</div>
+      ${done?'<div style="font-size:10px;color:var(--moss-l);font-family:\'JetBrains Mono\',monospace;margin-top:3px;">✓ desbloqueada</div>':''}</div>
     </div>`;
   }).join('');
 }
@@ -10868,7 +10899,7 @@ function n90RenderDailyChecks(state) {
   let html = '';
   allChecks.forEach(c => {
     if (c.cat !== lastCat) {
-      html += `<div style="font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-top:10px;margin-bottom:4px;">${c.cat}</div>`;
+      html += `<div style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-top:10px;margin-bottom:4px;">${c.cat}</div>`;
       lastCat = c.cat;
     }
     const done = saved.includes(c.id);
@@ -10918,7 +10949,7 @@ function n90RenderRoadmap(currentWeek) {
   N90_WEEKS.forEach(w => {
     if (w.phase !== lastPhase) {
       const p = N90_PHASES[w.phase - 1];
-      html += `<div style="font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin:12px 0 6px;padding-left:4px;">${p.icon} ${p.name.toUpperCase()}</div>`;
+      html += `<div style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin:12px 0 6px;padding-left:4px;">${p.icon} ${p.name.toUpperCase()}</div>`;
       lastPhase = w.phase;
     }
     const isCurrent  = w.w === currentWeek;
@@ -10934,7 +10965,7 @@ function n90RenderRoadmap(currentWeek) {
           <div style="font-size:11px;color:var(--muted);line-height:1.5;">${w.desc}</div>
         </div>
         ${isPast ? '<div style="font-size:14px;">✓</div>' : ''}
-        ${isCurrent ? '<div style="font-family:\'JetBrains Mono\',monospace;font-size:8px;background:var(--moss);color:#0f172a;border-radius:4px;padding:2px 6px;font-weight:700;white-space:nowrap;align-self:center;">AGORA</div>' : ''}
+        ${isCurrent ? '<div style="font-family:\'JetBrains Mono\',monospace;font-size:10px;background:var(--moss);color:#0f172a;border-radius:4px;padding:2px 6px;font-weight:700;white-space:nowrap;align-self:center;">AGORA</div>' : ''}
       </div>`;
   });
   container.innerHTML = html;
@@ -11122,24 +11153,24 @@ function renderLast5Days() {
       <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:14px;">
         <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;color:${isToday ? 'var(--moss-l)' : 'var(--text1)'};">${label}</span>
         <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);">${dateLabel}</span>
-        ${isToday ? '<span style="font-family:\'JetBrains Mono\',monospace;font-size:9px;background:var(--moss);color:#0a0d13;padding:2px 7px;border-radius:20px;margin-left:auto;">hoje</span>' : ''}
+        ${isToday ? '<span style="font-family:\'JetBrains Mono\',monospace;font-size:10px;background:var(--moss);color:#0a0d13;padding:2px 7px;border-radius:20px;margin-left:auto;">hoje</span>' : ''}
       </div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
 
         <div style="background:var(--bg);border-radius:10px;padding:12px;">
-          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">🌙 Sono</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">🌙 Sono</div>
           <div style="font-size:18px;font-weight:700;color:${sonoColor};font-family:'JetBrains Mono',monospace;">${sonoTxt}</div>
           <div style="font-size:10px;color:var(--muted);margin-top:3px;font-family:'JetBrains Mono',monospace;">${sonoSub}</div>
         </div>
 
         <div style="background:var(--bg);border-radius:10px;padding:12px;">
-          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">⚖️ Peso</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">⚖️ Peso</div>
           <div style="font-size:18px;font-weight:700;color:${pesoColor};font-family:'JetBrains Mono',monospace;">${pesoTxt}</div>
           <div style="font-size:10px;color:var(--muted);margin-top:3px;font-family:'JetBrains Mono',monospace;">${pesoSub}</div>
         </div>
 
         <div style="background:var(--bg);border-radius:10px;padding:12px;">
-          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">💼 Trabalho</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">💼 Trabalho</div>
           <div style="font-size:18px;font-weight:700;color:${trabalhoColor};font-family:'JetBrains Mono',monospace;">${trabalhoTxt}</div>
           <div style="font-size:10px;color:var(--muted);margin-top:3px;font-family:'JetBrains Mono',monospace;">${trabalhoSub}</div>
         </div>
@@ -11765,8 +11796,8 @@ function clearAllData() {
 // Monkey-patch showSection depois de definida
 (function() {
   const _orig = showSection;
-  showSection = function(id, el) {
-    _orig(id, el);
+  showSection = function(id, el, fromHistory) {
+    _orig(id, el, fromHistory);
     if (id === 'settings') initSettingsPage();
     if (id === 'last5') renderLast5Days();
     if (id === 'work')     { initWorkDatePicker(); renderWorkCalendar(); }
@@ -11781,6 +11812,7 @@ function clearAllData() {
 })();
 
 applyUiPrefs();
+setTimeout(applyHashSection, 0);
 initPWA();
 initAiChat();
 setTimeout(() => {
