@@ -1357,6 +1357,14 @@ input[type="range"]::-webkit-slider-thumb {
 
 /* ── STATS / CHARTS ── */
 canvas { display:block; width:100% !important; max-width:100%; }
+.chart-tools { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.chart-table-btn { min-height: 36px; padding: 0 14px; font-size: 12px; }
+.chart-table { margin-top: 12px; overflow-x: auto; }
+.chart-table table { width: 100%; border-collapse: collapse; font-size: 12px; color: var(--text2); }
+.chart-table caption { text-align: left; color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 10px; margin-bottom: 6px; }
+.chart-table th, .chart-table td { padding: 7px 10px; border-bottom: 1px solid var(--border); text-align: left; }
+.chart-table th { color: var(--muted); font-family: 'JetBrains Mono', monospace; font-size: 10px; text-transform: uppercase; letter-spacing: .5px; }
+.chart-table td:not(:first-child) { text-align: right; font-variant-numeric: tabular-nums; }
 
 .stat-kpi {
   background: var(--card);
@@ -1420,6 +1428,33 @@ canvas { display:block; width:100% !important; max-width:100%; }
   font-family:'JetBrains Mono',monospace;
   font-size:10px;color:var(--muted);
   height:14px;display:flex;align-items:center;
+}
+.cal-a11y { margin-top: 12px; font-size: 12px; color: var(--text2); }
+.cal-a11y summary { cursor: pointer; color: var(--moss-l); font-family: 'JetBrains Mono', monospace; font-size: 11px; }
+.cal-a11y ul { margin: 8px 0 0; padding-left: 20px; max-height: 180px; overflow: auto; line-height: 1.7; }
+.cal-a11y-note { margin-top: 10px; font-size: 12px; color: var(--muted); }
+.calendar-hint { font-size: 13px; color: var(--muted); line-height: 1.6; margin-bottom: 12px; }
+.calendar-note { font-size: 11px; color: var(--muted); line-height: 1.6; margin-top: 10px; }
+.calendar-label { display: block; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 6px; }
+.calendar-connect { display: flex; gap: 8px; flex-wrap: wrap; }
+.calendar-connect input { flex: 1 1 260px; min-width: 0; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; color: var(--text); font-size: 13px; outline: none; }
+.calendar-connect input:focus { border-color: var(--moss); }
+#googleCalEmbedBox { margin-top: 14px; border: 1px solid var(--border); border-radius: 12px; overflow: hidden; background: var(--surface); }
+#googleCalEmbed { display: block; width: 100%; height: 520px; border: 0; }
+.cal-event { display: flex; gap: 14px; align-items: flex-start; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.cal-event:last-child { border-bottom: 0; }
+.cal-event-date { flex: 0 0 76px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--moss-l); line-height: 1.5; }
+.cal-event-body { flex: 1; min-width: 0; }
+.cal-event-title { font-size: 14px; color: var(--text); }
+.cal-event-meta { font-size: 12px; color: var(--muted); margin-top: 3px; }
+.cal-event-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.cal-event-actions a { display: inline-flex; align-items: center; min-height: 36px; padding: 0 12px; border: 1px solid rgba(var(--accent-rgb), .45); border-radius: 999px; font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--moss-l); text-decoration: none; }
+.cal-event-actions a:hover { background: rgba(var(--accent-rgb), .1); }
+.calendar-steps { margin: 0; padding-left: 20px; color: var(--text2); font-size: 13px; line-height: 1.8; }
+@media (max-width: 560px) {
+  .cal-event { flex-wrap: wrap; gap: 4px 12px; }
+  .cal-event-date { flex-basis: 100%; }
+  .cal-event-actions a { min-height: 44px; }
 }
 
 /* ── GOOGLE SHEETS SYNC ── */
@@ -1873,7 +1908,9 @@ canvas { display:block; width:100% !important; max-width:100%; }
   background: var(--surface); border-left: 1px solid var(--border2); border-bottom: 1px solid var(--border2);
   transform: rotate(45deg);
 }
-.mascot-meta { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 0.3px; }
+.mascot-meta { display: flex; gap: 2px 6px; flex-wrap: wrap; margin-top: 10px; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); letter-spacing: 0.3px; }
+.mascot-meta > span { white-space: nowrap; }
+.mascot-meta > span + span::before { content: '·'; margin-right: 6px; opacity: 0.45; }
 .mascot-dot { opacity: 0.45; }
 @keyframes mascotBob { 0%,100% { transform: translateY(0); } 50% { transform: translateY(-2.5px); } }
 @keyframes mascotSway { 0%,100% { transform: rotate(-3deg); } 50% { transform: rotate(3deg); } }
@@ -1939,6 +1976,8 @@ canvas { display:block; width:100% !important; max-width:100%; }
 }
 .skip-link:focus { transform: translateY(0); }
 body.app-ready .skip-link { display: block; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+.section-title:focus { outline: none; }
 .mascot-customize {
   margin-left: auto; padding: 4px 10px; border-radius: 999px;
   border: 1px dashed var(--border2); background: transparent;
@@ -1980,6 +2019,8 @@ body.app-ready .skip-link { display: block; }
 @media (max-width: 640px) {
   .top-header-author { display: none; }
   .top-header-quote { font-size: 11px; padding-right: 4px; }
+  .mascot-meta { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 12px; justify-items: start; }
+  .mascot-meta > span + span::before { content: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto !important; }
@@ -2032,6 +2073,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
 <body>
 
 <a class="skip-link" href="#mainContent" onclick="skipToMain(event)">Saltar para o conteúdo</a>
+<div id="routeAnnouncer" class="sr-only" aria-live="polite" aria-atomic="true"></div>
 
 <!-- ══ AUTH OVERLAY ══ -->
 <div id="authOverlay" style="
@@ -2253,6 +2295,9 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
     <button type="button" class="nav-item" onclick="showSection('plan',this)">
       <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span> Plano
     </button>
+    <button type="button" class="nav-item" onclick="showSection('calendar',this)">
+      <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="m9 15 2 2 4-4"/></svg></span> Calendário
+    </button>
     <button type="button" class="nav-item" onclick="showSection('profile',this)">
       <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg></span> Perfil
     </button>
@@ -2341,10 +2386,10 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
       <button type="button" class="onboarding-dismiss" onclick="dismissOnboarding()" aria-label="Dispensar sugestões">&times;</button>
     </div>
     <div class="onboarding-steps">
-      <button type="button" class="onboarding-step" onclick="document.getElementById('waterMini').scrollIntoView({behavior:'smooth',block:'center'})">&#128167; Água</button>
-      <button type="button" class="onboarding-step" onclick="showSection('meals', navBySection('meals'))">&#127869; Refeição</button>
-      <button type="button" class="onboarding-step" onclick="showSection('weight', navBySection('weight'))">&#9878; Peso</button>
-      <button type="button" class="onboarding-step" onclick="showSection('overview', navBySection('overview'))">&#128211; Diário</button>
+      <button type="button" class="onboarding-step" onclick="document.getElementById('waterMini').scrollIntoView({behavior:'smooth',block:'center'})">Água</button>
+      <button type="button" class="onboarding-step" onclick="showSection('meals', navBySection('meals'))">Refeição</button>
+      <button type="button" class="onboarding-step" onclick="showSection('weight', navBySection('weight'))">Peso</button>
+      <button type="button" class="onboarding-step" onclick="showSection('overview', navBySection('overview'))">Diário</button>
     </div>
   </div>
 
@@ -2682,7 +2727,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
       </div>
       <div style="display:flex;gap:16px;flex-wrap:wrap;">
         <div style="background:rgba(90,110,74,0.07);border:1px solid rgba(90,110,74,0.2);border-radius:10px;padding:10px 14px;flex:1;min-width:120px;">
-          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--moss);margin-bottom:4px;">🎯 Saída ideal (8h)</div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:var(--moss);margin-bottom:4px;" title="Baseado em 8 horas">Saída ideal</div>
           <div style="font-family:'Source Serif 4',serif;font-size:22px;font-weight:300;color:var(--moss-l);" id="idealExit">—</div>
         </div>
         <div style="background:rgba(184,144,80,0.07);border:1px solid rgba(184,144,80,0.2);border-radius:10px;padding:10px 14px;flex:1;min-width:120px;" id="overtimeCard">
@@ -3016,6 +3061,49 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
   </div>
 </div>
 
+<div class="section" id="section-calendar">
+  <div class="section-header">
+    <div class="section-title">Calendário & <em>Google</em></div>
+    <div class="section-sub">treinos e pesagens prontos para o teu calendário</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">próximos eventos</div>
+    <p class="calendar-hint">Gerado a partir do plano semanal e dos teus lembretes. Cada evento abre diretamente no Google Calendar.</p>
+    <div id="calendarEvents"></div>
+    <div class="chart-tools">
+      <button type="button" class="btn btn-primary" onclick="downloadCalendarIcs()">Descarregar calendário (.ics)</button>
+      <a class="btn btn-secondary" href="https://calendar.google.com/calendar/u/0/r" target="_blank" rel="noopener">Abrir Google Calendar</a>
+    </div>
+    <p class="calendar-note">O ficheiro .ics pode ser importado no Google Calendar. Para manter os eventos sincronizados, usa os links individuais.</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">ligar calendário google</div>
+    <p class="calendar-hint">Podes incorporar um calendário público do Google para veres os teus eventos aqui. No Google Calendar, abre a configuração do calendário, ativa a partilha pública e copia o URL de incorporação.</p>
+    <label for="googleCalEmbedUrl" class="calendar-label">URL de incorporação do Google Calendar</label>
+    <div class="calendar-connect">
+      <input type="url" id="googleCalEmbedUrl" placeholder="https://calendar.google.com/calendar/embed?src=..." autocomplete="off">
+      <button type="button" class="btn btn-primary" onclick="saveGoogleCalEmbed()">Ligar</button>
+      <button type="button" class="btn btn-secondary" onclick="clearGoogleCalEmbed()">Desligar</button>
+    </div>
+    <div id="googleCalEmbedBox" hidden>
+      <iframe id="googleCalEmbed" title="Calendário Google incorporado" loading="lazy" referrerpolicy="no-referrer"></iframe>
+    </div>
+    <div id="googleCalStatus" class="calendar-note" aria-live="polite"></div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">como funciona</div>
+    <ol class="calendar-steps">
+      <li>O plano semanal cria automaticamente os eventos de treino.</li>
+      <li>Os lembretes de pesagem e treino definem as horas dos eventos.</li>
+      <li>Usa “Google” em cada evento ou descarrega o .ics para importar tudo.</li>
+      <li>A incorporação é só de leitura e precisa de um calendário público.</li>
+    </ol>
+  </div>
+</div>
+
 
 
 <!-- ▸ PERFIL -->
@@ -3154,7 +3242,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
   <!-- WEIGHT chart -->
   <div class="card" id="card-weight-chart">
     <div class="weight-chart-head">
-      <div class="card-title">⚖️ peso — evolução</div>
+      <div class="card-title">peso — evolução</div>
       <div class="weight-chart-toggle" role="group" aria-label="Agregação do gráfico de peso">
         <button type="button" class="ex-filter-btn active" id="weightModeWeek" onclick="setWeightChartMode('week')" aria-pressed="true">Semanal</button>
         <button type="button" class="ex-filter-btn" id="weightModeDay" onclick="setWeightChartMode('day')" aria-pressed="false">Diário</button>
@@ -3162,14 +3250,24 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
     </div>
     <canvas id="chart-weight" height="200" role="img" aria-label="Gráfico de evolução do peso" aria-describedby="stats-weight-summary"></canvas>
     <div style="margin-top:10px;display:flex;gap:16px;flex-wrap:wrap;" id="stats-weight-summary"></div>
+    <div class="chart-tools">
+      <button type="button" class="btn btn-secondary chart-table-btn" onclick="toggleChartTable('chart-weight')" aria-expanded="false" aria-controls="chart-weight-table">Ver tabela</button>
+      <a class="btn btn-secondary chart-table-btn" href="#weight" onclick="showSection('weight', navBySection('weight')); return false;">Registar peso</a>
+    </div>
+    <div id="chart-weight-table" class="chart-table" hidden></div>
   </div>
 
 
   <!-- CALORIES chart -->
   <div class="card" id="card-cal-chart">
-    <div class="card-title">🍽️ calorias diárias</div>
+    <div class="card-title">calorias diárias</div>
     <canvas id="chart-calories" height="200" role="img" aria-label="Gráfico de calorias diárias" aria-describedby="stats-cal-summary"></canvas>
     <div style="margin-top:10px;display:flex;gap:16px;flex-wrap:wrap;" id="stats-cal-summary"></div>
+    <div class="chart-tools">
+      <button type="button" class="btn btn-secondary chart-table-btn" onclick="toggleChartTable('chart-calories')" aria-expanded="false" aria-controls="chart-calories-table">Ver tabela</button>
+      <a class="btn btn-secondary chart-table-btn" href="#meals" onclick="showSection('meals', navBySection('meals')); return false;">Registar refeição</a>
+    </div>
+    <div id="chart-calories-table" class="chart-table" hidden></div>
   </div>
 
 
@@ -3177,7 +3275,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
 
   <!-- ACTIVITY CALENDAR -->
   <div class="card" id="card-calendar-chart">
-    <div class="card-title">🗓️ calendário de atividade</div>
+    <div class="card-title">calendário de atividade</div>
     <p style="font-size:11px;color:var(--muted);font-style:italic;margin-bottom:14px;">Cada quadrado é um dia. Quanto mais escuro, mais dados registaste.</p>
     <div id="activity-calendar" style="overflow-x:auto;"></div>
     <div style="display:flex;align-items:center;gap:6px;margin-top:12px;">
@@ -3193,21 +3291,25 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
 
   <!-- TENDÊNCIAS -->
   <div class="card">
-    <div class="card-title">📈 tendências — esta semana vs semana anterior</div>
+    <div class="card-title">tendências — esta semana vs semana anterior</div>
     <div id="trendsPanel" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:8px;"></div>
   </div>
 
   <!-- RESUMO SEMANAL IA -->
   <div class="card">
-    <div class="card-title">🤖 resumo semanal com ia</div>
+    <div class="card-title">resumo semanal com ia</div>
     <p style="font-size:12px;color:var(--muted);margin-bottom:12px;">Gerado automaticamente às segundas-feiras. Podes forçar agora.</p>
-    <button class="btn btn-primary" id="weeklySummaryBtn" onclick="generateWeeklySummary(true)" style="width:100%;margin-bottom:12px;">✨ Gerar resumo desta semana</button>
+    <button class="btn btn-primary" id="weeklySummaryBtn" onclick="generateWeeklySummary(true)" style="width:100%;margin-bottom:12px;">Gerar resumo desta semana</button>
     <div id="weeklySummaryResponse" style="display:none;font-size:13px;color:var(--text2);line-height:1.7;padding:14px;background:var(--surface);border-radius:10px;border:1px solid var(--border);"></div>
+    <div id="weeklyShareTools" class="chart-tools" hidden>
+      <button type="button" class="btn btn-secondary" onclick="copyWeeklySummary(this)">Copiar resumo</button>
+      <button type="button" class="btn btn-secondary" onclick="shareWeeklySummary(this)">Partilhar</button>
+    </div>
   </div>
 
   <!-- CONQUISTAS -->
   <div class="card">
-    <div class="card-title">🏆 conquistas</div>
+    <div class="card-title">conquistas</div>
     <div id="achievementsPanel" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-top:8px;"></div>
   </div>
 
@@ -3230,7 +3332,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
   </div>
 
   <div class="card">
-    <div class="card-title">🎨 Aparência</div>
+    <div class="card-title">Aparência</div>
     <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Escolhe o tipo de letra e a cor principal. Guardado neste dispositivo.</p>
     <div style="margin-bottom:14px;">
       <div class="mascot-label">Tipo de letra</div>
@@ -3259,7 +3361,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
     <div id="uiAppearanceStatus" class="mascot-status"></div>
   </div>
   <div class="card">
-    <div class="card-title">🌱 Mascote pixel</div>
+    <div class="card-title">Mascote pixel</div>
     <div class="mascot-settings">
       <div class="mascot-stage mascot-stage-settings" id="mascotSettingsStage" aria-hidden="true"></div>
       <div class="mascot-settings-fields">
@@ -3301,7 +3403,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
     </div>
   </div>
   <div class="card">
-    <div class="card-title">☁️ Google Sheets</div>
+    <div class="card-title">Google Sheets</div>
     <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Os teus dados sincronizam automaticamente ao guardar. 1 linha por dia, atualizada a cada gravação.</p>
     <div style="margin-bottom:14px;">
       <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">URL do Apps Script</div>
@@ -3327,7 +3429,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
     </div>
   </div>
   <div class="card">
-    <div class="card-title">🤖 Inteligência Artificial</div>
+    <div class="card-title">Inteligência Artificial</div>
     <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">A IA incluída usa chaves geridas no servidor, sem chaves no teu dispositivo. Podes optar por usar as tuas próprias chaves.</p>
 
     <div style="margin-bottom:14px;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;">
@@ -3449,7 +3551,7 @@ hf_... (2ª chave)" style="width:100%;background:var(--surface);border:1px solid
     </div>
   </div>
   <div class="card">
-    <div class="card-title">🔔 Lembretes diários</div>
+    <div class="card-title">Lembretes diários</div>
     <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Notificações para não te esqueceres de preencher o diário.</p>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
       <input type="checkbox" id="remEnabledSettings" style="width:24px;height:24px;accent-color:var(--moss);">
@@ -3475,7 +3577,7 @@ hf_... (2ª chave)" style="width:100%;background:var(--surface);border:1px solid
     <div id="remSettingsStatus" style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--moss-l);"></div>
   </div>
   <div class="card">
-    <div class="card-title">🔒 Segurança & Palavra-passe</div>
+    <div class="card-title">Segurança & Palavra-passe</div>
     <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Altera a tua palavra-passe de acesso. O hash é guardado com segurança no teu dispositivo.</p>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:14px;">
       <div>
@@ -3498,7 +3600,7 @@ hf_... (2ª chave)" style="width:100%;background:var(--surface);border:1px solid
     <div id="pwdSettingsStatus" style="margin-top:10px;font-family:'JetBrains Mono',monospace;font-size:11px;"></div>
   </div>
   <div class="card">
-    <div class="card-title">🗄️ Dados & Privacidade</div>
+    <div class="card-title">Dados & Privacidade</div>
     <p style="font-size:12px;color:var(--muted);margin-bottom:16px;">Todos os dados ficam guardados localmente no teu browser.</p>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
       <button class="btn btn-secondary" onclick="exportData()" style="font-size:11px;">⬇ Exportar JSON</button>
@@ -4440,6 +4542,33 @@ function toggleMobileMenu(force) {
   }
 }
 
+const SECTION_LABELS = {
+  overview: 'Resumo', ai: 'Chat IA', weight: 'Peso', meals: 'Refeições',
+  work: 'Trabalho', treadmill: 'Passadeira', plan: 'Plano', calendar: 'Calendário',
+  profile: 'Perfil', competition: 'Competição', compadmin: 'Gerir competição',
+  last5: 'Últimos 5 Dias', stats: 'Estatísticas', settings: 'Configurações'
+};
+
+function initSectionA11y() {
+  document.querySelectorAll('.section-title').forEach(t => {
+    t.setAttribute('role', 'heading');
+    t.setAttribute('aria-level', '1');
+    t.setAttribute('tabindex', '-1');
+  });
+}
+
+function announceSection(id, navEl) {
+  const label = SECTION_LABELS[id] || (navEl ? navEl.textContent.trim().replace(/\s+/g, ' ') : id);
+  const announcer = document.getElementById('routeAnnouncer');
+  if (announcer) announcer.textContent = label;
+  const app = document.getElementById('appContent');
+  const overlay = document.getElementById('authOverlay');
+  if (!app || getComputedStyle(app).display === 'none') return;
+  if (overlay && getComputedStyle(overlay).display !== 'none') return;
+  const title = document.querySelector('#section-' + id + ' .section-title');
+  if (title) setTimeout(() => title.focus({ preventScroll: true }), 0);
+}
+
 function showSection(id, el, fromHistory) {
   const target = document.getElementById('section-' + id);
   if (!target) return;
@@ -4451,6 +4580,7 @@ function showSection(id, el, fromHistory) {
   document.querySelectorAll('.nav-item').forEach(n => { n.classList.remove('active'); n.removeAttribute('aria-current'); });
   const navEl = el || (typeof navBySection === 'function' ? navBySection(id) : null);
   if (navEl) { navEl.classList.add('active'); navEl.setAttribute('aria-current', 'page'); }
+  announceSection(id, navEl);
   if (!fromHistory) {
     const hash = '#' + id;
     if (location.hash !== hash) {
@@ -6646,6 +6776,7 @@ function drawXLabels(ctx, labels, pad) {
 function drawLineChart(canvasId, labels, datasets) {
   const ctx = setupCanvas(canvasId);
   if(!ctx) return;
+  rememberChartData(canvasId, labels, datasets);
 
   // find range
   const allVals = datasets.flatMap(d => d.data.filter(v => v !== null));
@@ -6732,6 +6863,7 @@ function drawLineChart(canvasId, labels, datasets) {
 function drawBarChart(canvasId, labels, datasets, stacked=false) {
   const ctx = setupCanvas(canvasId);
   if(!ctx) return;
+  rememberChartData(canvasId, labels, datasets);
 
   const allVals = datasets.flatMap(d => d.data.filter(v=>v!==null));
   if(!allVals.length) { drawEmpty(ctx); return; }
@@ -6888,6 +7020,56 @@ function drawEmpty(ctx) {
   ctx.fillText('Continua a registar e os gráficos vão aparecer.', ctx.W/2, ctx.H/2+20);
 }
 
+const CHART_TABLE_DATA = {};
+
+function chartEsc(value) {
+  return String(value == null ? '' : value)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function rememberChartData(canvasId, labels, datasets) {
+  CHART_TABLE_DATA[canvasId] = {
+    labels: (labels || []).slice(),
+    datasets: (datasets || []).map(d => ({
+      label: d.label || 'Valor',
+      data: (d.data || []).slice()
+    }))
+  };
+  const table = document.getElementById(canvasId + '-table');
+  if (table && !table.hidden) renderChartTable(canvasId);
+}
+
+function renderChartTable(canvasId) {
+  const table = document.getElementById(canvasId + '-table');
+  const data = CHART_TABLE_DATA[canvasId];
+  if (!table || !data) return;
+  const canvas = document.getElementById(canvasId);
+  const caption = canvas ? canvas.getAttribute('aria-label') : 'Dados do gráfico';
+  const head = data.datasets.map(d => `<th scope="col">${chartEsc(d.label)}</th>`).join('');
+  const rows = data.labels.map((label, i) => {
+    const cells = data.datasets.map(d => {
+      const v = d.data[i];
+      if (v === null || v === undefined) return '<td>—</td>';
+      return '<td>' + Number(v).toLocaleString('pt-PT', { maximumFractionDigits: 1 }) + '</td>';
+    }).join('');
+    return `<tr><th scope="row">${chartEsc(label)}</th>${cells}</tr>`;
+  }).join('');
+  table.innerHTML = rows
+    ? `<table><caption>${chartEsc(caption)}</caption><thead><tr><th scope="col">Período</th>${head}</tr></thead><tbody>${rows}</tbody></table>`
+    : '<p class="cal-a11y-note">Sem dados para mostrar.</p>';
+}
+
+function toggleChartTable(canvasId) {
+  const table = document.getElementById(canvasId + '-table');
+  const btn = document.querySelector('.chart-table-btn[aria-controls="' + canvasId + '-table"]');
+  if (!table) return;
+  const open = table.hidden;
+  table.hidden = !open;
+  if (btn) btn.setAttribute('aria-expanded', String(open));
+  if (open) renderChartTable(canvasId);
+}
+
 // ── ACTIVITY CALENDAR ─────────────────────────────────────────────
 
 function renderActivityCalendar() {
@@ -6923,6 +7105,7 @@ function renderActivityCalendar() {
 
   // Build HTML
   let html = '<div style="display:flex;gap:3px;">';
+  const loggedDays = [];
 
   // Day labels column
   html += '<div style="display:flex;flex-direction:column;gap:3px;padding-top:20px;">';
@@ -6946,13 +7129,24 @@ function renderActivityCalendar() {
       if(!day) { html += '<div class="cal-day" style="background:transparent;"></div>'; return; }
       const bg = getCalColor(day.score);
       const title = day.date + (day.hasData ? ' · '+day.score+' dados' : ' · sem registo');
-      html += `<div class="cal-day" style="background:${bg};" title="${title}" role="img" aria-label="${title}"></div>`;
+      if (day.hasData) loggedDays.push({ date: day.date, score: day.score });
+      html += `<div class="cal-day" style="background:${bg};" title="${title}"></div>`;
     });
     html += '</div>';
   });
 
   html += '</div>';
-  container.innerHTML = html;
+  const dateLabel = iso => {
+    const p = iso.split('-');
+    return p[2] + '/' + p[1] + '/' + p[0];
+  };
+  const summary = loggedDays.length
+    ? `<details class="cal-a11y"><summary>Ver dias registados (${loggedDays.length})</summary><ul>${loggedDays
+        .slice().reverse()
+        .map(d => `<li>${dateLabel(d.date)} — ${d.score} ${d.score === 1 ? 'registo' : 'registos'}</li>`)
+        .join('')}</ul></details>`
+    : '<p class="cal-a11y-note">Ainda não há dias registados neste período.</p>';
+  container.innerHTML = `<div aria-hidden="true">${html}</div>${summary}`;
 }
 
 function calcDayScore(d) {
@@ -7056,12 +7250,12 @@ function renderAllCharts() {
   renderKPIs(days);
 
   drawLineChart('chart-weight', weightLabels, [{
-    data: weightData, color: CHART_COLORS.clay,
+    label: 'Peso (kg)', data: weightData, color: CHART_COLORS.clay,
     goal: weightGoalVal
   }]);
 
   drawBarChart('chart-calories', labels, [{
-    data: calData, color: CHART_COLORS.amber, goal: 2000
+    label: 'Calorias (kcal)', data: calData, color: CHART_COLORS.amber, goal: 2000
   }]);
 
   renderActivityCalendar();
@@ -7470,10 +7664,10 @@ function renderMascot() {
 
   const meta = document.getElementById('mascotMeta');
   if (meta) {
-    meta.innerHTML = '🔥 ' + reaction.streak + 'd seguidos <span class="mascot-dot">·</span> 💧 '
-      + reaction.waterCount + '/' + reaction.waterGoal + ' <span class="mascot-dot">·</span> 🌙 '
-      + (reaction.sleepH ? reaction.sleepH.toFixed(1) + 'h' : '—')
-      + ' <span class="mascot-dot">·</span> 📋 ' + reaction.flowPct + '%';
+    meta.innerHTML = '<span>' + reaction.streak + ' dias seguidos</span>'
+      + '<span>' + reaction.waterCount + '/' + reaction.waterGoal + ' água</span>'
+      + '<span>' + (reaction.sleepH ? reaction.sleepH.toFixed(1) + 'h sono' : '— sono') + '</span>'
+      + '<span>' + reaction.flowPct + '% rotina</span>';
   }
 
   renderMascotSettingsPreview();
@@ -9755,6 +9949,250 @@ function tmPlanPrettyText(text) {
     return tmDayName(date) + ' ' + m[3] + '/' + m[2] + ' · ' + (rest ? 'Descanso' : m[4]);
   }).join('\n');
 }
+
+// ═══════════════════════════════════════════════════════════════════
+// CALENDÁRIO — Google Calendar (links + .ics + incorporação pública)
+// ═══════════════════════════════════════════════════════════════════
+
+const GOOGLE_CAL_EMBED_KEY = 'dvGoogleCalEmbed';
+
+function calTime(value, fallback) {
+  const m = String(value || '').match(/^(\d{1,2}):(\d{2})$/);
+  if (!m) return fallback;
+  const h = Math.min(23, Math.max(0, Number(m[1])));
+  const min = Math.min(59, Math.max(0, Number(m[2])));
+  return String(h).padStart(2, '0') + ':' + String(min).padStart(2, '0');
+}
+
+function calEndDateTime(date, time, minutes) {
+  const d = new Date(date + 'T' + time + ':00');
+  d.setMinutes(d.getMinutes() + Math.max(5, Number(minutes) || 30));
+  return {
+    date: localDateStr(d),
+    time: String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0')
+  };
+}
+
+function calReminderPrefs() {
+  try { return JSON.parse(localStorage.getItem('dvReminders') || 'null'); } catch (e) { return null; }
+}
+
+function collectCalendarEvents() {
+  const events = [];
+  const prefs = calReminderPrefs();
+  const workoutTime = calTime(prefs && prefs.treino && prefs.treino.hora, '18:00');
+  const plan = tmCurrentPlan();
+  if (plan) {
+    tmParsePlan(plan.text).forEach(it => {
+      if (!it.date || it.date < TODAY || it.rest) return;
+      const minutes = Math.max(10, Number(it.minutes) || 30);
+      const end = calEndDateTime(it.date, workoutTime, minutes);
+      const title = it.distance ? 'Treino · ' + it.distance + ' km' : 'Treino';
+      const details = [
+        it.distance ? it.distance + ' km' : '',
+        it.minutes ? it.minutes + ' min' : '',
+        'Plano semanal do Diário de Vida'
+      ].filter(Boolean).join(' · ');
+      events.push({
+        kind: 'treino', date: it.date, start: workoutTime,
+        end: end.time, endDate: end.date, title, details
+      });
+    });
+  }
+  const weigh = prefs && prefs.pesoSemana;
+  if (weigh && weigh.enabled !== false) {
+    const target = Number(weigh.dia);
+    const time = calTime(weigh.hora, '09:00');
+    const base = new Date(TODAY + 'T12:00:00');
+    for (let i = 0; i < 14; i++) {
+      const d = new Date(base);
+      d.setDate(d.getDate() + i);
+      if (d.getDay() !== target) continue;
+      const date = localDateStr(d);
+      const end = calEndDateTime(date, time, 15);
+      events.push({
+        kind: 'pesagem', date, start: time,
+        end: end.time, endDate: end.date, title: 'Pesagem semanal',
+        details: 'Registo do peso no Diário de Vida'
+      });
+    }
+  }
+  return events.sort((a, b) => (a.date + a.start).localeCompare(b.date + b.start)).slice(0, 12);
+}
+
+function calDateLabel(date) {
+  return new Date(date + 'T12:00:00').toLocaleDateString('pt-PT', {
+    weekday: 'short', day: '2-digit', month: 'short'
+  });
+}
+
+function googleCalendarUrl(ev) {
+  const digits = s => s.replace(/[^0-9]/g, '');
+  const dates = ev.date.replace(/-/g, '') + 'T' + digits(ev.start) + '00/' +
+    (ev.endDate || ev.date).replace(/-/g, '') + 'T' + digits(ev.end) + '00';
+  const params = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: ev.title,
+    dates,
+    details: ev.details,
+    ctz: 'Europe/Lisbon'
+  });
+  return 'https://calendar.google.com/calendar/render?' + params.toString();
+}
+
+function renderCalendarSection() {
+  const box = document.getElementById('calendarEvents');
+  if (!box) return;
+  const events = collectCalendarEvents();
+  if (!events.length) {
+    box.innerHTML = '<p class="calendar-note">Ainda não há eventos. Gera um plano semanal ou configura os lembretes para começar.</p>';
+  } else {
+    box.innerHTML = events.map(ev => `
+      <div class="cal-event">
+        <div class="cal-event-date">${calDateLabel(ev.date)}<br>${ev.start}–${ev.end}${ev.endDate && ev.endDate !== ev.date ? ' (+1)' : ''}</div>
+        <div class="cal-event-body">
+          <div class="cal-event-title">${chartEsc(ev.title)}</div>
+          <div class="cal-event-meta">${chartEsc(ev.details)}</div>
+          <div class="cal-event-actions">
+            <a href="${googleCalendarUrl(ev)}" target="_blank" rel="noopener">Adicionar ao Google Calendar</a>
+          </div>
+        </div>
+      </div>`).join('');
+  }
+  initGoogleCalEmbed();
+}
+
+function icsEscape(value) {
+  return String(value || '').replace(/\\/g, '\\\\').replace(/\r?\n/g, '\\n')
+    .replace(/;/g, '\\;').replace(/,/g, '\\,');
+}
+
+function icsStamp() {
+  const d = new Date();
+  return d.getUTCFullYear() + String(d.getUTCMonth() + 1).padStart(2, '0') +
+    String(d.getUTCDate()).padStart(2, '0') + 'T' +
+    String(d.getUTCHours()).padStart(2, '0') + String(d.getUTCMinutes()).padStart(2, '0') +
+    String(d.getUTCSeconds()).padStart(2, '0') + 'Z';
+}
+
+function icsFold(line) {
+  const encoder = new TextEncoder();
+  if (encoder.encode(line).length <= 75) return line;
+  let out = '', chunk = '', bytes = 0;
+  for (const ch of line) {
+    const size = encoder.encode(ch).length;
+    if (bytes + size > 74) {
+      out += chunk + '\r\n ';
+      chunk = '';
+      bytes = 0;
+    }
+    chunk += ch;
+    bytes += size;
+  }
+  return out + chunk;
+}
+
+function downloadCalendarIcs() {
+  const events = collectCalendarEvents();
+  if (!events.length) { alert('Ainda não há eventos para exportar. Gera um plano semanal primeiro.'); return; }
+  const blob = new Blob([buildCalendarIcs(events)], { type: 'text/calendar;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'diario-de-vida.ics';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1500);
+}
+
+function buildCalendarIcs(events) {
+  const stamp = icsStamp();
+  const lines = [
+    'BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Diario de Vida//PT-PT',
+    'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'X-WR-CALNAME:Diário de Vida',
+    'X-WR-TIMEZONE:Europe/Lisbon',
+    'BEGIN:VTIMEZONE', 'TZID:Europe/Lisbon',
+    'BEGIN:STANDARD', 'DTSTART:19701025T020000', 'RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=10',
+    'TZOFFSETFROM:+0100', 'TZOFFSETTO:+0000', 'TZNAME:WET', 'END:STANDARD',
+    'BEGIN:DAYLIGHT', 'DTSTART:19700329T010000', 'RRULE:FREQ=YEARLY;BYDAY=-1SU;BYMONTH=3',
+    'TZOFFSETFROM:+0000', 'TZOFFSETTO:+0100', 'TZNAME:WEST', 'END:DAYLIGHT',
+    'END:VTIMEZONE'
+  ];
+  events.forEach(ev => {
+    const start = ev.date.replace(/-/g, '') + 'T' + ev.start.replace(':', '') + '00';
+    const end = (ev.endDate || ev.date).replace(/-/g, '') + 'T' + ev.end.replace(':', '') + '00';
+    lines.push('BEGIN:VEVENT',
+      'UID:dv-' + ev.kind + '-' + ev.date + '@diariodevida.local',
+      'DTSTAMP:' + stamp,
+      'DTSTART;TZID=Europe/Lisbon:' + start,
+      'DTEND;TZID=Europe/Lisbon:' + end,
+      'SUMMARY:' + icsEscape(ev.title),
+      'DESCRIPTION:' + icsEscape(ev.details),
+      'BEGIN:VALARM', 'TRIGGER:-PT30M', 'ACTION:DISPLAY', 'DESCRIPTION:' + icsEscape(ev.title), 'END:VALARM',
+      'END:VEVENT');
+  });
+  lines.push('END:VCALENDAR');
+  return lines.map(icsFold).join('\r\n') + '\r\n';
+}
+
+function normalizeGoogleCalEmbed(raw) {
+  const htmlMatch = String(raw || '').match(/src=["']([^"']+)["']/i);
+  const value = htmlMatch ? htmlMatch[1] : String(raw || '').trim();
+  if (!value) throw new Error('Cola o URL de incorporação.');
+  const url = new URL(value);
+  if (url.protocol !== 'https:' || url.hostname !== 'calendar.google.com' ||
+      url.pathname.indexOf('/calendar/') !== 0 || !url.searchParams.get('src')) {
+    throw new Error('Usa um URL de incorporação do Google Calendar.');
+  }
+  return url.toString();
+}
+
+function initGoogleCalEmbed() {
+  const input = document.getElementById('googleCalEmbedUrl');
+  const box = document.getElementById('googleCalEmbedBox');
+  const frame = document.getElementById('googleCalEmbed');
+  const status = document.getElementById('googleCalStatus');
+  if (!input || !box || !frame) return;
+  let saved = '';
+  try { saved = localStorage.getItem(GOOGLE_CAL_EMBED_KEY) || ''; } catch (e) {}
+  if (saved) {
+    try { saved = normalizeGoogleCalEmbed(saved); }
+    catch (e) { saved = ''; try { localStorage.removeItem(GOOGLE_CAL_EMBED_KEY); } catch (err) {} }
+  }
+  if (!input.value && saved) input.value = saved;
+  if (saved) {
+    frame.src = saved;
+    box.hidden = false;
+    if (status) status.textContent = 'Calendário público ligado. A vista é só de leitura.';
+  } else {
+    frame.removeAttribute('src');
+    box.hidden = true;
+    if (status) status.textContent = 'Ainda não há calendário incorporado.';
+  }
+}
+
+function saveGoogleCalEmbed() {
+  const input = document.getElementById('googleCalEmbedUrl');
+  const status = document.getElementById('googleCalStatus');
+  try {
+    const url = normalizeGoogleCalEmbed(input ? input.value : '');
+    localStorage.setItem(GOOGLE_CAL_EMBED_KEY, url);
+    if (input) input.value = url;
+    if (status) status.textContent = 'Calendário público ligado. A vista é só de leitura.';
+    initGoogleCalEmbed();
+  } catch (e) {
+    if (status) status.textContent = e.message;
+  }
+}
+
+function clearGoogleCalEmbed() {
+  localStorage.removeItem(GOOGLE_CAL_EMBED_KEY);
+  const input = document.getElementById('googleCalEmbedUrl');
+  if (input) input.value = '';
+  initGoogleCalEmbed();
+}
+
 function tmRenderPlanCards() {
   const card = document.getElementById('tmPlanCard');
   const box = document.getElementById('tmPlanDays');
@@ -10684,8 +11122,10 @@ async function generateWeeklySummary(force) {
   }
   const el = document.getElementById('weeklySummaryResponse');
   const btn = document.getElementById('weeklySummaryBtn');
+  const tools = document.getElementById('weeklyShareTools');
   if (!el) return;
   el.style.display='block';
+  if (tools) tools.hidden = true;
   el.innerHTML='<span style="color:var(--muted);font-style:italic;">A gerar resumo semanal...</span>';
   if (btn) btn.disabled=true;
 
@@ -10708,11 +11148,58 @@ async function generateWeeklySummary(force) {
       900
     );
     el.innerHTML = txt.replace(/\n/g,'<br>');
+    if (tools) tools.hidden = false;
     localStorage.setItem(lastKey, now.toISOString());
   } catch(err) {
     el.innerHTML='<span style="color:var(--rose);">Erro ao gerar resumo. Verifica a chave Groq.</span>';
   }
   if (btn) btn.disabled=false;
+}
+
+function weeklySummaryText() {
+  const el = document.getElementById('weeklySummaryResponse');
+  return el ? el.innerText.trim() : '';
+}
+
+function weeklyShareFeedback(btn, text) {
+  if (!btn) return;
+  const old = btn.textContent;
+  btn.textContent = text;
+  setTimeout(() => { btn.textContent = old; }, 1800);
+}
+
+async function copyWeeklySummary(btn) {
+  const text = weeklySummaryText();
+  if (!text) { alert('Gera primeiro o resumo semanal.'); return; }
+  let copied = false;
+  try {
+    await navigator.clipboard.writeText(text);
+    copied = true;
+  } catch (e) {
+    const area = document.createElement('textarea');
+    area.value = text;
+    area.setAttribute('readonly', '');
+    area.style.position = 'fixed';
+    area.style.opacity = '0';
+    document.body.appendChild(area);
+    area.select();
+    try { copied = document.execCommand('copy'); } catch (err) {}
+    area.remove();
+  }
+  if (copied) weeklyShareFeedback(btn, 'Copiado!');
+  else alert('Não foi possível copiar o resumo.');
+}
+
+async function shareWeeklySummary(btn) {
+  const text = weeklySummaryText();
+  if (!text) { alert('Gera primeiro o resumo semanal.'); return; }
+  if (navigator.share) {
+    try {
+      await navigator.share({ title: 'Resumo semanal · Diário de Vida', text });
+      return;
+    } catch (e) {}
+  }
+  copyWeeklySummary(btn);
 }
 
 // ═══════════════════════════════════════════════════════════════════
@@ -11808,9 +12295,11 @@ function clearAllData() {
     if (id === 'competition') renderCompetition();
     if (id === 'compadmin')   renderCompAdmin();
     if (id === 'stats')       renderAchievements();
+    if (id === 'calendar')    renderCalendarSection();
   };
 })();
 
+initSectionA11y();
 applyUiPrefs();
 setTimeout(applyHashSection, 0);
 initPWA();
