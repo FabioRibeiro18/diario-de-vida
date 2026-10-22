@@ -22,7 +22,7 @@
 .tm-days{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
 .tm-chip{padding:7px 14px;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--text2);font-size:12px;cursor:pointer;transition:all .15s;font-family:inherit}
 .tm-chip:hover{border-color:var(--moss)}
-.tm-chip.active{background:var(--moss-d);color:#fff;border-color:var(--moss-d)}
+.tm-chip.active{background:var(--moss);color:#0a0d13;border-color:var(--moss)}
 .tm-stage{position:relative;height:130px;margin:4px 0 18px;border-radius:14px;background:linear-gradient(180deg,var(--surface),var(--card));border:1px solid var(--border);overflow:hidden}
 .tm-incl-label{position:absolute;right:12px;top:10px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted)}
 .tm-belt-wrap{position:absolute;left:10%;right:10%;bottom:26px;height:14px;transform-origin:left bottom;transform:rotate(calc(var(--tm-angle,0deg) * -1));transition:transform .35s ease}
@@ -81,8 +81,8 @@
 .tm-bar.sel{color:var(--text)}
 .pf-bar{height:10px;border-radius:6px;background:var(--surface);border:1px solid var(--border);overflow:hidden;margin-top:14px}
 .pf-bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--moss),var(--moss-l));transition:width .4s}
-.tm-ach{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid var(--border);background:var(--surface);font-size:11px;color:var(--muted);opacity:.55}
-.tm-ach.on{border-color:rgba(var(--accent-rgb),.5);color:var(--text2);background:rgba(var(--accent-rgb),.12);opacity:1}
+.tm-ach{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px dashed var(--border);background:var(--surface);font-size:11px;color:var(--muted)}
+.tm-ach.on{border-style:solid;border-color:rgba(var(--accent-rgb),.5);color:var(--text2);background:rgba(var(--accent-rgb),.12)}
 .tm-do{width:100%;text-align:center;padding:8px 10px;border-radius:10px;border:1px solid var(--moss);background:rgba(var(--accent-rgb),.14);color:var(--moss-l);font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:.5px;cursor:pointer}
 .tm-rest-days{display:flex;gap:6px;flex-wrap:wrap}
 .tm-rest{padding:7px 11px;border-radius:999px;border:1px solid var(--border);background:var(--bg);color:var(--text2);font-family:'JetBrains Mono',monospace;font-size:11px;cursor:pointer;transition:border-color .12s,color .12s,background .12s}
@@ -154,8 +154,8 @@
 
   --text:      #f1f5f9;      /* quase branco */
   --text2:     #cbd5e1;      /* cinza claro */
-  --muted:     #7b8aa3;      /* slate muted */
-  --faint:     #55647c;      /* muito suave */
+  --muted:     #8e9cb4;      /* slate muted */
+  --faint:     #8a97ae;      /* suave mas legível */
 
   --radius:    14px;
   --radius-s:  10px;
@@ -395,6 +395,18 @@ body::after {
 
 .nav-item:hover { background: rgba(var(--accent-rgb),0.05); color: var(--text2); }
 
+button.nav-item {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  border-left: 2px solid transparent;
+  border-radius: 0;
+  text-align: left;
+  line-height: 1.5;
+}
+
+.nav-item:focus-visible { outline: 2px solid var(--moss-l); outline-offset: -3px; }
+
 .nav-item.active {
   background: rgba(var(--accent-rgb),0.08);
   border-left-color: var(--moss);
@@ -411,18 +423,19 @@ body::after {
 .btn-save-main {
   width: 100%;
   padding: 10px;
-  background: linear-gradient(135deg, var(--moss-d), var(--moss));
-  color: white;
+  background: var(--moss);
+  color: #0a0d13;
   border: none;
   border-radius: var(--radius-s);
   font-family: 'Lora', serif;
   font-size: 13px;
+  font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
   letter-spacing: 0.3px;
 }
 
-.btn-save-main:hover { background: var(--moss); }
+.btn-save-main:hover { background: var(--moss-l); }
 .btn-save-main:active { transform: scale(0.98); }
 
 /* ── MAIN CONTENT ── */
@@ -453,7 +466,7 @@ body::after {
   font-family: 'Source Serif 4', serif;
   font-size: 28px;
   font-weight: 300;
-  color: var(--moss-d);
+  color: var(--moss-l);
   letter-spacing: -0.3px;
 }
 
@@ -585,7 +598,7 @@ body::after {
 
 .tag-green  { background: rgba(90,110,74,0.1);  color: var(--moss);  border: 1px solid rgba(90,110,74,0.2); }
 .tag-amber  { background: rgba(184,144,80,0.1);  color: var(--amber); border: 1px solid rgba(184,144,80,0.2); }
-.tag-red    { background: rgba(180,80,80,0.08);  color: #b44;        border: 1px solid rgba(180,80,80,0.15); }
+.tag-red    { background: rgba(180,80,80,0.08);  color: #f87171;      border: 1px solid rgba(180,80,80,0.25); }
 .tag-sky    { background: rgba(120,152,168,0.1); color: var(--sky);  border: 1px solid rgba(120,152,168,0.2); }
 .tag-rose   { background: rgba(192,136,144,0.1); color: var(--rose); border: 1px solid rgba(192,136,144,0.2); }
 .tag-sand   { background: rgba(196,168,130,0.1); color: var(--clay); border: 1px solid rgba(196,168,130,0.2); }
@@ -606,7 +619,7 @@ body::after {
   font-family: 'Source Serif 4', serif;
   font-size: 38px;
   font-weight: 300;
-  color: var(--moss-d);
+  color: var(--moss-l);
   line-height: 1;
 }
 .counter-name {
@@ -629,7 +642,7 @@ body::after {
   display: flex; align-items: center; justify-content: center;
   transition: all 0.15s;
 }
-.counter-btn:hover { background: var(--moss); border-color: var(--moss); color: white; }
+.counter-btn:hover { background: var(--moss); border-color: var(--moss); color: #0a0d13; }
 .counter-btn:active { transform: scale(0.9); }
 
 /* ── SLEEP BAR ── */
@@ -651,7 +664,7 @@ body::after {
   font-family: 'Source Serif 4', serif;
   font-size: 48px;
   font-weight: 300;
-  color: var(--moss-d);
+  color: var(--moss-l);
   line-height: 1;
 }
 .sleep-unit {
@@ -792,7 +805,7 @@ body::after {
 .meal-slot-name {
   font-family: 'Source Serif 4', serif;
   font-size: 15px; font-weight: 400;
-  color: var(--moss-d); flex: 1;
+  color: var(--moss-l); flex: 1;
 }
 .meal-slot-total {
   font-family: 'JetBrains Mono', monospace;
@@ -1090,7 +1103,7 @@ input[type="range"]::-webkit-slider-thumb {
   margin-top: 1px;
 }
 
-.habit-check.done { background: var(--moss); border-color: var(--moss); color: white; }
+.habit-check.done { background: var(--moss); border-color: var(--moss); color: #0a0d13; }
 
 .habit-icon { font-size: 22px; flex-shrink: 0; }
 .habit-info { flex: 1; }
@@ -1208,8 +1221,8 @@ input[type="range"]::-webkit-slider-thumb {
 .saved-bar {
   position: fixed;
   bottom: 20px; right: 24px;
-  background: var(--moss-d);
-  color: white;
+  background: var(--moss);
+  color: #0a0d13;
   padding: 10px 20px;
   border-radius: 30px;
   font-family: 'JetBrains Mono', monospace;
@@ -1267,7 +1280,7 @@ input[type="range"]::-webkit-slider-thumb {
   letter-spacing: 0.3px;
 }
 .ex-filter-btn:hover { border-color: var(--moss-l); color: var(--moss); }
-.ex-filter-btn.active { background: var(--moss); border-color: var(--moss); color: white; }
+.ex-filter-btn.active { background: var(--moss); border-color: var(--moss); color: #0a0d13; }
 
 /* ── EXERCISE CARD WITH CHECKBOX ── */
 .ex-card {
@@ -1303,7 +1316,7 @@ input[type="range"]::-webkit-slider-thumb {
 .ex-card.ex-done .ex-checkbox {
   background: var(--moss);
   border-color: var(--moss);
-  color: white;
+  color: #0a0d13;
 }
 
 .ex-card-icon { font-size: 26px; flex-shrink: 0; }
@@ -1363,7 +1376,7 @@ canvas { display:block; width:100% !important; max-width:100%; }
 }
 .stat-kpi-val {
   font-family:'Source Serif 4',serif;
-  font-size:24px;font-weight:300;color:var(--moss-d);
+  font-size:24px;font-weight:300;color:var(--moss-l);
 }
 .stat-kpi-sub {
   font-family:'JetBrains Mono',monospace;
@@ -1383,7 +1396,7 @@ canvas { display:block; width:100% !important; max-width:100%; }
 }
 .stats-summary-val {
   font-family:'Source Serif 4',serif;
-  font-size:18px;font-weight:300;color:var(--moss-d);
+  font-size:18px;font-weight:300;color:var(--moss-l);
 }
 
 /* calendar grid */
@@ -1432,7 +1445,7 @@ canvas { display:block; width:100% !important; max-width:100%; }
 .sync-modal h2 {
   font-family: 'Source Serif 4', serif;
   font-size: 20px; font-weight: 300;
-  color: var(--moss-d); margin-bottom: 6px;
+  color: var(--moss-l); margin-bottom: 6px;
 }
 .sync-modal-sub {
   font-family: 'JetBrains Mono', monospace;
@@ -1447,7 +1460,7 @@ canvas { display:block; width:100% !important; max-width:100%; }
 .sync-step:last-of-type { border-bottom: none; }
 .sync-step-num {
   width: 24px; height: 24px; border-radius: 50%;
-  background: var(--moss); color: white;
+  background: var(--moss); color: #0a0d13;
   font-family: 'JetBrains Mono', monospace;
   font-size: 11px; display: flex; align-items: center; justify-content: center;
   flex-shrink: 0; margin-top: 1px;
@@ -1458,7 +1471,7 @@ canvas { display:block; width:100% !important; max-width:100%; }
   background: var(--bg2); border: 1px solid var(--border);
   border-radius: 4px; padding: 1px 6px;
   font-family: 'JetBrains Mono', monospace; font-size: 11px;
-  color: var(--moss-d); word-break: break-all;
+  color: var(--moss-l); word-break: break-all;
 }
 .sync-url-field {
   margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap;
@@ -1520,7 +1533,7 @@ canvas { display:block; width:100% !important; max-width:100%; }
   padding: 12px 14px;
   font-size: 13px; color: var(--text2); line-height: 1.6;
 }
-.advisor-suggestion strong { color: var(--moss-d); }
+.advisor-suggestion strong { color: var(--moss-l); }
 .advisor-stats {
   display: flex; gap: 16px; flex-wrap: wrap; margin-top: 14px;
 }
@@ -1580,7 +1593,7 @@ canvas { display:block; width:100% !important; max-width:100%; }
   font-family: 'Source Serif 4', serif;
   font-size: 40px;
   font-weight: 300;
-  color: var(--moss-d);
+  color: var(--moss-l);
   line-height: 1;
 }
 .goal-stat-val.highlight { color: var(--amber); }
@@ -1671,12 +1684,12 @@ canvas { display:block; width:100% !important; max-width:100%; }
   position: absolute;
   bottom: -2px; right: -2px;
   width: 16px; height: 16px;
-  background: var(--moss-d);
+  background: var(--moss);
   border-radius: 50%;
   font-size: 9px;
-  color: white;
+  color: #0a0d13;
   display: flex; align-items: center; justify-content: center;
-  border: 1.5px solid white;
+  border: 1.5px solid var(--card);
 }
 .flow-label {
   font-family: 'JetBrains Mono', monospace;
@@ -1734,7 +1747,7 @@ canvas { display:block; width:100% !important; max-width:100%; }
 .flow-detail.visible { display: block; }
 .flow-detail-title {
   font-family: 'Source Serif 4', serif;
-  font-size: 14px; color: var(--moss-d);
+  font-size: 14px; color: var(--moss-l);
   margin-bottom: 6px;
 }
 .flow-detail-items {
@@ -1905,7 +1918,7 @@ canvas { display:block; width:100% !important; max-width:100%; }
 .mascot-opt:hover { border-color: var(--moss-l); color: var(--moss); }
 .mascot-opt.active { background: var(--moss); border-color: var(--moss); color: #0a0d13; font-weight: 600; }
 .mascot-check { display: flex; align-items: center; gap: 8px; font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--muted); cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; }
-.mascot-check input { accent-color: var(--moss); }
+.mascot-check input { accent-color: var(--moss); width: 24px; height: 24px; }
 .mascot-status { font-family: 'JetBrains Mono', monospace; font-size: 10px; color: var(--moss-l); min-height: 14px; margin-top: 8px; }
 .mascot-hint { font-size: 11px; color: var(--muted); line-height: 1.6; margin-top: 10px; }
 
@@ -1930,6 +1943,7 @@ body.app-ready .skip-link { display: block; }
   border: 1px dashed var(--border2); background: transparent;
   color: var(--muted); font-family: 'JetBrains Mono', monospace;
   font-size: 9px; letter-spacing: 1px; text-transform: uppercase; cursor: pointer;
+  min-height: 24px; display: inline-flex; align-items: center; justify-content: center;
 }
 .mascot-customize:hover { color: var(--moss-l); border-color: var(--moss); }
 .onboarding-card {
@@ -1941,7 +1955,7 @@ body.app-ready .skip-link { display: block; }
 .onboarding-title { font-family: 'Source Serif 4', serif; font-size: 18px; font-weight: 300; color: var(--text); }
 .onboarding-title em { color: var(--moss-l); font-style: italic; }
 .onboarding-sub { font-size: 12px; color: var(--text2); line-height: 1.55; margin-top: 3px; }
-.onboarding-dismiss { background: transparent; border: none; color: var(--muted); font-size: 20px; line-height: 1; cursor: pointer; padding: 2px 6px; border-radius: 6px; }
+.onboarding-dismiss { background: transparent; border: none; color: var(--muted); font-size: 20px; line-height: 1; cursor: pointer; padding: 2px 6px; border-radius: 6px; min-width: 24px; min-height: 24px; }
 .onboarding-dismiss:hover { color: var(--text); }
 .onboarding-steps { display: flex; flex-wrap: wrap; gap: 8px; }
 .onboarding-step {
@@ -1954,7 +1968,7 @@ body.app-ready .skip-link { display: block; }
 @media (max-width: 768px) {
   .mobile-menu-btn { min-width: 44px; min-height: 44px; margin-right: 8px; font-size: 20px; }
   .saved-bar { left: 14px; right: 14px; bottom: 16px; border-radius: 12px; text-align: center; }
-  .mascot-customize { font-size: 8px; }
+  .mascot-customize { font-size: 10px; }
   .nav-item { padding: 12px 20px; }
   .flow-step { min-width: 76px; }
   .mascot-swatch { width: 36px; height: 36px; }
@@ -2187,18 +2201,18 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
     <div style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--moss-l);max-width:150px;" id="sidebarUserBox">
       👤 <span id="sidebarUserEmail">A carregar...</span>
     </div>
-    <button type="button" onclick="logout()" title="Terminar Sessão" style="background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:2px 4px;">🚪</button>
+    <button type="button" onclick="logout()" title="Terminar Sessão" style="background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:12px;padding:4px 6px;min-width:24px;min-height:24px;">🚪</button>
   </div>
   <div id="syncBadge" onclick="SyncManager.retryNow()" title="Estado da sincronização" style="padding:6px 18px;border-bottom:1px solid rgba(255,255,255,0.07);font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);cursor:pointer;">☁ …</div>
 
   <div style="padding:10px 18px;border-bottom:1px solid rgba(255,255,255,0.07);">
     <div style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:7px;">🔥 calorias</div>
     <div style="display:grid;grid-template-columns:1fr auto;gap:2px 8px;align-items:center;">
-      <span style="font-family:'JetBrains Mono',monospace;font-size:8px;color:rgba(255,255,255,0.35);">consumidas</span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);">consumidas</span>
       <span style="font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:var(--amber);text-align:right;" id="sbCalIn">0</span>
-      <span style="font-family:'JetBrains Mono',monospace;font-size:8px;color:rgba(255,255,255,0.35);">gastas</span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);">gastas</span>
       <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--sage);text-align:right;" id="sbCalBMR">—</span>
-      <span style="font-family:'JetBrains Mono',monospace;font-size:8px;color:rgba(255,255,255,0.35);">exercício</span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:8px;color:var(--muted);">exercício</span>
       <span style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--moss-l);text-align:right;" id="sbCalExercise">0</span>
       <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:rgba(255,255,255,0.6);padding-top:4px;border-top:1px solid rgba(255,255,255,0.07);">balanço</span>
       <span style="font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:700;text-align:right;padding-top:4px;border-top:1px solid rgba(255,255,255,0.07);" id="sbCalBalance">—</span>
@@ -2206,55 +2220,55 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
   </div>
 
   <nav class="sidebar-nav" id="sidebarNav">
-    <div class="nav-item active" role="button" tabindex="0" aria-current="page" onclick="showSection('overview',this)">
+    <button type="button" class="nav-item active" aria-current="page" onclick="showSection('overview',this)">
       <span class="nav-icon">🌿</span> Resumo
-    </div>
-    <div class="nav-item" onclick="showSection('ai',this)">
+    </button>
+    <button type="button" class="nav-item" onclick="showSection('ai',this)">
       <span class="nav-icon">💬</span> Chat IA
-    </div>
-    <div class="nav-item" onclick="showSection('weight',this)">
+    </button>
+    <button type="button" class="nav-item" onclick="showSection('weight',this)">
       <span class="nav-icon">⚖️</span> Peso
-    </div>
-    <div class="nav-item" onclick="showSection('meals',this)">
+    </button>
+    <button type="button" class="nav-item" onclick="showSection('meals',this)">
       <span class="nav-icon">🍽️</span> Refeições
-    </div>
+    </button>
 
-    <div class="nav-item" onclick="showSection('work',this)">
+    <button type="button" class="nav-item" onclick="showSection('work',this)">
       <span class="nav-icon">💼</span> Trabalho
-    </div>
-    <div class="nav-item" onclick="showSection('treadmill',this)">
+    </button>
+    <button type="button" class="nav-item" onclick="showSection('treadmill',this)">
       <span class="nav-icon">🏃</span> Passadeira
-    </div>
-    <div class="nav-item" onclick="showSection('plan',this)">
+    </button>
+    <button type="button" class="nav-item" onclick="showSection('plan',this)">
       <span class="nav-icon">🗓️</span> Plano
-    </div>
-    <div class="nav-item" onclick="showSection('profile',this)">
+    </button>
+    <button type="button" class="nav-item" onclick="showSection('profile',this)">
       <span class="nav-icon">👤</span> Perfil
-    </div>
+    </button>
 
-    <div class="nav-item" id="navCompeticao" style="display:none" onclick="showSection('competition',this)">
+    <button type="button" class="nav-item" id="navCompeticao" style="display:none" onclick="showSection('competition',this)">
       <span class="nav-icon">🏆</span> Competição
-    </div>
-    <div class="nav-item" id="navCompAdmin" style="display:none" onclick="showSection('compadmin',this)">
+    </button>
+    <button type="button" class="nav-item" id="navCompAdmin" style="display:none" onclick="showSection('compadmin',this)">
       <span class="nav-icon">⚙️</span> Gerir competição
-    </div>
-    <div class="nav-item" onclick="showSection('last5',this)">
+    </button>
+    <button type="button" class="nav-item" onclick="showSection('last5',this)">
       <span class="nav-icon">📅</span> Últimos 5 Dias
-    </div>
-    <div class="nav-item" onclick="showSection('stats',this)">
+    </button>
+    <button type="button" class="nav-item" onclick="showSection('stats',this)">
       <span class="nav-icon">📈</span> Estatísticas
-    </div>
-    <div class="nav-item" onclick="showSection('settings',this)">
+    </button>
+    <button type="button" class="nav-item" onclick="showSection('settings',this)">
       <span class="nav-icon">⚙️</span> Configurações
-    </div>
+    </button>
   </nav>
 
   <div class="sidebar-bottom">
     <button class="btn-save-main" onclick="saveData()">💾 Guardar registo</button>
-    <button onclick="logout()" style="margin-top:8px;width:100%;padding:6px;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:rgba(160,176,144,0.5);font-family:'JetBrains Mono',monospace;font-size:9px;cursor:pointer;letter-spacing:1px;text-transform:uppercase;transition:all 0.2s;" onmouseover="this.style.color='rgba(160,176,144,0.9)'" onmouseout="this.style.color='rgba(160,176,144,0.5)'">
+    <button onclick="logout()" style="margin-top:8px;width:100%;padding:6px;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:10px;cursor:pointer;letter-spacing:1px;text-transform:uppercase;transition:all 0.2s;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">
       Sair / Bloquear
     </button>
-    <div id="syncStatus" style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:9px;text-align:center;letter-spacing:0.5px;color:var(--moss-l);opacity:0.8;height:14px;"></div>
+    <div id="syncStatus" style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size:10px;text-align:center;letter-spacing:0.5px;color:var(--moss-l);height:14px;"></div>
     <button onclick="saveData();syncToSheets()" style="margin-top:4px;width:100%;padding:7px;background:transparent;border:1px solid rgba(255,255,255,0.1);border-radius:6px;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:10px;cursor:pointer;letter-spacing:0.5px;">
       &#9729; Sincronizar Sheets
     </button>
@@ -2444,7 +2458,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
     <div class="card-title">objetivos</div>
     <div class="grid-2">
       <div class="field"><label>Peso objetivo (kg)</label><input type="number" id="weightGoal" step="0.1" placeholder="ex: 70.0"></div>
-      <div class="field"><label>Objetivo até</label><input type="date" id="weightDeadline"></div>
+      <div class="field"><label for="weightDeadline">Objetivo até</label><input type="date" id="weightDeadline"></div>
     </div>
   </div>
 
@@ -2585,7 +2599,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
       <div class="card-title" style="margin-bottom:0;">horário de trabalho</div>
       <div style="display:flex;align-items:center;gap:8px;">
         <button onclick="workDatePrev()" style="background:none;border:1px solid var(--border);border-radius:8px;width:28px;height:28px;color:var(--muted);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;">‹</button>
-        <input type="date" id="workDatePicker"
+        <input type="date" id="workDatePicker" aria-label="Dia do registo de trabalho"
           style="background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:4px 10px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text2);cursor:pointer;outline:none;"
           onchange="workDateChange(this.value)">
         <button onclick="workDateNext()" id="workDateNextBtn" style="background:none;border:1px solid var(--border);border-radius:8px;width:28px;height:28px;color:var(--muted);cursor:pointer;font-size:13px;display:flex;align-items:center;justify-content:center;">›</button>
@@ -2602,7 +2616,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
       <div style="flex:1;min-width:130px;background:var(--surface);border:2px solid var(--border);border-radius:12px;padding:14px 16px;transition:border-color 0.2s;" id="workStartCard">
         <div style="font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1.5px;color:var(--muted);margin-bottom:8px;">🟢 Entrada</div>
         <input type="text" id="workStart" placeholder="HH:MM" maxlength="5" oninput="fmtTime(this)" onchange="calcWorkHours();markWorkEntry()"
-          style="width:100%;background:none;border:none;outline:none;font-family:'Source Serif 4',serif;font-size:28px;font-weight:300;color:var(--moss-d);cursor:pointer;">
+          style="width:100%;background:none;border:none;outline:none;font-family:'Source Serif 4',serif;font-size:28px;font-weight:300;color:var(--moss-l);cursor:pointer;">
         <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:6px;" id="workStartLabel">— não registado —</div>
         <button onclick="stampWorkEntry()" style="margin-top:8px;width:100%;padding:6px;background:rgba(90,110,74,0.1);border:1px solid rgba(90,110,74,0.3);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--moss);cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='rgba(90,110,74,0.2)'" onmouseout="this.style.background='rgba(90,110,74,0.1)'">
           ⏱ Registar agora
@@ -2615,7 +2629,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
         <input type="text" id="workEnd" placeholder="HH:MM" maxlength="5" oninput="fmtTime(this)" onchange="calcWorkHours();markWorkExit()"
           style="width:100%;background:none;border:none;outline:none;font-family:'Source Serif 4',serif;font-size:28px;font-weight:300;color:var(--rose,#c06060);cursor:pointer;">
         <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:6px;" id="workEndLabel">— não registado —</div>
-        <button onclick="stampWorkExit()" style="margin-top:8px;width:100%;padding:6px;background:rgba(180,80,80,0.08);border:1px solid rgba(180,80,80,0.25);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#b05555;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='rgba(180,80,80,0.15)'" onmouseout="this.style.background='rgba(180,80,80,0.08)'">
+        <button onclick="stampWorkExit()" style="margin-top:8px;width:100%;padding:6px;background:rgba(180,80,80,0.08);border:1px solid rgba(180,80,80,0.25);border-radius:8px;font-family:'JetBrains Mono',monospace;font-size:10px;color:#f87171;cursor:pointer;transition:background 0.15s;" onmouseover="this.style.background='rgba(180,80,80,0.15)'" onmouseout="this.style.background='rgba(180,80,80,0.08)'">
           ⏱ Registar agora
         </button>
       </div>
@@ -2651,14 +2665,14 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
     <!-- Sumário -->
     <div style="padding-top:14px;border-top:1px solid var(--border);">
       <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:10px;">
-        <span style="font-family:'Source Serif 4',serif;font-size:42px;font-weight:300;color:var(--moss-d);" id="workTotal">0:00</span>
+        <span style="font-family:'Source Serif 4',serif;font-size:42px;font-weight:300;color:var(--moss-l);" id="workTotal">0:00</span>
         <span style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--muted);">horas trabalhadas</span>
         <span id="workTag" style="margin-left:8px;"></span>
       </div>
       <div style="display:flex;gap:16px;flex-wrap:wrap;">
         <div style="background:rgba(90,110,74,0.07);border:1px solid rgba(90,110,74,0.2);border-radius:10px;padding:10px 14px;flex:1;min-width:120px;">
           <div style="font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--moss);margin-bottom:4px;">🎯 Saída ideal (8h)</div>
-          <div style="font-family:'Source Serif 4',serif;font-size:22px;font-weight:300;color:var(--moss-d);" id="idealExit">—</div>
+          <div style="font-family:'Source Serif 4',serif;font-size:22px;font-weight:300;color:var(--moss-l);" id="idealExit">—</div>
         </div>
         <div style="background:rgba(184,144,80,0.07);border:1px solid rgba(184,144,80,0.2);border-radius:10px;padding:10px 14px;flex:1;min-width:120px;" id="overtimeCard">
           <div style="font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;letter-spacing:1px;color:var(--amber);margin-bottom:4px;">⏱ Overtime hoje</div>
@@ -2671,7 +2685,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
         </div>
       </div>
       <div style="margin-top:10px;display:flex;gap:8px;align-items:center;">
-        <button onclick="resetOvertimeBank()" style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:4px 10px;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);cursor:pointer;letter-spacing:0.5px;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">↺ Resetar banco</button>
+        <button onclick="resetOvertimeBank()" style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:4px 10px;min-height:32px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);cursor:pointer;letter-spacing:0.5px;" onmouseover="this.style.color='var(--text)'" onmouseout="this.style.color='var(--muted)'">↺ Resetar banco</button>
         <span style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--faint);">acumula desde o primeiro registo</span>
       </div>
     </div>
@@ -2680,7 +2694,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
   <div class="card">
     <div class="card-title">como foi o trabalho</div>
     <div class="grid-2">
-      <div class="field"><label>Humor</label>
+      <div class="field"><label for="workMood">Humor</label>
         <select id="workMood">
           <option value="">— selecionar —</option>
           <option>😫 Muito stressante</option>
@@ -2769,7 +2783,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
       <button type="button" class="tm-chip" id="tmChip0" onclick="tmSetDay(tmDateOffset(0))">Hoje</button>
       <button type="button" class="tm-chip" id="tmChip1" onclick="tmSetDay(tmDateOffset(1))">Ontem</button>
       <button type="button" class="tm-chip" id="tmChip2" onclick="tmSetDay(tmDateOffset(2))">Anteontem</button>
-      <input type="date" id="tmDate" onchange="loadTreadmillDay()" aria-label="Dia do treino" style="margin-left:auto;max-width:170px;">
+      <input type="date" id="tmDate" onchange="loadTreadmillDay()" aria-label="Dia do treino" style="margin-left:auto;max-width:170px;min-height:32px;">
     </div>
 
     <div class="tm-stage" id="tmStage" aria-hidden="true">
@@ -2888,7 +2902,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
       <div class="ai-panel-label">plano dos próximos 7 dias</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
         <div style="flex:1 1 170px;">
-          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Objetivo</div>
+          <label for="tmPlanGoal" style="display:block;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Objetivo</label>
           <select id="tmPlanGoal" onchange="tmSaveCriteria()" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;">
             <option value="manter">Manter a forma</option>
             <option value="perder">Perder peso</option>
@@ -2898,7 +2912,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
           </select>
         </div>
         <div style="flex:1 1 170px;">
-          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Distância-alvo (km/semana)</div>
+          <label for="tmPlanTargetKm" style="display:block;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Distância-alvo (km/semana)</label>
           <input type="number" id="tmPlanTargetKm" min="0" step="0.5" placeholder="ex: 20" oninput="tmSaveCriteria()" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;">
         </div>
       </div>
@@ -2955,7 +2969,6 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
     <div id="tmPlanDays" class="tmp-grid"></div>
     <div style="font-size:11px;color:var(--muted);margin-top:10px;">Toca num dia passado ou de hoje para abrir o registo.</div>
   </div>
-</div>
 
   <div class="card">
     <div class="card-title">objetivos da semana</div>
@@ -2990,6 +3003,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
       <div class="mini-tile"><div class="mini-val" id="tmRecDays">0</div><div class="mini-lbl">dias com treino</div></div>
     </div>
   </div>
+</div>
 
 
 
@@ -3033,14 +3047,14 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
 
   <div class="card">
     <div class="grid-2">
-      <div class="field"><label>O que conta</label>
+      <div class="field"><label for="compMetric">O que conta</label>
         <select id="compMetric" onchange="renderCompetition()">
           <option value="km">Distância na passadeira (km)</option>
           <option value="min">Tempo na passadeira (min)</option>
           <option value="dias">Dias com registo</option>
         </select>
       </div>
-      <div class="field"><label>Período</label>
+      <div class="field"><label for="compPeriod">Período</label>
         <select id="compPeriod" onchange="renderCompetition()">
           <option value="mes">Este mês</option>
           <option value="semana">Esta semana</option>
@@ -3306,7 +3320,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
     <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">A IA incluída usa chaves geridas no servidor, sem chaves no teu dispositivo. Podes optar por usar as tuas próprias chaves.</p>
 
     <div style="margin-bottom:14px;padding:12px;background:var(--surface);border:1px solid var(--border);border-radius:10px;">
-      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Modo de IA</div>
+      <label for="aiModeSelect" style="display:block;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Modo de IA</label>
       <select id="aiModeSelect" onchange="changeAiMode()" style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;">
         <option value="app">✨ IA incluída (recomendado)</option>
         <option value="byok">🔑 Usar as minhas chaves</option>
@@ -3316,7 +3330,7 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
     </div>
 
     <div id="aiProviderField" style="margin-bottom:14px;">
-      <div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Provedor de IA</div>
+      <label for="aiProviderSelect" style="display:block;font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">Provedor de IA</label>
       <select id="aiProviderSelect" onchange="changeAiProvider()" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:12px;outline:none;">
         <option value="auto">⚡ Auto (todos em cadeia — Recomendado)</option>
         <option value="openrouter">OpenRouter (Múltiplas IA's)</option>
@@ -3427,7 +3441,7 @@ hf_... (2ª chave)" style="width:100%;background:var(--surface);border:1px solid
     <div class="card-title">🔔 Lembretes diários</div>
     <p style="font-size:12px;color:var(--muted);margin-bottom:14px;">Notificações para não te esqueceres de preencher o diário.</p>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-      <input type="checkbox" id="remEnabledSettings" style="width:18px;height:18px;accent-color:var(--moss);">
+      <input type="checkbox" id="remEnabledSettings" style="width:24px;height:24px;accent-color:var(--moss);">
       <label for="remEnabledSettings" style="font-size:13px;color:var(--text);">Ativar lembretes</label>
     </div>
     <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:16px;">
@@ -3439,11 +3453,11 @@ hf_... (2ª chave)" style="width:100%;background:var(--surface);border:1px solid
       <div><div style="font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--muted);margin-bottom:6px;">🏃 TREINO · HORA</div><input type="text" id="remTreinoHoraSettings" placeholder="18:00" maxlength="5" aria-label="Hora do lembrete de treino" oninput="fmtTime(this)" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px 13px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size:14px;outline:none;"></div>
     </div>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-      <input type="checkbox" id="remPesoEnabledSettings" style="width:18px;height:18px;accent-color:var(--moss);">
+      <input type="checkbox" id="remPesoEnabledSettings" style="width:24px;height:24px;accent-color:var(--moss);">
       <label for="remPesoEnabledSettings" style="font-size:13px;color:var(--text);">Lembrete semanal de pesagem</label>
     </div>
     <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;">
-      <input type="checkbox" id="remTreinoEnabledSettings" style="width:18px;height:18px;accent-color:var(--moss);">
+      <input type="checkbox" id="remTreinoEnabledSettings" style="width:24px;height:24px;accent-color:var(--moss);">
       <label for="remTreinoEnabledSettings" style="font-size:13px;color:var(--text);">Lembrete de treino nos dias com plano</label>
     </div>
     <button class="btn btn-primary" onclick="saveSettingsReminders()" style="width:100%;">💾 Guardar lembretes</button>
@@ -3503,7 +3517,7 @@ hf_... (2ª chave)" style="width:100%;background:var(--surface);border:1px solid
     <h2>🔔 Lembretes diários</h2>
     <div class="sync-modal-sub">notificações para não te esqueceres</div>
     <div style="margin:16px 0;display:flex;align-items:center;gap:10px;">
-      <input type="checkbox" id="remEnabled" style="width:18px;height:18px;accent-color:var(--moss);">
+      <input type="checkbox" id="remEnabled" style="width:24px;height:24px;accent-color:var(--moss);">
       <label for="remEnabled" style="font-size:13px;color:var(--text);">Ativar lembretes</label>
     </div>
     <div class="sync-step">
@@ -4376,11 +4390,11 @@ function renderOverviewHabits() {
   el.innerHTML = `
     <div style="display:flex;gap:24px;margin-bottom:14px;flex-wrap:wrap;">
       <div>
-        <span style="font-family:'Source Serif 4',serif;font-size:32px;font-weight:300;color:var(--moss-d);">${habDone.length}</span>
+        <span style="font-family:'Source Serif 4',serif;font-size:32px;font-weight:300;color:var(--moss-l);">${habDone.length}</span>
         <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);display:block;text-transform:uppercase;letter-spacing:1px;">de ${HABITS.length} hábitos</span>
       </div>
       <div>
-        <span style="font-family:'Source Serif 4',serif;font-size:32px;font-weight:300;color:var(--moss-d);">${exDone.length}</span>
+        <span style="font-family:'Source Serif 4',serif;font-size:32px;font-weight:300;color:var(--moss-l);">${exDone.length}</span>
         <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);display:block;text-transform:uppercase;letter-spacing:1px;">de ${QUICK_EXERCISES.length} exercícios</span>
       </div>
     </div>
@@ -5264,7 +5278,7 @@ function showFoodNutrition(food) {
   resp.className = 'ai-response visible';
   resp.innerHTML = `
     <strong>${food.nome}</strong><br><br>
-    <strong style="color:var(--moss-d)">${food.calorias} kcal</strong><br>
+    <strong style="color:var(--moss-l)">${food.calorias} kcal</strong><br>
     <small style="color:var(--muted)">Proteína: ${food.proteina}g · Hidratos: ${food.carbo}g · Gordura: ${food.gordura}g</small>
   `;
   const addBtn = document.createElement('button');
@@ -5764,12 +5778,12 @@ function renderWorkCalendar() {
     if (isWeekend) {
       bg     = 'background:transparent;';
       border = 'border:1px dashed rgba(100,116,139,0.12);';
-      label  = `<span style="font-size:8px;color:rgba(100,116,139,0.3);">${day}</span>`;
+      label  = `<span style="font-size:8px;color:var(--muted);">${day}</span>`;
     } else if (isBefore) {
       // Antes da data de início — mostrar como inativo
       bg     = 'background:rgba(30,40,55,0.4);';
       border = 'border:1px solid rgba(100,116,139,0.1);';
-      label  = `<span style="font-size:8px;color:rgba(100,116,139,0.2);">${day}</span>`;
+      label  = `<span style="font-size:8px;color:var(--muted);">${day}</span>`;
     } else if (!data) {
       // Sem registo (dia útil)
       bg     = 'background:rgba(51,65,85,0.5);';
@@ -7894,7 +7908,7 @@ function markWorkExit() {
   const card = document.getElementById('workEndCard');
   if (val) {
     lbl.textContent = 'registado às ' + val + 'h';
-    lbl.style.color = '#b05555';
+    lbl.style.color = '#f87171';
     card.style.borderColor = 'rgba(180,80,80,0.4)';
   } else {
     lbl.textContent = '— não registado —';
@@ -7991,10 +8005,10 @@ function updateGoalCounter() {
   // Format large numbers
   const fmt = n => n >= 1000 ? (n/1000).toFixed(1) + 'k' : n.toString();
 
-  elLeft.textContent    = fmt(kcalLeft) + ' kcal';
-  elKgLeft.textContent  = kgLeft.toFixed(1) + ' kg';
-  elPct.textContent     = pct.toFixed(1) + '%';
-  elDays.textContent    = daysLeft + ' dias';
+elLeft.textContent    = fmt(kcalLeft);
+elKgLeft.textContent  = kgLeft.toFixed(1);
+elPct.textContent     = pct.toFixed(1) + '%';
+elDays.textContent    = daysLeft;
   elBar.style.width     = pct.toFixed(1) + '%';
   elCurrent.textContent = currentWeight.toFixed(1) + ' kg (atual)';
 
@@ -8160,7 +8174,7 @@ let sheetsUrl = localStorage.getItem(SHEETS_URL_KEY) || '';
 function updateSyncStatus(msg, type) {
   const el = document.getElementById('syncStatus');
   if (!el) return;
-  const colors = { ok:'#a0b090', err:'#c08890', ing:'#b89050', off:'rgba(160,176,144,0.5)' };
+  const colors = { ok:'#a0b090', err:'#c08890', ing:'#b89050', off:'#8e9cb4' };
   el.textContent = msg;
   el.style.color = colors[type] || colors.off;
 }
@@ -10603,7 +10617,7 @@ function showAchievementToast(a) {
 function checkAchievements() {
   const unlocked = JSON.parse(localStorage.getItem('dvAchievements')||'[]');
   const newUnlocks = [];
-  ACHIEVEMENTS.forEach(a => { if (!unlocked.includes(a.id) && a.check()) { unlocked.push(a.id); newUnlocks.push(a); } });
+  ACHIEVEMENTS.forEach(a => { try { if (!unlocked.includes(a.id) && a.check()) { unlocked.push(a.id); newUnlocks.push(a); } } catch (e) {} });
   if (newUnlocks.length) {
     cfgSave('dvAchievements', JSON.stringify(unlocked));
     newUnlocks.forEach(a => showAchievementToast(a));
@@ -10617,7 +10631,7 @@ function renderAchievements() {
   const unlocked = JSON.parse(localStorage.getItem('dvAchievements')||'[]');
   el.innerHTML = ACHIEVEMENTS.map(a => {
     const done = unlocked.includes(a.id);
-    return `<div style="background:${done?'var(--surface)':'transparent'};border:1px solid ${done?'rgba(var(--accent-rgb),0.3)':'var(--border)'};border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px;opacity:${done?1:0.4};">
+    return `<div style="background:${done?'var(--surface)':'transparent'};border:1px solid ${done?'rgba(var(--accent-rgb),0.3)':'var(--border)'};border-radius:12px;padding:14px;display:flex;align-items:center;gap:12px;">
       <span style="font-size:26px;filter:${done?'none':'grayscale(1)'};">${a.icon}</span>
       <div><div style="font-size:13px;color:${done?'var(--text)':'var(--muted)'};">${a.title}</div>
       <div style="font-size:11px;color:var(--muted);">${a.desc}</div>
@@ -11108,7 +11122,7 @@ function renderLast5Days() {
       <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:14px;">
         <span style="font-family:'JetBrains Mono',monospace;font-weight:700;font-size:15px;color:${isToday ? 'var(--moss-l)' : 'var(--text1)'};">${label}</span>
         <span style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);">${dateLabel}</span>
-        ${isToday ? '<span style="font-family:\'JetBrains Mono\',monospace;font-size:9px;background:var(--moss);color:#fff;padding:2px 7px;border-radius:20px;margin-left:auto;">hoje</span>' : ''}
+        ${isToday ? '<span style="font-family:\'JetBrains Mono\',monospace;font-size:9px;background:var(--moss);color:#0a0d13;padding:2px 7px;border-radius:20px;margin-left:auto;">hoje</span>' : ''}
       </div>
       <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
 
@@ -11762,6 +11776,7 @@ function clearAllData() {
     if (id === 'ai')          { initAiChat(); setTimeout(() => { const inp = document.getElementById('aiChatInput'); if (inp && window.innerWidth > 700) inp.focus(); }, 120); }
     if (id === 'competition') renderCompetition();
     if (id === 'compadmin')   renderCompAdmin();
+    if (id === 'stats')       renderAchievements();
   };
 })();
 
@@ -11770,6 +11785,7 @@ initPWA();
 initAiChat();
 setTimeout(() => {
   try { checkAchievements(); } catch (e) {}
+  try { renderAchievements(); } catch (e) {}
   try { renderTrends(); } catch (e) {}
   try { generateWeeklySummary(false); } catch (e) {}
 }, 2000);
