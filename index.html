@@ -9515,7 +9515,7 @@ async function tmPlanChatApply() {
     const planDates = tmParsePlan(plan.text).map(it => it.date);
     const datesLine = planDates.length === 7
       ? planDates.join(', ')
-      : Array.from({ length: 7 }, (_, i) => tmFutureDate(i + 1)).join(', ');
+      : Array.from({ length: 7 }, (_, i) => tmFutureDate(i)).join(', ');
     const prompt = tmPlanChatContext() + '\n\nConversa até agora:\n' + history +
       '\n\nDatas válidas (uma vez cada, sem datas passadas): ' + datesLine + '.' +
       '\n\nReescreve o plano completo com os ajustes pedidos. Responde apenas com o plano, sem introdução nem comentários.';
@@ -9814,14 +9814,14 @@ async function generateTreadmillPlan() {
   tmAiLoading('tmPlanResponse', 'A preparar o plano semanal');
   const week = tmWeekStats();
   const dates = [];
-  for (let i = 1; i <= 7; i++) {
+  for (let i = 0; i < 7; i++) {
     const date = tmFutureDate(i);
     dates.push(date + ' (' + tmDayName(date) + ')');
   }
   try {
     const text = await callGemini(
-      'És um treinador de corrida em Portugal. Cria um plano de passadeira para os próximos 7 dias, em PT-PT. Responde com exatamente 7 linhas, uma por dia, na ordem das datas fornecidas. Cada linha tem de seguir este formato: "AAAA-MM-DD: X km, Y min" ou "AAAA-MM-DD: Descanso". Não escrevas mais nada: sem títulos, listas, introdução, conclusão, velocidade, inclinação, aquecimento, arrefecimento, RPE, objetivo nem justificações. Não repitas dias nem uses datas passadas. Respeita o número de sessões e os dias de descanso indicados nos critérios. Se houver distância-alvo semanal, aproxima o total das sessões desse valor. Não aumentes o tempo total semanal mais de 10% em relação à semana anterior. Não faças diagnóstico médico nem prometas resultados.',
-      'Critérios do utilizador:\n' + tmCriteriaText() + '\n\nContexto:\n' + tmTrainingContext(week) + '\n\nDatas dos próximos 7 dias: ' + dates.join(', ') + '.\nUsa exatamente estas datas no formato AAAA-MM-DD, uma vez cada; não inventes, repitas nem uses datas passadas.\nCria o plano com apenas distância e tempo.',
+      'És um treinador de corrida em Portugal. Cria um plano de passadeira para os próximos 7 dias, incluindo hoje, em PT-PT. Responde com exatamente 7 linhas, uma por dia, na ordem das datas fornecidas. Cada linha tem de seguir este formato: "AAAA-MM-DD: X km, Y min" ou "AAAA-MM-DD: Descanso". Não escrevas mais nada: sem títulos, listas, introdução, conclusão, velocidade, inclinação, aquecimento, arrefecimento, RPE, objetivo nem justificações. Não repitas dias nem uses datas passadas. Respeita o número de sessões e os dias de descanso indicados nos critérios. Se houver distância-alvo semanal, aproxima o total das sessões desse valor. Não aumentes o tempo total semanal mais de 10% em relação à semana anterior. Não faças diagnóstico médico nem prometas resultados.',
+      'Critérios do utilizador:\n' + tmCriteriaText() + '\n\nContexto:\n' + tmTrainingContext(week) + '\n\nDatas dos próximos 7 dias (a começar hoje): ' + dates.join(', ') + '.\nUsa exatamente estas datas no formato AAAA-MM-DD, uma vez cada, incluindo hoje; não inventes, repitas nem uses datas passadas.\nCria o plano com apenas distância e tempo.',
       1400
     );
     if (tmSavePlan(text)) {
