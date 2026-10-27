@@ -2175,6 +2175,33 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
 }
 .hx-toast.show { opacity: 1; transform: translate(-50%, 0); }
 
+/* paleta de comandos */
+.hx-pal { position: fixed; inset: 0; z-index: 10085; display: none; align-items: flex-start; justify-content: center; padding: 12vh 16px 16px; background: rgba(5, 7, 12, .72); backdrop-filter: blur(3px); }
+.hx-pal.open { display: flex; }
+.hx-pal-box { width: 100%; max-width: 560px; border-radius: 16px; border: 1px solid var(--border2); background: var(--bg2); box-shadow: var(--shadow-m); overflow: hidden; }
+.hx-pal-input { width: 100%; padding: 16px 18px; border: 0; border-bottom: 1px solid var(--border); background: transparent; color: var(--text); font-family: inherit; font-size: calc(14px * var(--font-scale)); outline: none; }
+.hx-pal-input::placeholder { color: var(--faint); }
+.hx-pal-list { max-height: 52vh; overflow-y: auto; padding: 8px; }
+.hx-pal-item { display: flex; gap: 10px; align-items: baseline; width: 100%; padding: 10px 12px; border: 0; border-radius: 10px; background: transparent; color: var(--text2); text-align: left; cursor: pointer; font-family: inherit; font-size: calc(12.5px * var(--font-scale)); }
+.hx-pal-item.sel { background: rgba(var(--accent-rgb), .14); color: var(--text); }
+.hx-pal-grp { flex: 0 0 58px; font-family: 'JetBrains Mono', monospace; font-size: calc(9px * var(--font-scale)); letter-spacing: 1px; text-transform: uppercase; color: var(--faint); }
+.hx-pal-empty { padding: 16px 14px; color: var(--muted); font-size: calc(12px * var(--font-scale)); }
+
+/* cartões que se fecham */
+.hx-fold-btn { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 10px; background: none; border: 0; padding: 0; color: inherit; font: inherit; cursor: pointer; text-align: left; }
+.hx-fold-btn:focus-visible { outline: 2px solid var(--moss-l); outline-offset: 4px; border-radius: 6px; }
+.hx-fold-i { flex: 0 0 auto; color: var(--muted); font-size: calc(14px * var(--font-scale)); transition: transform .18s; }
+.hx-folded .hx-fold-i { transform: rotate(-90deg); }
+.hx-folded > *:not(.hx-fold-head) { display: none !important; }
+
+/* refeições: histórico */
+.hx-meal-hist { margin-top: 10px; }
+.hx-meal-lbl { font-family: 'JetBrains Mono', monospace; font-size: calc(9.5px * var(--font-scale)); letter-spacing: .8px; text-transform: uppercase; color: var(--faint); margin-bottom: 6px; }
+.hx-meal-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.hx-meal-chip { padding: 6px 11px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--text2); font-family: inherit; font-size: calc(11px * var(--font-scale)); cursor: pointer; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hx-meal-chip:hover { border-color: var(--moss); color: var(--text); }
+.hx-meal-repeat { border-color: rgba(var(--accent-rgb), .45); color: var(--moss-l); }
+
 /* barra de anulação */
 .hx-undo {
   position: fixed; left: 50%; bottom: 22px; transform: translate(-50%, 20px);
@@ -12654,6 +12681,8 @@ function clearAllData() {
     if (id === 'compadmin')   renderCompAdmin();
     if (id === 'stats')       renderAchievements();
     if (id === 'calendar')    renderCalendarSection();
+    if (id === 'meals')       { try { hxMealSuggestAll(); } catch (e) {} }
+    try { hxFoldApply(); } catch (e) {}
   };
 })();
 
@@ -13667,10 +13696,334 @@ async function hxDiagCloud() {
   }
 }
 
+/* ── refeições: memória do que já registaste ────────────────────── */
+
+function hxMealDb(slot) {
+  var counts = {};
+  var push = function (items, dayKey) {
+    (items || []).forEach(function (m) {
+      var name = String((m && m.name) || '').trim();
+      if (!name) { return; }
+      var key = name.toLowerCase();
+      if (!counts[key]) { counts[key] = { name: name, cal: 0, n: 0, last: '' }; }
+      counts[key].n++;
+      if (!counts[key].cal && m.cal) { counts[key].cal = Number(m.cal) || 0; }
+      if (dayKey > counts[key].last) { counts[key].last = dayKey; }
+    });
+  };
+  try {
+    Object.keys(DB).forEach(function (d) {
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(d) || d === TODAY) { return; }
+      var day = DB[d];
+      if (!day || !day.meals) { return; }
+      push(day.meals[slot], d);
+    });
+  } catch (e) {}
+  push(meals[slot] || [], TODAY);
+  return Object.keys(counts).map(function (k) { return counts[k]; })
+    .sort(function (a, b) { return (b.n - a.n) || (a.last < b.last ? 1 : -1); });
+}
+
+function hxMealYesterday(slot) {
+  try {
+    var d = new Date();
+    d.setDate(d.getDate() - 1);
+    var k = localDateStr(d);
+    var day = DB[k];
+    if (!day || !day.meals) { return null; }
+    var items = day.meals[slot] || [];
+    return items.length ? { date: k, items: items } : null;
+  } catch (e) { return null; }
+}
+
+function hxMealBox(slot) {
+  var body = document.querySelector('#slot-' + slot + ' .meal-slot-body');
+  if (!body) { return null; }
+  var box = body.querySelector('.hx-meal-hist');
+  if (!box) {
+    box = document.createElement('div');
+    box.className = 'hx-meal-hist';
+    body.appendChild(box);
+  }
+  return box;
+}
+
+function hxMealSuggest(slot) {
+  var box = hxMealBox(slot);
+  if (!box) { return; }
+  var hoje = {};
+  (meals[slot] || []).forEach(function (m) { hoje[String(m.name || '').toLowerCase()] = 1; });
+
+  var recentes = hxMealDb(slot).filter(function (m) { return !hoje[m.name.toLowerCase()]; }).slice(0, 4);
+  var ontem = hxMealYesterday(slot);
+  var out = [];
+
+  if (ontem) {
+    var totalOntem = ontem.items.reduce(function (s, m) { return s + (Number(m.cal) || 0); }, 0);
+    out.push('<button type="button" class="hx-meal-chip hx-meal-repeat" data-slot="' + slot + '" data-repeat="1">' +
+      '↺ Repetir ontem' + (totalOntem ? ' · ' + totalOntem + ' kcal' : '') + '</button>');
+  }
+  recentes.forEach(function (m) {
+    out.push('<button type="button" class="hx-meal-chip" data-slot="' + slot + '" data-name="' + hxEsc(m.name) + '" data-cal="' + (m.cal || 0) + '"' +
+      ' title="' + hxEsc(m.name) + (m.cal ? ' · ' + m.cal + ' kcal' : '') + '">' +
+      hxEsc(m.name) + (m.cal ? ' · ' + m.cal : '') + '</button>');
+  });
+
+  box.innerHTML = out.length
+    ? '<div class="hx-meal-lbl">Do teu histórico</div><div class="hx-meal-chips">' + out.join('') + '</div>'
+    : '';
+}
+
+function hxMealSuggestAll() {
+  Object.keys(SLOTS).forEach(function (slot) {
+    try { hxMealSuggest(slot); } catch (e) {}
+  });
+}
+
+function hxMealAdd(slot, name, cal) {
+  if (!name) { return; }
+  meals[slot] = meals[slot] || [];
+  meals[slot].push({ name: name, cal: Number(cal) || 0, aiCalc: false });
+  try { renderMeals(); } catch (e) {}
+  try { updateSidebarCals(); } catch (e) {}
+  try { saveData(true); } catch (e) {}
+  hxToast('Adicionado: ' + name + '.');
+}
+
+function hxMealRepeat(slot) {
+  var ontem = hxMealYesterday(slot);
+  if (!ontem) { return; }
+  var hoje = {};
+  (meals[slot] || []).forEach(function (m) { hoje[String(m.name || '').toLowerCase()] = 1; });
+  var add = 0;
+  ontem.items.forEach(function (m) {
+    var key = String(m.name || '').toLowerCase();
+    if (!key || hoje[key]) { return; }
+    hoje[key] = 1;
+    meals[slot] = meals[slot] || [];
+    meals[slot].push({ name: m.name, cal: Number(m.cal) || 0, aiCalc: false });
+    add++;
+  });
+  if (!add) { hxToast('Ontem já estava tudo igual. Nada a repetir.'); return; }
+  try { renderMeals(); } catch (e) {}
+  try { updateSidebarCals(); } catch (e) {}
+  try { saveData(true); } catch (e) {}
+  hxToast(add + (add === 1 ? ' refeição repetida de ontem.' : ' refeições repetidas de ontem.'));
+}
+
+document.addEventListener('click', function (ev) {
+  var chip = ev.target && ev.target.closest ? ev.target.closest('.hx-meal-chip') : null;
+  if (!chip) { return; }
+  ev.preventDefault();
+  var slot = chip.getAttribute('data-slot');
+  if (chip.getAttribute('data-repeat')) { hxMealRepeat(slot); return; }
+  hxMealAdd(slot, chip.getAttribute('data-name'), chip.getAttribute('data-cal'));
+});
+
+(function hxMealPatch() {
+  if (typeof renderMeals !== 'function') { return; }
+  var orig = renderMeals;
+  renderMeals = function () {
+    var r = orig.apply(this, arguments);
+    try { hxMealSuggestAll(); } catch (e) {}
+    return r;
+  };
+})();
+
+/* ── paleta de comandos (Ctrl+K) ───────────────────────────────── */
+
+var HX_PALETTE = [];
+
+function hxPaletteItems() {
+  var out = [];
+  Object.keys(SECTION_LABELS).forEach(function (id) {
+    if (id === 'competition' || id === 'compadmin') { return; }
+    if (!document.getElementById('section-' + id)) { return; }
+    out.push({ group: 'Ir para', label: SECTION_LABELS[id], run: function () { showSection(id, navBySection(id)); } });
+  });
+  out.push({ group: 'Fazer', label: 'Registar um copo de água', run: function () { showSection('overview', navBySection('overview')); hxWater(document.getElementById('hxBtnWater')); } });
+  out.push({ group: 'Fazer', label: 'Registar uma pausa', run: function () { showSection('overview', navBySection('overview')); hxBreak(document.getElementById('hxBtnBreak')); } });
+  out.push({ group: 'Fazer', label: 'Registar luz natural', run: function () { showSection('overview', navBySection('overview')); hxLight(document.getElementById('hxBtnLight')); } });
+  out.push({ group: 'Fazer', label: 'Check-in de humor', run: function () { hxOpenMood(); } });
+  out.push({ group: 'Fazer', label: 'Dia difícil (só água e humor)', run: function () { hxDayOff(); } });
+  out.push({ group: 'Fazer', label: 'Lembretes e notificações', run: function () { openRemindersModal(); } });
+  out.push({ group: 'Fazer', label: 'Exportar os meus dados', run: function () { exportData(); } });
+  out.push({ group: 'Fazer', label: 'Exportar só o humor', run: function () { hxExportMood(); } });
+  out.push({ group: 'Fazer', label: 'Correr diagnóstico', run: function () { hxRunDiagnostic(); } });
+  out.push({ group: 'Ver', label: 'Versão: ' + APP_VERSION, run: function () { showSection('settings', navBySection('settings')); hxToast('Versão ' + APP_VERSION + ' · ' + APP_BUILT); } });
+  return out;
+}
+
+function hxPaletteOpen() {
+  var el = document.getElementById('hxPalette');
+  if (!el) {
+    el = document.createElement('div');
+    el.id = 'hxPalette';
+    el.className = 'hx-pal';
+    el.setAttribute('role', 'dialog');
+    el.setAttribute('aria-modal', 'true');
+    el.setAttribute('aria-label', 'Comandos');
+    el.innerHTML =
+      '<div class="hx-pal-box">' +
+        '<input type="text" class="hx-pal-input" id="hxPalInput" autocomplete="off" spellcheck="false" ' +
+          'placeholder="Onde queres ir?  ·  Esc fecha" aria-controls="hxPalList" aria-autocomplete="list">' +
+        '<div class="hx-pal-list" id="hxPalList" role="listbox" aria-label="Sugestões"></div>' +
+      '</div>';
+    el.addEventListener('click', function (ev) {
+      if (ev.target === el) { hxPaletteClose(); }
+    });
+    document.body.appendChild(el);
+    el.querySelector('.hx-pal-input').addEventListener('input', function () { hxPaletteRender(this.value); });
+    el.querySelector('.hx-pal-list').addEventListener('click', function (ev) {
+      var b = ev.target.closest('.hx-pal-item');
+      if (!b) { return; }
+      hxPaletteRun(Number(b.getAttribute('data-i')));
+    });
+  }
+  HX_PALETTE = hxPaletteItems();
+  hxPaletteRender('');
+  el.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  var inp = document.getElementById('hxPalInput');
+  if (inp) { inp.value = ''; inp.focus(); }
+}
+
+function hxPaletteClose() {
+  var el = document.getElementById('hxPalette');
+  if (el) { el.classList.remove('open'); }
+  document.body.style.overflow = '';
+}
+
+function hxNorm(s) {
+  return String(s || '').toLowerCase()
+    .normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+}
+
+function hxPaletteFilter(q) {
+  var nq = hxNorm(q).trim();
+  if (!nq) { return HX_PALETTE.slice(0, 12); }
+  return HX_PALETTE
+    .filter(function (it) { return hxNorm(it.label).indexOf(nq) !== -1 || hxNorm(it.group).indexOf(nq) !== -1; })
+    .slice(0, 12);
+}
+
+function hxPaletteRender(q) {
+  var list = document.getElementById('hxPalList');
+  if (!list) { return; }
+  var items = hxPaletteFilter(q);
+  window.__hxPalItems = items;
+  window.__hxPalSel = 0;
+  if (!items.length) {
+    list.innerHTML = '<div class="hx-pal-empty">Nada com «' + hxEsc(q) + '».</div>';
+    return;
+  }
+  list.innerHTML = items.map(function (it, i) {
+    return '<button type="button" class="hx-pal-item' + (i === 0 ? ' sel' : '') + '" data-i="' + i + '" role="option" aria-selected="' + (i === 0) + '">' +
+      '<span class="hx-pal-grp">' + hxEsc(it.group) + '</span>' +
+      '<span class="hx-pal-lbl">' + hxEsc(it.label) + '</span></button>';
+  }).join('');
+}
+
+function hxPaletteMove(delta) {
+  var items = window.__hxPalItems || [];
+  if (!items.length) { return; }
+  var sel = (window.__hxPalSel || 0) + delta;
+  if (sel < 0) { sel = items.length - 1; }
+  if (sel >= items.length) { sel = 0; }
+  window.__hxPalSel = sel;
+  var nodes = document.querySelectorAll('#hxPalList .hx-pal-item');
+  nodes.forEach(function (n, i) {
+    n.classList.toggle('sel', i === sel);
+    n.setAttribute('aria-selected', String(i === sel));
+  });
+  if (nodes[sel] && nodes[sel].scrollIntoView) { nodes[sel].scrollIntoView({ block: 'nearest' }); }
+}
+
+function hxPaletteRun(i) {
+  var items = window.__hxPalItems || [];
+  var it = items[i];
+  hxPaletteClose();
+  if (it && typeof it.run === 'function') { setTimeout(function () { it.run(); }, 60); }
+}
+
+document.addEventListener('keydown', function (ev) {
+  var pal = document.getElementById('hxPalette');
+  var open = pal && pal.classList.contains('open');
+  if ((ev.ctrlKey || ev.metaKey) && (ev.key === 'k' || ev.key === 'K')) {
+    ev.preventDefault();
+    if (open) { hxPaletteClose(); } else { hxPaletteOpen(); }
+    return;
+  }
+  if (!open) { return; }
+  if (ev.key === 'Escape') { ev.preventDefault(); hxPaletteClose(); return; }
+  if (ev.key === 'ArrowDown') { ev.preventDefault(); hxPaletteMove(1); return; }
+  if (ev.key === 'ArrowUp') { ev.preventDefault(); hxPaletteMove(-1); return; }
+  if (ev.key === 'Enter') {
+    ev.preventDefault();
+    hxPaletteRun(window.__hxPalSel || 0);
+  }
+});
+
+/* ── cartões do Resumo que se fecham e lembram ─────────────────── */
+
+var HX_FOLD_KEY = 'dvFoldedCards';
+var HX_FOLD_KEEP = { hxQuick: 1, waterMini: 1 };
+
+function hxFolded() { return hxRead(HX_FOLD_KEY, {}) || {}; }
+
+function hxFoldTargets() {
+  var out = [];
+  ['overview', 'stats', 'settings', 'meals', 'work'].forEach(function (sid) {
+    var sec = document.getElementById('section-' + sid);
+    if (!sec) { return; }
+    [].forEach.call(sec.querySelectorAll(':scope > .card'), function (card, i) {
+      if (card.id && HX_FOLD_KEEP[card.id]) { return; }
+      var head = card.querySelector('.card-title') || card.querySelector('.hx-hist-head');
+      if (!head) { return; }
+      if (!card.id) { card.id = 'hxf-' + sid + '-' + i; }
+      out.push({ card: card, head: head });
+    });
+  });
+  return out;
+}
+
+function hxFoldApply() {
+  var st = hxFolded();
+  hxFoldTargets().forEach(function (t) {
+    var card = t.card, head = t.head, id = card.id;
+    head.classList.add('hx-fold-head');
+    if (!head.querySelector('.hx-fold-btn')) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'hx-fold-btn';
+      btn.innerHTML = '<span class="hx-fold-t">' + head.innerHTML + '</span><span class="hx-fold-i" aria-hidden="true">⌄</span>';
+      head.innerHTML = '';
+      head.appendChild(btn);
+      btn.addEventListener('click', function () { hxFoldToggle(id); });
+    }
+    var folded = st[id] === true;
+    card.classList.toggle('hx-folded', folded);
+    var b = head.querySelector('.hx-fold-btn');
+    if (b) {
+      b.setAttribute('aria-expanded', String(!folded));
+      b.setAttribute('aria-label', (folded ? 'Abrir ' : 'Fechar ') + b.querySelector('.hx-fold-t').textContent.trim());
+    }
+  });
+}
+
+function hxFoldToggle(id) {
+  var st = hxFolded();
+  st[id] = !(st[id] === true);
+  hxWrite(HX_FOLD_KEY, st);
+  hxFoldApply();
+}
+
 /* ── arranque ───────────────────────────────────────────────────── */
 
 document.addEventListener('keydown', function (e) {
   if (e.key !== 'Escape') { return; }
+  var pal = document.getElementById('hxPalette');
+  if (pal && pal.classList.contains('open')) { return; }
   var sheet = document.getElementById('hxSheet');
   if (sheet && sheet.classList.contains('open')) {
     hxCloseMood();
@@ -13692,6 +14045,7 @@ document.addEventListener('visibilitychange', function () {
     try { hxApplyDayTheme(); } catch (e) {}
     try { hxRenderVersion(); } catch (e) {}
     try { hxUndoCheck(); } catch (e) {}
+    try { hxFoldApply(); } catch (e) {}
   };
   if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', run); }
   else { run(); }
