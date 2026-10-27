@@ -3,10 +3,11 @@
 // Funcionalidades: cache offline + notificações push
 // ═══════════════════════════════════════════════════════════════════
 
-const CACHE_NAME = 'diario-v3';
+const CACHE_NAME = 'diario-v4';
 const ASSETS = [
   './',
   './index.html',
+  './quick/index.html',
   './manifest.json',
   './icon-192.png',
   './icon-512.png'
@@ -58,7 +59,7 @@ self.addEventListener('notificationclick', e => {
       if (clientList.length > 0) {
         clientList[0].focus();
       } else {
-        clients.openWindow('/diario-de-vida/');
+        clients.openWindow(self.registration.scope);
       }
     })
   );
@@ -68,10 +69,11 @@ self.addEventListener('notificationclick', e => {
 self.addEventListener('message', e => {
   if (e.data && e.data.type === 'SHOW_NOTIFICATION') {
     const { title, body, icon } = e.data;
+    const iconUrl = new URL('icon-192.png', self.registration.scope).href;
     self.registration.showNotification(title, {
       body,
-      icon: icon || '/diario-de-vida/icon-192.png',
-      badge: '/diario-de-vida/icon-192.png',
+      icon: icon || iconUrl,
+      badge: iconUrl,
       vibrate: [200, 100, 200],
       tag: 'diario-lembrete',
       renotify: true,

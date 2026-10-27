@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f1117">
+<title>Registo rápido · Diário de Vida</title>
+<link rel="manifest" href="../manifest.json">
+<link rel="apple-touch-icon" href="../apple-touch-icon.png">
+<link rel="icon" href="../icon-192.png">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+  :root{
+    --bg:#0f1117; --bg2:#161922; --surface:#1c2030; --card:#1e2436;
+    --border:#2a3050; --border2:#3a4268;
+    --moss:#2dd4bf; --moss-l:#5eead4; --accent-rgb:45,212,191;
+    --text:#f1f5f9; --text2:#cbd5e1; --muted:#8e9cb4;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:var(--bg); color:var(--text); min-height:100vh;
+    font-family:'Lora',Georgia,serif; font-size:15px; line-height:1.55;
+    padding:18px 16px calc(18px + env(safe-area-inset-bottom,0px));
+    display:flex; flex-direction:column; gap:14px;
+    -webkit-tap-highlight-color:transparent;
+  }
+  body::before{
+    content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+    background:radial-gradient(600px 400px at 12% -10%, rgba(var(--accent-rgb),.16), transparent 70%);
+  }
+  .wrap{position:relative;z-index:1;display:flex;flex-direction:column;gap:14px;max-width:560px;width:100%;margin:0 auto;flex:1}
+  header{display:flex;flex-direction:column;gap:2px}
+  .kicker{
+    font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.4px;
+    text-transform:uppercase;color:var(--moss);display:flex;align-items:center;gap:7px;
+  }
+  .kicker i{width:6px;height:6px;border-radius:50%;background:var(--moss);display:block}
+  h1{font-family:'Source Serif 4',serif;font-weight:300;font-size:24px;letter-spacing:-.3px}
+  .sub{color:var(--muted);font-size:13px}
+
+  .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .qa{
+    display:flex;flex-direction:column;align-items:flex-start;justify-content:flex-end;gap:2px;
+    min-height:118px;padding:15px;border:1px solid var(--border);border-radius:16px;
+    background:linear-gradient(165deg,var(--surface),var(--card));
+    color:var(--text);cursor:pointer;font-family:inherit;text-align:left;
+    transition:transform .12s ease,border-color .18s ease,background .18s ease;
+  }
+  .qa:active{transform:scale(.97)}
+  .qa:focus-visible{outline:2px solid var(--moss);outline-offset:2px}
+  .qa .ico{font-size:26px;line-height:1;margin-bottom:auto}
+  .qa .lbl{font-size:16px;font-weight:600}
+  .qa .meta{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)}
+  .qa.on{border-color:rgba(var(--accent-rgb),.55);background:linear-gradient(165deg,rgba(var(--accent-rgb),.16),var(--card))}
+  .qa.on .meta{color:var(--moss)}
+  .qa.pop{animation:pop .42s ease}
+  @keyframes pop{0%{transform:scale(.94);box-shadow:0 0 0 0 rgba(var(--accent-rgb),.45)}55%{transform:scale(1.02);box-shadow:0 0 0 10px rgba(var(--accent-rgb),0)}100%{transform:scale(1)}}
+  @media (prefers-reduced-motion:reduce){.qa{transition:none}.qa.pop{animation:none}}
+
+  .hint{color:var(--muted);font-size:12.5px;min-height:20px}
+  footer{margin-top:auto;display:flex;flex-direction:column;gap:10px}
+  .open-app{
+    display:flex;align-items:center;justify-content:center;gap:8px;width:100%;
+    padding:12px;border-radius:12px;border:1px solid var(--border);
+    background:transparent;color:var(--text2);text-decoration:none;font-size:13px;
+  }
+  .open-app:hover{border-color:var(--moss);color:var(--text)}
+  .status{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-align:center;letter-spacing:.4px}
+
+  .toast{
+    position:fixed;left:50%;bottom:20px;transform:translate(-50%,14px);
+    z-index:50;max-width:min(92vw,420px);padding:12px 16px;border-radius:14px;
+    background:rgba(28,32,48,.97);border:1px solid rgba(var(--accent-rgb),.35);
+    box-shadow:0 10px 34px rgba(0,0,0,.5);font-size:13px;
+    opacity:0;pointer-events:none;transition:opacity .22s,transform .22s;
+  }
+  .toast.show{opacity:1;transform:translate(-50%,0)}
+
+  /* folha de humor */
+  .sheet-overlay{
+    position:fixed;inset:0;z-index:40;display:none;align-items:flex-end;justify-content:center;
+    background:rgba(8,10,16,.72);backdrop-filter:blur(6px);
+  }
+  .sheet-overlay.open{display:flex}
+  .sheet{
+    width:100%;max-width:540px;max-height:92vh;overflow-y:auto;
+    background:var(--card);border:1px solid var(--border);border-bottom:none;
+    border-radius:22px 22px 0 0;padding:18px 18px calc(18px + env(safe-area-inset-bottom,0px));
+  }
+  @media (min-width:620px){.sheet-overlay{align-items:center}.sheet{border-radius:22px;border-bottom:1px solid var(--border)}}
+  .sheet-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+  .sheet-title{font-size:17px}
+  .sheet-sub{font-size:12px;color:var(--muted);margin-top:3px}
+  .x{background:transparent;border:1px solid var(--border);border-radius:10px;color:var(--muted);width:34px;height:34px;cursor:pointer;font-size:15px}
+  .label{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin:16px 0 8px}
+  .moods{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+  .mood{
+    display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 4px;
+    border-radius:14px;border:1px solid var(--border);background:var(--surface);
+    color:var(--text2);cursor:pointer;font-family:inherit;
+  }
+  .mood .em{font-size:26px;line-height:1}
+  .mood .nm{font-size:9.5px;color:var(--muted);text-align:center}
+  .mood.sel{border-color:var(--moss);background:rgba(var(--accent-rgb),.14)}
+  .mood.sel .nm{color:var(--text)}
+  .trigs{display:flex;flex-wrap:wrap;gap:7px}
+  .trig{
+    padding:8px 12px;border-radius:999px;border:1px solid var(--border);background:var(--surface);
+    color:var(--text2);cursor:pointer;font-family:inherit;font-size:11.5px;
+  }
+  .trig.sel{border-color:var(--moss);color:var(--text);background:rgba(var(--accent-rgb),.14)}
+  .note{
+    width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;
+    padding:10px 12px;color:var(--text);font-family:inherit;font-size:13px;outline:none;
+  }
+  .note:focus{border-color:var(--moss)}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+  .btn{
+    flex:1 1 auto;padding:12px 16px;border-radius:12px;cursor:pointer;font-family:inherit;
+    font-size:14px;border:1px solid var(--border2);background:var(--surface);color:var(--text);
+  }
+  .btn.primary{background:var(--moss);border-color:var(--moss);color:#08120f;font-weight:600}
+  .skip{background:none;border:none;color:var(--muted);cursor:pointer;font-family:inherit;font-size:12px;text-decoration:underline;padding:8px 2px;width:100%;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker"><i></i><span id="dayKicker">registo rápido</span></div>
+    <h1>Um toque chega</h1>
+    <div class="sub" id="daySub">—</div>
+  </header>
+
+  <div class="grid" role="group" aria-label="Ações rápidas">
+    <button type="button" class="qa" id="btnWater" onclick="doWater(this)" aria-label="Registar um copo de água">
+      <span class="ico" aria-hidden="true">💧</span>
+      <span class="lbl">Água</span>
+      <span class="meta" id="metaWater">0 / 8 copos</span>
+    </button>
+    <button type="button" class="qa" id="btnBreak" onclick="doBreak(this)" aria-label="Registar uma pausa">
+      <span class="ico" aria-hidden="true">☕</span>
+      <span class="lbl">Pausa</span>
+      <span class="meta" id="metaBreak">0 hoje</span>
+    </button>
+    <button type="button" class="qa" id="btnLight" onclick="doLight(this)" aria-label="Registar luz natural">
+      <span class="ico" aria-hidden="true">🌤️</span>
+      <span class="lbl">Luz natural</span>
+      <span class="meta" id="metaLight">0 hoje</span>
+    </button>
+    <button type="button" class="qa" id="btnMood" onclick="openMood()" aria-label="Registar o teu humor">
+      <span class="ico" aria-hidden="true">🙂</span>
+      <span class="lbl">Humor</span>
+      <span class="meta" id="metaMood">como te sentes?</span>
+    </button>
+  </div>
+
+  <div class="hint" id="hint">Se não te apetecer, fica para depois. Isto não é uma lista de obrigações.</div>
+
+  <footer>
+    <a class="open-app" href="../index.html">Abrir o diário completo →</a>
+    <div class="status" id="status">a preparar…</div>
+  </footer>
+</div>
+
+<div class="sheet-overlay" id="moodSheet" onclick="if(event.target===this)closeMood()">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="moodTitle">
+    <div class="sheet-head">
+      <div>
+        <div class="sheet-title" id="moodTitle">Como te sentes agora?</div>
+        <div class="sheet-sub" id="moodSub">Um toque chega. O resto é opcional.</div>
+      </div>
+      <button type="button" class="x" onclick="closeMood()" aria-label="Fechar">✕</button>
+    </div>
+
+    <div id="step1">
+      <div class="moods" id="moodGrid" role="group" aria-label="Escolhe o teu humor"></div>
+    </div>
+
+    <div id="step2" hidden>
+      <div class="label">O que contribuiu? (opcional)</div>
+      <div class="trigs" id="moodTrigs" role="group" aria-label="Gatilhos"></div>
+      <div class="label">Uma linha, se quiseres</div>
+      <input type="text" class="note" id="moodNote" maxlength="120" placeholder="ex.: dia de chamadas seguidas">
+      <div class="actions">
+        <button type="button" class="btn primary" onclick="saveMoodDetails()">Guardar detalhes</button>
+        <button type="button" class="btn" onclick="closeMood()">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────
+// Registo rápido — mesma origem, mesmos dados do diário.
+// Com sessão: grava no Supabase. Sem sessão: fica em local e o
+// diário completo apanha no próximo arranque.
+// ─────────────────────────────────────────────────────────────────
+
+var SUPABASE_URL = 'https://nocafjkyiaigxttwdkei.supabase.co';
+var SUPABASE_ANON_KEY = 'sb_publishable_JemTyDpY6iPhrpSAemaQDg_ws94_aBm';
+
+var DB_KEY = 'dvLifeDiary_v3';
+var MOOD_KEY = 'dvHomeMood';
+var TODAY = localDateStr(new Date());
+
+var sb = null;
+try {
+  if (window.supabase && typeof window.supabase.createClient === 'function') {
+    sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  }
+} catch (e) {}
+
+var MOODS = [
+  { v: 1, emoji: '😞', label: 'em baixo' },
+  { v: 2, emoji: '🙁', label: 'assim assim' },
+  { v: 3, emoji: '😐', label: 'neutro' },
+  { v: 4, emoji: '🙂', label: 'bem' },
+  { v: 5, emoji: '😄', label: 'muito bem' }
+];
+
+var TRIGGERS = [
+  'Não falei com ninguém hoje',
+  'Dia sem sair de casa',
+  'Muito tempo ao ecrã',
+  'Trabalho a invadir o serão',
+  'Dia desorganizado',
+  'Pouca luz natural'
+];
+
+var DAY_INFO = [
+  { emoji: '🌙', label: 'domingo' },
+  { emoji: '🌱', label: 'segunda' },
+  { emoji: '🎯', label: 'terça' },
+  { emoji: '🌿', label: 'quarta' },
+  { emoji: '☀️', label: 'quinta' },
+  { emoji: '🎈', label: 'sexta' },
+  { emoji: '🍵', label: 'sábado' }
+];
+
+var pick = 0, trig = '', moodSavedId = '';
+
+function localDateStr(d) {
+  var y = d.getFullYear();
+  var m = String(d.getMonth() + 1).padStart(2, '0');
+  var dd = String(d.getDate()).padStart(2, '0');
+  return y + '-' + m + '-' + dd;
+}
+function readDB() {
+  try { return JSON.parse(localStorage.getItem(DB_KEY) || '{}') || {}; }
+  catch (e) { return {}; }
+}
+function writeDB(db) {
+  try { localStorage.setItem(DB_KEY, JSON.stringify(db)); } catch (e) {}
+}
+function readMood() {
+  try { return JSON.parse(localStorage.getItem(MOOD_KEY) || '{}') || {}; }
+  catch (e) { return {}; }
+}
+function writeMood(all) {
+  try { localStorage.setItem(MOOD_KEY, JSON.stringify(all)); } catch (e) {}
+}
+function toast(msg) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(function () { el.classList.remove('show'); }, 3200);
+}
+function pop(btn) {
+  btn.classList.remove('pop');
+  void btn.offsetWidth;
+  btn.classList.add('pop');
+}
+function day() {
+  var db = readDB();
+  if (!db[TODAY]) { db[TODAY] = {}; }
+  return db[TODAY];
+}
+function saveDay(patch) {
+  var db = readDB();
+  var cur = db[TODAY] || {};
+  db[TODAY] = Object.assign({}, cur, patch, { savedAt: new Date().toISOString() });
+  writeDB(db);
+  return db[TODAY];
+}
+function bump(kind, value) {
+  var d = day();
+  if (kind === 'water') {
+    var goal = parseFloat(d.waterGoal) || 8;
+    var next = Math.min((parseFloat(d.waterCount) || 0) + 1, goal);
+    return saveDay({ waterCount: next, waterGoal: goal });
+  }
+  if (kind === 'break') {
+    var c = Object.assign({}, d.counters || {});
+    c.pausas = (parseFloat(c.pausas) || 0) + 1;
+    return saveDay({ counters: c });
+  }
+  if (kind === 'light') {
+    return saveDay({ lightCount: (parseFloat(d.lightCount) || 0) + 1 });
+  }
+  return d;
+}
+
+async function syncDayToCloud(d) {
+  if (!sb) { return 'local'; }
+  try {
+    var res = await sb.auth.getSession();
+    var session = res && res.data ? res.data.session : null;
+    if (!session || !session.user) { return 'local'; }
+    var q = await sb.from('diario_registos').select('dados').eq('user_id', session.user.id).eq('data', TODAY).maybeSingle();
+    var dados = (q && q.data && q.data.dados) ? q.data.dados : {};
+    dados = Object.assign({}, dados, {
+      waterCount: d.waterCount,
+      waterGoal: d.waterGoal,
+      counters: d.counters || dados.counters,
+      lightCount: d.lightCount,
+      savedAt: d.savedAt
+    });
+    var up = await sb.from('diario_registos').upsert({
+      user_id: session.user.id,
+      data: TODAY,
+      dados: dados,
+      atualizado_em: new Date().toISOString()
+    }, { onConflict: 'user_id,data' });
+    if (up && up.error) { return 'local'; }
+    return 'cloud';
+  } catch (e) { return 'local'; }
+}
+
+function render() {
+  var d = readDB()[TODAY] || {};
+  var now = new Date();
+  var info = DAY_INFO[now.getDay()];
+  var mood = (readMood()[TODAY]) || d.moodCheckin || null;
+
+  document.getElementById('dayKicker').textContent = info.emoji + ' ' + info.label + ' · registo rápido';
+  document.getElementById('daySub').textContent =
+    now.toLocaleDateString('pt-PT', { day: 'numeric', month: 'long' }) + ' · só o que te apetecer';
+
+  var cups = parseFloat(d.waterCount) || 0;
+  var goal = parseFloat(d.waterGoal) || 8;
+  var pauses = (d.counters && parseFloat(d.counters.pausas)) || 0;
+  var lights = parseFloat(d.lightCount) || 0;
+
+  document.getElementById('metaWater').textContent = cups + ' / ' + goal + ' copos';
+  document.getElementById('metaBreak').textContent = pauses + ' hoje';
+  document.getElementById('metaLight').textContent = lights + ' hoje';
+  var mm = document.getElementById('metaMood');
+  if (mood) {
+    var mi = MOODS.filter(function (m) { return Number(m.v) === Number(mood.mood); })[0];
+    mm.textContent = mi ? mi.emoji + ' ' + mi.label : 'registado';
+  } else {
+    mm.textContent = 'como te sentes?';
+  }
+
+  document.getElementById('btnWater').classList.toggle('on', cups >= goal && goal > 0);
+  document.getElementById('btnBreak').classList.toggle('on', pauses > 0);
+  document.getElementById('btnLight').classList.toggle('on', lights > 0);
+  document.getElementById('btnMood').classList.toggle('on', !!mood);
+}
+
+async function afterChange(d, btn, msg) {
+  pop(btn);
+  toast(msg);
+  render();
+  var where = await syncDayToCloud(d);
+  var st = document.getElementById('status');
+  st.textContent = where === 'cloud'
+    ? 'guardado na tua conta'
+    : 'guardado neste dispositivo — envio quando entrares';
+}
+
+function doWater(btn) {
+  var d = day();
+  var goal = parseFloat(d.waterGoal) || 8;
+  if ((parseFloat(d.waterCount) || 0) >= goal) {
+    pop(btn);
+    toast('Já chegaste à meta de hoje. Um copo a mais também conta 💧');
+    return;
+  }
+  afterChange(bump('water'), btn, 'Um copo a mais. O corpo agradece 💧');
+}
+function doBreak(btn) {
+  afterChange(bump('break'), btn, 'Pausa registada. O trabalho espera um bocadinho ☕');
+}
+function doLight(btn) {
+  afterChange(bump('light'), btn, 'Luz natural registada. Cinco minutos à janela já contam 🌤️');
+}
+
+/* ── humor ── */
+function buildMoodUI() {
+  var grid = document.getElementById('moodGrid');
+  if (!grid.children.length) {
+    grid.innerHTML = MOODS.map(function (m) {
+      return '<button type="button" class="mood" data-mood="' + m.v + '" aria-label="' + m.label + '">' +
+        '<span class="em" aria-hidden="true">' + m.emoji + '</span>' +
+        '<span class="nm">' + m.label + '</span></button>';
+    }).join('');
+    grid.querySelectorAll('.mood').forEach(function (b) {
+      b.addEventListener('click', function () { pickMood(Number(b.getAttribute('data-mood'))); });
+    });
+  }
+  var tr = document.getElementById('moodTrigs');
+  if (!tr.children.length) {
+    tr.innerHTML = TRIGGERS.map(function (t) {
+      return '<button type="button" class="trig" data-trigger="' + t + '">' + t + '</button>';
+    }).join('');
+    tr.querySelectorAll('.trig').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var v = b.getAttribute('data-trigger');
+        trig = (trig === v) ? '' : v;
+        tr.querySelectorAll('.trig').forEach(function (x) {
+          x.classList.toggle('sel', x.getAttribute('data-trigger') === trig);
+        });
+      });
+    });
+  }
+}
+function openMood() {
+  buildMoodUI();
+  pick = 0; trig = ''; moodSavedId = '';
+  document.getElementById('step2').hidden = true;
+  document.getElementById('moodSub').textContent = 'Um toque chega. O resto é opcional.';
+  document.getElementById('moodNote').value = '';
+  document.querySelectorAll('#moodGrid .mood').forEach(function (b) { b.classList.remove('sel'); });
+  document.querySelectorAll('#moodTrigs .trig').forEach(function (b) { b.classList.remove('sel'); });
+  document.getElementById('moodSheet').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeMood() {
+  document.getElementById('moodSheet').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function pickMood(v) {
+  pick = v;
+  document.querySelectorAll('#moodGrid .mood').forEach(function (b) {
+    b.classList.toggle('sel', Number(b.getAttribute('data-mood')) === v);
+  });
+  document.getElementById('step2').hidden = false;
+  document.getElementById('moodSub').textContent = 'Guardado. Se quiseres, acrescenta o que contribuiu — ou fecha.';
+  saveMoodQuick(v);
+}
+
+var moodChain = Promise.resolve();
+
+async function pushMoodQuick(entry) {
+  var st = document.getElementById('status');
+  if (!sb) { st.textContent = 'guardado neste dispositivo'; return; }
+  try {
+    var res = await sb.auth.getSession();
+    var session = res && res.data ? res.data.session : null;
+    if (!session || !session.user) { st.textContent = 'guardado neste dispositivo — envio quando entrares'; return; }
+    if (moodSavedId) {
+      var up = await sb.from('mood_checkins')
+        .update({ mood: entry.mood })
+        .eq('id', moodSavedId).eq('user_id', session.user.id);
+      st.textContent = up.error ? 'guardado no dispositivo (a conta não respondeu)' : 'guardado na tua conta';
+      return;
+    }
+    var ins = await sb.from('mood_checkins').insert({
+      user_id: session.user.id,
+      mood: entry.mood,
+      trigger: null,
+      note: null
+    }).select('id').maybeSingle();
+    if (!ins.error && ins.data) { moodSavedId = ins.data.id; }
+    st.textContent = (ins && ins.error) ? 'guardado no dispositivo (a conta não respondeu)' : 'guardado na tua conta';
+  } catch (e) {
+    st.textContent = 'guardado neste dispositivo';
+  }
+}
+
+async function pushMoodDetails(entry) {
+  var st = document.getElementById('status');
+  if (!sb) { return; }
+  try {
+    var res = await sb.auth.getSession();
+    var session = res && res.data ? res.data.session : null;
+    if (!session || !session.user) { return; }
+    if (moodSavedId) {
+      var up = await sb.from('mood_checkins')
+        .update({ mood: entry.mood, trigger: entry.trigger || null, note: entry.note || null })
+        .eq('id', moodSavedId).eq('user_id', session.user.id);
+      st.textContent = up.error ? 'guardado no dispositivo' : 'guardado na tua conta';
+    } else {
+      var ins = await sb.from('mood_checkins').insert({
+        user_id: session.user.id,
+        mood: entry.mood,
+        trigger: entry.trigger || null,
+        note: entry.note || null
+      }).select('id').maybeSingle();
+      if (!ins.error && ins.data) { moodSavedId = ins.data.id; }
+      st.textContent = ins.error ? 'guardado no dispositivo' : 'guardado na tua conta';
+    }
+  } catch (e) {}
+}
+
+function saveMoodQuick(v) {
+  var entry = { mood: v, trigger: '', note: '', at: new Date().toISOString() };
+  var all = readMood();
+  all[TODAY] = entry;
+  writeMood(all);
+  saveDay({ moodCheckin: entry, selectedMood: String(v) });
+  render();
+  var feedback = v <= 2
+    ? 'Registado. Dias assim existem — obrigado por dizeres como estás. 🫂'
+    : (v === 3 ? 'Anotado. Um dia normal também conta.' : 'Que bom. Fica registado. 😄');
+  var sub = document.getElementById('moodSub');
+  if (sub) { sub.textContent = feedback + ' Podes acrescentar o que contribuiu, se quiseres.'; }
+
+  moodChain = moodChain.then(function () { return pushMoodQuick(entry); }).catch(function () {});
+  return moodChain;
+}
+
+async function saveMoodDetails() {
+  if (!pick) { return; }
+  var note = String(document.getElementById('moodNote').value || '').trim().slice(0, 120);
+  var trigger = trig;
+  if (!note && !trigger) { closeMood(); return; }
+
+  var entry = { mood: pick, trigger: trigger, note: note, at: new Date().toISOString() };
+  var all = readMood();
+  all[TODAY] = entry;
+  writeMood(all);
+  saveDay({ moodCheckin: entry });
+  closeMood();
+  toast('Anotado. Obrigado por contares mais um pouco.');
+  render();
+
+  moodChain = moodChain.then(function () { return pushMoodDetails(entry); });
+  await moodChain;
+}
+
+/* ── arranque ── */
+render();
+if (sb) {
+  sb.auth.getSession().then(function (res) {
+    var session = res && res.data ? res.data.session : null;
+    document.getElementById('status').textContent = session && session.user
+      ? 'ligado à tua conta'
+      : 'modo local — entra no diário para sincronizar';
+  }).catch(function () {
+    document.getElementById('status').textContent = 'modo local';
+  });
+} else {
+  document.getElementById('status').textContent = 'modo local';
+}
+</script>
+</body>
+</html>

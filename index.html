@@ -2069,6 +2069,308 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
 .ui-font.active { border-color: var(--moss); background: rgba(var(--accent-rgb), .16); color: var(--moss-l); }
 .ui-preview { margin-top: 14px; padding: 12px 14px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border); color: var(--text2); font-size: calc(13px * var(--font-scale)); line-height: 1.5; }
 .ui-preview b { color: var(--moss-l); }
+
+/* ══════════════════════════════════════════════════════════════════
+   MODO CASA — Hoje / Semana / Eu
+   Camada visual nova por cima dos tokens existentes.
+   ══════════════════════════════════════════════════════════════════ */
+
+:root { --day-tint: #2dd4bf; --day-tint-rgb: 45,212,191; }
+html[data-daytheme="0"] { --day-tint: #a78bfa; --day-tint-rgb: 167,139,250; }
+html[data-daytheme="1"] { --day-tint: #4ade80; --day-tint-rgb: 74,222,128; }
+html[data-daytheme="2"] { --day-tint: #38bdf8; --day-tint-rgb: 56,189,248; }
+html[data-daytheme="3"] { --day-tint: #2dd4bf; --day-tint-rgb: 45,212,191; }
+html[data-daytheme="4"] { --day-tint: #fbbf24; --day-tint-rgb: 251,191,36; }
+html[data-daytheme="5"] { --day-tint: #f472b6; --day-tint-rgb: 244,114,182; }
+html[data-daytheme="6"] { --day-tint: #94a3b8; --day-tint-rgb: 148,163,184; }
+
+.hub-top {
+  position: relative; overflow: hidden;
+  border: 1px solid var(--border); border-radius: 18px;
+  padding: 18px 20px;
+  background:
+    radial-gradient(120% 140% at 0% 0%, rgba(var(--day-tint-rgb), 0.14) 0%, transparent 62%),
+    linear-gradient(160deg, var(--surface), var(--card));
+}
+.hub-top::after {
+  content: ''; position: absolute; right: -30px; top: -30px;
+  width: 130px; height: 130px; border-radius: 50%;
+  background: radial-gradient(circle, rgba(var(--day-tint-rgb), 0.16) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hub-kicker {
+  font-family: 'JetBrains Mono', monospace; font-size: calc(10px * var(--font-scale));
+  letter-spacing: 1.4px; text-transform: uppercase; color: var(--day-tint);
+  display: flex; align-items: center; gap: 8px; margin-bottom: 6px;
+}
+.hub-kicker .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--day-tint); flex: 0 0 auto; }
+.hub-title {
+  font-size: calc(24px * var(--font-scale)); font-weight: 400; color: var(--text);
+  line-height: 1.25; margin-bottom: 4px;
+}
+.hub-title em { color: var(--day-tint); font-style: italic; }
+.hub-sub { font-size: calc(12.5px * var(--font-scale)); color: var(--muted); line-height: 1.6; }
+
+/* barra de ações rápidas */
+.qa-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+@media (max-width: 720px) { .qa-grid { grid-template-columns: repeat(2, 1fr); } }
+
+.qa {
+  position: relative; display: flex; flex-direction: column; align-items: flex-start; justify-content: flex-end;
+  gap: 2px; min-height: 104px; padding: 14px; text-align: left;
+  border: 1px solid var(--border); border-radius: 16px;
+  background: linear-gradient(165deg, var(--surface), var(--card));
+  color: var(--text); cursor: pointer; font-family: inherit;
+  transition: transform .12s ease, border-color .18s ease, box-shadow .18s ease, background .18s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+.qa:hover { border-color: var(--border2); }
+.qa:active { transform: scale(.975); }
+.qa:focus-visible { outline: 2px solid var(--day-tint); outline-offset: 2px; }
+.qa-ico { font-size: calc(24px * var(--font-scale)); line-height: 1; margin-bottom: auto; }
+.qa-lbl { font-size: calc(14px * var(--font-scale)); font-weight: 600; letter-spacing: .2px; }
+.qa-meta { font-family: 'JetBrains Mono', monospace; font-size: calc(10px * var(--font-scale)); color: var(--muted); }
+.qa.on { border-color: rgba(var(--day-tint-rgb), .55); background: linear-gradient(165deg, rgba(var(--day-tint-rgb), .16), var(--card)); }
+.qa.on .qa-meta { color: var(--day-tint); }
+.qa.pop { animation: qa-pop .42s ease; }
+@keyframes qa-pop {
+  0% { transform: scale(.94); box-shadow: 0 0 0 0 rgba(var(--day-tint-rgb), .45); }
+  55% { transform: scale(1.02); box-shadow: 0 0 0 10px rgba(var(--day-tint-rgb), 0); }
+  100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(var(--day-tint-rgb), 0); }
+}
+@media (prefers-reduced-motion: reduce) { .qa.pop { animation: none; } .qa { transition: none; } }
+
+.qa-hint {
+  font-size: calc(12px * var(--font-scale)); color: var(--muted);
+  padding: 0 4px; line-height: 1.55;
+}
+
+/* blocos do dia */
+.day-blocks { display: flex; flex-direction: column; gap: 10px; }
+.blk {
+  border: 1px solid var(--border); border-radius: 16px;
+  background: linear-gradient(170deg, var(--surface), var(--card));
+  overflow: hidden;
+}
+.blk[open] { border-color: rgba(var(--day-tint-rgb), .5); box-shadow: 0 0 0 1px rgba(var(--day-tint-rgb), .12); }
+.blk > summary {
+  list-style: none; cursor: pointer; display: flex; align-items: baseline; gap: 10px;
+  padding: 14px 16px; min-height: 56px;
+}
+.blk > summary::-webkit-details-marker { display: none; }
+.blk > summary:focus-visible { outline: 2px solid var(--day-tint); outline-offset: -2px; }
+.blk-time {
+  font-family: 'JetBrains Mono', monospace; font-size: calc(10px * var(--font-scale));
+  color: var(--muted); flex: 0 0 auto; letter-spacing: .4px;
+}
+.blk-name { font-size: calc(15px * var(--font-scale)); color: var(--text); flex: 1 1 auto; min-width: 0; }
+.blk-state {
+  font-family: 'JetBrains Mono', monospace; font-size: calc(9.5px * var(--font-scale));
+  text-transform: uppercase; letter-spacing: .6px; color: var(--muted);
+  border: 1px solid var(--border); border-radius: 999px; padding: 3px 8px;
+  flex: 0 0 auto; white-space: nowrap;
+}
+.blk.now .blk-state { color: var(--day-tint); border-color: rgba(var(--day-tint-rgb), .5); }
+.blk.now .blk-name { font-weight: 600; }
+.blk-body { padding: 0 16px 16px; display: flex; flex-direction: column; gap: 10px; }
+.blk-item {
+  display: flex; align-items: flex-start; gap: 9px;
+  font-size: calc(12.5px * var(--font-scale)); color: var(--text2); line-height: 1.55;
+}
+.blk-item .b-dot {
+  width: 5px; height: 5px; border-radius: 50%; background: var(--border2);
+  margin-top: 8px; flex: 0 0 auto;
+}
+.blk-item.done .b-dot { background: var(--day-tint); }
+.blk-item.done { color: var(--muted); }
+.blk-cta {
+  align-self: flex-start; margin-top: 2px;
+  padding: 8px 14px; border-radius: 999px; border: 1px solid var(--border2);
+  background: transparent; color: var(--text2); cursor: pointer; font-family: inherit;
+  font-size: calc(12px * var(--font-scale)); transition: border-color .15s, color .15s;
+}
+.blk-cta:hover { border-color: var(--day-tint); color: var(--day-tint); }
+
+/* links internos dos hubs */
+.hub-links { display: flex; flex-wrap: wrap; gap: 8px; }
+.hub-link {
+  padding: 9px 14px; border-radius: 999px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text2); cursor: pointer; font-family: inherit;
+  font-size: calc(12px * var(--font-scale)); transition: border-color .15s, color .15s;
+}
+.hub-link:hover { border-color: var(--day-tint); color: var(--text); }
+.hub-link.primary { border-color: rgba(var(--day-tint-rgb), .5); color: var(--day-tint); background: rgba(var(--day-tint-rgb), .1); }
+
+/* botão dia difícil */
+.calm-btn {
+  display: flex; align-items: center; gap: 10px; width: 100%;
+  padding: 12px 14px; border-radius: 14px; text-align: left;
+  border: 1px dashed var(--border2); background: transparent; color: var(--text2);
+  cursor: pointer; font-family: inherit; font-size: calc(12.5px * var(--font-scale)); line-height: 1.5;
+}
+.calm-btn:hover { border-color: var(--day-tint); color: var(--text); }
+.calm-btn.active { border-style: solid; border-color: rgba(var(--day-tint-rgb), .5); background: rgba(var(--day-tint-rgb), .08); }
+.calm-btn b { color: var(--text); font-weight: 600; }
+
+/* feedback suave */
+.hub-toast {
+  position: fixed; left: 50%; bottom: 22px; transform: translate(-50%, 14px);
+  z-index: 9997; max-width: min(92vw, 420px);
+  display: flex; align-items: center; gap: 9px;
+  padding: 12px 16px; border-radius: 14px;
+  background: rgba(28,32,48,.97); border: 1px solid rgba(var(--day-tint-rgb), .35);
+  box-shadow: 0 10px 34px rgba(0,0,0,.5);
+  color: var(--text); font-size: calc(13px * var(--font-scale)); line-height: 1.45;
+  opacity: 0; pointer-events: none;
+  transition: opacity .22s ease, transform .22s ease;
+}
+.hub-toast.show { opacity: 1; transform: translate(-50%, 0); }
+@media (prefers-reduced-motion: reduce) { .hub-toast { transition: opacity .12s; } }
+
+/* narrativa semanal */
+.narr-card { display: flex; flex-direction: column; gap: 12px; }
+.narr-line { font-size: calc(14px * var(--font-scale)); color: var(--text2); line-height: 1.75; }
+.narr-line b { color: var(--text); font-weight: 600; }
+.narr-line .hl { color: var(--day-tint); }
+.narr-empty { font-size: calc(13px * var(--font-scale)); color: var(--muted); line-height: 1.7; }
+
+/* folha de humor */
+.sheet-overlay {
+  position: fixed; inset: 0; z-index: 9998; display: none;
+  align-items: flex-end; justify-content: center;
+  background: rgba(8,10,16,.72); backdrop-filter: blur(6px);
+  padding: 0;
+}
+.sheet-overlay.open { display: flex; }
+.sheet {
+  width: 100%; max-width: 540px; max-height: 92vh; overflow-y: auto;
+  background: var(--card); border: 1px solid var(--border);
+  border-bottom: none; border-radius: 22px 22px 0 0;
+  padding: 18px 18px calc(18px + env(safe-area-inset-bottom, 0px));
+  box-shadow: 0 -12px 50px rgba(0,0,0,.6);
+}
+@media (min-width: 620px) {
+  .sheet-overlay { align-items: center; }
+  .sheet { border-radius: 22px; border-bottom: 1px solid var(--border); }
+}
+.sheet-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 4px; }
+.sheet-title { font-size: calc(17px * var(--font-scale)); color: var(--text); }
+.sheet-sub { font-size: calc(12px * var(--font-scale)); color: var(--muted); line-height: 1.6; margin-top: 3px; }
+.sheet-close {
+  background: transparent; border: 1px solid var(--border); border-radius: 10px;
+  color: var(--muted); cursor: pointer; width: 34px; height: 34px; flex: 0 0 auto;
+  font-size: 16px; line-height: 1;
+}
+.sheet-close:hover { color: var(--text); border-color: var(--border2); }
+.sheet-step { margin-top: 16px; }
+.sheet-step[hidden] { display: none; }
+.sheet-label {
+  font-family: 'JetBrains Mono', monospace; font-size: calc(10px * var(--font-scale));
+  text-transform: uppercase; letter-spacing: 1px; color: var(--muted); margin-bottom: 8px;
+}
+.mood-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; }
+.mood-pick {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  padding: 12px 4px; border-radius: 14px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text2); cursor: pointer; font-family: inherit;
+  transition: transform .12s, border-color .15s, background .15s;
+}
+.mood-pick .em { font-size: calc(26px * var(--font-scale)); line-height: 1; }
+.mood-pick .nm { font-size: calc(9.5px * var(--font-scale)); color: var(--muted); text-align: center; }
+.mood-pick:hover { border-color: var(--day-tint); }
+.mood-pick.sel { border-color: var(--day-tint); background: rgba(var(--day-tint-rgb), .14); }
+.mood-pick.sel .nm { color: var(--text); }
+.trig-row { display: flex; flex-wrap: wrap; gap: 7px; }
+.trig {
+  padding: 8px 12px; border-radius: 999px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text2); cursor: pointer; font-family: inherit;
+  font-size: calc(11.5px * var(--font-scale));
+}
+.trig.sel { border-color: var(--day-tint); color: var(--text); background: rgba(var(--day-tint-rgb), .14); }
+.sheet-note {
+  width: 100%; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 12px; color: var(--text); font-family: inherit;
+  font-size: calc(13px * var(--font-scale)); outline: none;
+}
+.sheet-note:focus { border-color: var(--day-tint); }
+.sheet-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+.sheet-actions .btn { flex: 1 1 auto; }
+.sheet-skip {
+  background: transparent; border: none; color: var(--muted); cursor: pointer;
+  font-family: inherit; font-size: calc(12px * var(--font-scale)); text-decoration: underline;
+  padding: 6px 2px;
+}
+.sheet-skip:hover { color: var(--text2); }
+
+/* histórico de humor */
+.mood-hist { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+@media (max-width: 420px) { .mood-hist { gap: 4px; } }
+.mh-cell {
+  aspect-ratio: 1 / 1; border-radius: 10px; border: 1px solid var(--border);
+  background: var(--surface); display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 1px;
+  font-size: calc(15px * var(--font-scale)); line-height: 1;
+}
+.mh-cell.empty { color: var(--border2); font-size: calc(11px * var(--font-scale)); }
+.mh-cell.today { border-color: rgba(var(--day-tint-rgb), .6); }
+.mh-day { font-family: 'JetBrains Mono', monospace; font-size: calc(8px * var(--font-scale)); color: var(--muted); }
+.mood-obs {
+  margin-top: 12px; padding: 11px 13px; border-radius: 12px;
+  background: rgba(var(--day-tint-rgb), .08); border: 1px solid rgba(var(--day-tint-rgb), .22);
+  font-size: calc(12.5px * var(--font-scale)); color: var(--text2); line-height: 1.6;
+}
+
+/* segmentado (orçamento de notificações) */
+.seg { display: flex; gap: 6px; flex-wrap: wrap; }
+.seg button {
+  flex: 1 1 auto; min-width: 56px; padding: 9px 12px; border-radius: 10px;
+  border: 1px solid var(--border); background: var(--surface); color: var(--text2);
+  cursor: pointer; font-family: 'JetBrains Mono', monospace;
+  font-size: calc(12px * var(--font-scale));
+}
+.seg button.active { border-color: var(--day-tint); color: var(--day-tint); background: rgba(var(--day-tint-rgb), .12); }
+.pref-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.pref-row:last-child { margin-bottom: 0; }
+.pref-label { font-size: calc(13px * var(--font-scale)); color: var(--text2); }
+.pref-help { font-size: calc(11.5px * var(--font-scale)); color: var(--muted); line-height: 1.55; margin-top: 3px; }
+.win-input {
+  width: 108px; background: var(--surface); border: 1px solid var(--border);
+  border-radius: 9px; padding: 8px 10px; color: var(--text);
+  font-family: 'JetBrains Mono', monospace; font-size: calc(12px * var(--font-scale)); outline: none;
+}
+.win-input:focus { border-color: var(--day-tint); }
+.privacy-text { font-size: calc(12px * var(--font-scale)); color: var(--muted); line-height: 1.7; }
+
+/* voltar ao hub nas secções antigas */
+.hub-back {
+  display: inline-flex; align-items: center; gap: 6px; margin-bottom: 12px;
+  padding: 7px 13px; border-radius: 999px; border: 1px solid var(--border);
+  background: var(--surface); color: var(--text2); cursor: pointer; font-family: inherit;
+  font-size: calc(11.5px * var(--font-scale));
+}
+.hub-back:hover { border-color: var(--day-tint); color: var(--text); }
+
+/* correções de transbordo em ecrãs estreitos (secções antigas) */
+.l5-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.l5-cell { min-width: 0; }
+.l5-val { overflow-wrap: anywhere; }
+@media (max-width: 480px) {
+  .l5-grid { grid-template-columns: minmax(0, 1fr); }
+  .tm-bars { gap: 2px; }
+  .tm-bars .tm-bar { min-width: 0; }
+}
+
+/* modo "dia difícil": o ecrã Hoje fica só com água e humor */
+.qa[hidden], .day-blocks[hidden], .hub-links[hidden], .dayoff-min[hidden] { display: none !important; }
+.qa-grid.two { grid-template-columns: repeat(2, 1fr); }
+@media (max-width: 720px) { .qa-grid.two { grid-template-columns: repeat(2, 1fr); } }
+.dayoff-min {
+  border: 1px solid rgba(var(--day-tint-rgb), .28);
+  background: rgba(var(--day-tint-rgb), .07);
+  border-radius: 14px; padding: 14px 16px;
+}
+.dayoff-min-title { font-size: calc(14px * var(--font-scale)); color: var(--text); font-weight: 600; margin-bottom: 3px; }
+.dayoff-min-sub { font-size: calc(12.5px * var(--font-scale)); color: var(--muted); line-height: 1.6; }
 </style>
 </head>
 <body>
@@ -2273,50 +2575,15 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
     </div>
   </div>
 
-  <nav class="sidebar-nav" id="sidebarNav">
-    <button type="button" class="nav-item active" aria-current="page" onclick="showSection('overview',this)">
-      <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/></svg></span> Resumo
+  <nav class="sidebar-nav" id="sidebarNav" aria-label="Navegação principal">
+    <button type="button" class="nav-item active" aria-current="page" onclick="showSection('hoje',this)">
+      <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></span> Hoje
     </button>
-    <button type="button" class="nav-item" onclick="showSection('ai',this)">
-      <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.6 8.6 0 0 1-3.9-.9L3 21l1.9-5.1a8.4 8.4 0 1 1 16.1-4.4Z"/></svg></span> Chat IA
+    <button type="button" class="nav-item" onclick="showSection('semana',this)">
+      <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="M8 14h3M8 17h6"/></svg></span> Semana
     </button>
-    <button type="button" class="nav-item" onclick="showSection('weight',this)">
-      <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M7 21h10"/><path d="m16 16 3-8 3 8a6 6 0 0 1-6 0Z"/><path d="m2 16 3-8 3 8a6 6 0 0 1-6 0Z"/></svg></span> Peso
-    </button>
-    <button type="button" class="nav-item" onclick="showSection('meals',this)">
-      <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v7a3 3 0 0 0 3 3V2"/><path d="M7 12v10"/><path d="M17 2c-2 0-3 2-3 5v5h4V2"/><path d="M18 12v10"/></svg></span> Refeições
-    </button>
-
-    <button type="button" class="nav-item" onclick="showSection('work',this)">
-      <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M3 12h18"/></svg></span> Trabalho
-    </button>
-    <button type="button" class="nav-item" onclick="showSection('treadmill',this)">
-      <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h4l3-8 4 16 3-8h4"/></svg></span> Passadeira
-    </button>
-    <button type="button" class="nav-item" onclick="showSection('plan',this)">
-      <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span> Plano
-    </button>
-    <button type="button" class="nav-item" onclick="showSection('calendar',this)">
-      <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/><path d="m9 15 2 2 4-4"/></svg></span> Calendário
-    </button>
-    <button type="button" class="nav-item" onclick="showSection('profile',this)">
-      <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg></span> Perfil
-    </button>
-
-    <button type="button" class="nav-item" id="navCompeticao" style="display:none" onclick="showSection('competition',this)">
-      <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4a3 3 0 0 0 3 5M17 6h3a3 3 0 0 1-3 5"/></svg></span> Competição
-    </button>
-    <button type="button" class="nav-item" id="navCompAdmin" style="display:none" onclick="showSection('compadmin',this)">
-      <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3"/><path d="M1 14h6M9 8h6M17 16h6"/></svg></span> Gerir competição
-    </button>
-    <button type="button" class="nav-item" onclick="showSection('last5',this)">
-      <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg></span> Últimos 5 Dias
-    </button>
-    <button type="button" class="nav-item" onclick="showSection('stats',this)">
-      <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span> Estatísticas
-    </button>
-    <button type="button" class="nav-item" onclick="showSection('settings',this)">
-      <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.9l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.9-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.9.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.9 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.9l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.9.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.9-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.9V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg></span> Configurações
+    <button type="button" class="nav-item" onclick="showSection('eu',this)">
+      <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg></span> Eu
     </button>
   </nav>
 
@@ -2341,8 +2608,199 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
 </div>
 <main class="main-content" id="mainContent">
 
+<!-- ══ HOJE ══ -->
+<div class="section active hub" id="section-hoje">
+  <div class="hub-top">
+    <div class="hub-kicker"><span class="dot"></span><span id="hojeKicker">hoje</span></div>
+    <div class="section-title hub-title" id="hojeGreeting">Bom dia</div>
+    <div class="hub-sub" id="hojeSub">A carregar o teu dia…</div>
+  </div>
+
+  <div class="qa-grid" role="group" aria-label="Ações rápidas">
+    <button type="button" class="qa" id="qaBtnWater" onclick="qaWater(this)" aria-label="Registar um copo de água">
+      <span class="qa-ico" aria-hidden="true">💧</span>
+      <span class="qa-lbl">Água</span>
+      <span class="qa-meta" id="qaWaterMeta">0 / 8 copos</span>
+    </button>
+    <button type="button" class="qa" id="qaBtnBreak" onclick="qaBreak(this)" aria-label="Registar uma pausa">
+      <span class="qa-ico" aria-hidden="true">☕</span>
+      <span class="qa-lbl">Pausa</span>
+      <span class="qa-meta" id="qaBreakMeta">0 hoje</span>
+    </button>
+    <button type="button" class="qa" id="qaBtnLight" onclick="qaLight(this)" aria-label="Registar luz natural">
+      <span class="qa-ico" aria-hidden="true">🌤️</span>
+      <span class="qa-lbl">Luz natural</span>
+      <span class="qa-meta" id="qaLightMeta">0 hoje</span>
+    </button>
+    <button type="button" class="qa" id="qaBtnMood" onclick="openMoodSheet()" aria-label="Registar o teu humor">
+      <span class="qa-ico" aria-hidden="true">🙂</span>
+      <span class="qa-lbl">Humor</span>
+      <span class="qa-meta" id="qaMoodMeta">como te sentes?</span>
+    </button>
+  </div>
+  <div class="qa-hint" id="qaHint">Um toque chega. Se não te apetecer, fica para depois.</div>
+
+  <div class="day-blocks" id="dayBlocks">
+    <details class="blk" id="blkManha" data-block="manha">
+      <summary><span class="blk-time">06h–12h</span><span class="blk-name">Manhã</span><span class="blk-state" id="blkStateManha">a começar</span></summary>
+      <div class="blk-body" id="blkBodyManha"></div>
+    </details>
+    <details class="blk" id="blkFoco" data-block="foco">
+      <summary><span class="blk-time">12h–16h</span><span class="blk-name">Foco</span><span class="blk-state" id="blkStateFoco">mais tarde</span></summary>
+      <div class="blk-body" id="blkBodyFoco"></div>
+    </details>
+    <details class="blk" id="blkTarde" data-block="tarde">
+      <summary><span class="blk-time">16h–19h</span><span class="blk-name">Tarde</span><span class="blk-state" id="blkStateTarde">mais tarde</span></summary>
+      <div class="blk-body" id="blkBodyTarde"></div>
+    </details>
+    <details class="blk" id="blkNoite" data-block="noite">
+      <summary><span class="blk-time">19h–06h</span><span class="blk-name">Noite</span><span class="blk-state" id="blkStateNoite">mais tarde</span></summary>
+      <div class="blk-body" id="blkBodyNoite"></div>
+    </details>
+  </div>
+
+  <div class="dayoff-min" id="dayOffMinimal" hidden>
+    <div class="dayoff-min-title">Hoje só isto.</div>
+    <div class="dayoff-min-sub">Água e humor chegam. O resto do dia pode esperar por ti — sem culpa e sem contas.</div>
+  </div>
+
+  <div class="hub-links" id="hojeLinks" aria-label="Ver mais">
+    <button type="button" class="hub-link primary" onclick="showSection('overview', null)">Resumo completo</button>
+    <button type="button" class="hub-link" onclick="showSection('meals', null)">Refeições</button>
+    <button type="button" class="hub-link" onclick="showSection('work', null)">Trabalho</button>
+    <button type="button" class="hub-link" onclick="showSection('treadmill', null)">Passadeira</button>
+    <button type="button" class="hub-link" onclick="showSection('weight', null)">Peso</button>
+  </div>
+
+  <button type="button" class="calm-btn" id="dayOffBtn" onclick="homeDayOff()">
+    <span aria-hidden="true">🌧️</span>
+    <span id="dayOffText"><b>Dia difícil.</b> Fico só com água e humor e não te chateio com o resto durante 24 h.</span>
+  </button>
+</div>
+
+<!-- ══ SEMANA ══ -->
+<div class="section hub" id="section-semana">
+  <div class="hub-top">
+    <div class="hub-kicker"><span class="dot"></span><span id="semanaKicker">esta semana</span></div>
+    <div class="section-title hub-title" id="semanaTitulo">A tua <em>semana</em></div>
+    <div class="hub-sub" id="semanaSub">Um resumo em palavras, sem gráficos.</div>
+  </div>
+
+  <div class="card narr-card" id="semanaNarrativa">
+    <div class="narr-empty">Ainda estou a juntar os teus dias…</div>
+  </div>
+
+  <div class="hub-links" aria-label="Ver mais">
+    <button type="button" class="hub-link primary" onclick="showSection('plan', null)">Plano da semana</button>
+    <button type="button" class="hub-link" onclick="showSection('calendar', null)">Calendário</button>
+    <button type="button" class="hub-link" onclick="showSection('stats', null)">Estatísticas</button>
+    <button type="button" class="hub-link" onclick="showSection('last5', null)">Últimos 5 dias</button>
+  </div>
+</div>
+
+<!-- ══ EU ══ -->
+<div class="section hub" id="section-eu">
+  <div class="hub-top">
+    <div class="hub-kicker"><span class="dot"></span><span>o teu espaço</span></div>
+    <div class="section-title hub-title" id="euTitulo">Como tens <em>estado</em></div>
+    <div class="hub-sub" id="euSub">Só tu vês isto.</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">últimos 14 dias</div>
+    <div class="mood-hist" id="moodHist" role="list" aria-label="Humor dos últimos 14 dias"></div>
+    <div class="mood-obs" id="moodObs">Ainda não há registos suficientes para uma observação.</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;">
+      <button type="button" class="btn btn-primary" onclick="openMoodSheet()" style="font-size:calc(12px * var(--font-scale));">Registar humor</button>
+      <button type="button" class="btn btn-ghost" onclick="renderEuHub(true)" style="font-size:calc(12px * var(--font-scale));">Atualizar</button>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">notificações</div>
+    <div class="pref-row">
+      <div>
+        <div class="pref-label">Receber lembretes</div>
+        <div class="pref-help">Só mando se disseres que sim. Silêncio é a omissão.</div>
+      </div>
+      <label style="display:flex;align-items:center;gap:8px;min-height:44px;">
+        <input type="checkbox" id="notifEnabled" style="width:20px;height:20px;accent-color:var(--moss);" onchange="homeToggleReminders(this.checked)">
+        <span class="sr-only">Receber lembretes</span>
+      </label>
+    </div>
+    <div class="pref-row">
+      <div>
+        <div class="pref-label">Quantas por dia</div>
+        <div class="pref-help">Por omissão são 3. Menos é sempre uma opção boa.</div>
+      </div>
+      <div class="seg" id="notifBudgetSeg" role="group" aria-label="Notificações por dia">
+        <button type="button" data-budget="1" onclick="homeSetBudget(1)">1</button>
+        <button type="button" data-budget="2" onclick="homeSetBudget(2)">2</button>
+        <button type="button" data-budget="3" onclick="homeSetBudget(3)">3</button>
+      </div>
+    </div>
+    <div class="pref-row">
+      <div>
+        <div class="pref-label">Janelas (hora de início)</div>
+        <div class="pref-help">Dentro de cada janela eu escolho um momento calmo — não é uma hora marcada.</div>
+      </div>
+    </div>
+    <div class="pref-row" style="justify-content:flex-start;gap:10px;">
+      <label class="pref-label" for="notifWinManha" style="display:flex;flex-direction:column;gap:5px;">Manhã
+        <input type="text" class="win-input" id="notifWinManha" maxlength="5" placeholder="10:00" oninput="fmtTime(this)" onchange="homeSaveWindows()">
+      </label>
+      <label class="pref-label" for="notifWinTarde" style="display:flex;flex-direction:column;gap:5px;">Tarde
+        <input type="text" class="win-input" id="notifWinTarde" maxlength="5" placeholder="15:00" oninput="fmtTime(this)" onchange="homeSaveWindows()">
+      </label>
+      <label class="pref-label" for="notifWinNoite" style="display:flex;flex-direction:column;gap:5px;">Noite
+        <input type="text" class="win-input" id="notifWinNoite" maxlength="5" placeholder="21:00" oninput="fmtTime(this)" onchange="homeSaveWindows()">
+      </label>
+    </div>
+    <div class="pref-help" id="notifStatus" style="margin-top:6px;">—</div>
+    <button type="button" class="calm-btn" id="dayOffBtnEu" onclick="homeDayOff()" style="margin-top:12px;">
+      <span aria-hidden="true">🌧️</span>
+      <span id="dayOffTextEu"><b>Dia difícil.</b> Silencio tudo menos água e humor durante 24 h.</span>
+    </button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">tema do dia</div>
+    <div class="pref-row">
+      <div>
+        <div class="pref-label">Uma cor suave para cada dia</div>
+        <div class="pref-help">Muda o destaque e a ilustração. Nunca mexe no contraste do texto. Só se aplica quando a cor principal é a turquesa.</div>
+      </div>
+      <div class="seg" id="dayThemeSeg" role="group" aria-label="Tema do dia">
+        <button type="button" onclick="homeSetDayTheme(true)">Ligado</button>
+        <button type="button" onclick="homeSetDayTheme(false)">Desligado</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">privacidade</div>
+    <p class="privacy-text">
+      O teu humor e as tuas notas são privados. Ficam guardados na tua conta, com regras que só deixam
+      a tua sessão ler e escrever os teus registos — nem outros utilizadores nem administradores os vêem.
+      Podes levar tudo contigo ou apagar tudo, a qualquer momento.
+    </p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">
+      <button type="button" class="btn btn-secondary" onclick="homeExportMood()" style="font-size:calc(12px * var(--font-scale));">⬇ Exportar humor e notas</button>
+      <button type="button" class="btn btn-ghost" onclick="homeDeleteMood()" style="font-size:calc(12px * var(--font-scale));color:var(--rose);">Apagar tudo</button>
+    </div>
+    <div id="privacyStatus" class="pref-help" style="margin-top:8px;"></div>
+  </div>
+
+  <div class="hub-links" aria-label="Ver mais">
+    <button type="button" class="hub-link primary" onclick="showSection('profile', null)">Perfil</button>
+    <button type="button" class="hub-link" onclick="showSection('settings', null)">Definições</button>
+    <button type="button" class="hub-link" onclick="showSection('ai', null)">Chat IA</button>
+    <button type="button" class="hub-link" id="euCompLink" style="display:none" onclick="showSection('competition', null)">Competição</button>
+  </div>
+</div>
+
 <!-- ▸ OVERVIEW -->
-<div class="section active" id="section-overview">
+<div class="section" id="section-overview">
   <div class="section-header">
     <div class="section-title">Resumo do <em>teu dia</em></div>
     <div class="section-sub">visão geral · <span id="todayFull"></span></div>
@@ -3633,6 +4091,36 @@ hf_... (2ª chave)" style="width:100%;background:var(--surface);border:1px solid
 </main>
 </div>
 
+<!-- Check-in de humor (2 passos) -->
+<div class="sheet-overlay" id="moodSheet" onclick="if (event.target === this) closeMoodSheet()">
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="moodSheetTitle">
+    <div class="sheet-head">
+      <div>
+        <div class="sheet-title" id="moodSheetTitle">Como te sentes agora?</div>
+        <div class="sheet-sub" id="moodSheetSub">Um toque chega. O resto é opcional.</div>
+      </div>
+      <button type="button" class="sheet-close" onclick="closeMoodSheet()" aria-label="Fechar">✕</button>
+    </div>
+
+    <div class="sheet-step" id="moodStep1">
+      <div class="mood-grid" id="moodGrid" role="group" aria-label="Escolhe o teu humor"></div>
+    </div>
+
+    <div class="sheet-step" id="moodStep2" hidden>
+      <div class="sheet-label">O que contribuiu? (opcional)</div>
+      <div class="trig-row" id="moodTriggers" role="group" aria-label="Gatilhos"></div>
+      <div class="sheet-label" style="margin-top:16px;">Uma linha, se quiseres</div>
+      <input type="text" class="sheet-note" id="moodNote" maxlength="120" autocomplete="off" placeholder="ex.: dia de chamadas seguidas">
+      <div class="sheet-actions">
+        <button type="button" class="btn btn-primary" onclick="saveMoodCheckin()">Guardar detalhes</button>
+        <button type="button" class="btn btn-secondary" onclick="closeMoodSheet()">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="hub-toast" id="hubToast" role="status" aria-live="polite"></div>
+
 <!-- Lembretes Modal -->
 <div class="sync-modal-overlay" id="remindersModal">
   <div class="sync-modal">
@@ -4552,6 +5040,7 @@ function toggleMobileMenu(force) {
 }
 
 const SECTION_LABELS = {
+  hoje: 'Hoje', semana: 'Semana', eu: 'Eu',
   overview: 'Resumo', ai: 'Chat IA', weight: 'Peso', meals: 'Refeições',
   work: 'Trabalho', treadmill: 'Passadeira', plan: 'Plano', calendar: 'Calendário',
   profile: 'Perfil', competition: 'Competição', compadmin: 'Gerir competição',
@@ -4607,7 +5096,7 @@ function showSection(id, el, fromHistory) {
 function applyHashSection() {
   const id = decodeURIComponent((location.hash || '').replace(/^#\/?/, ''));
   if (!id) {
-    showSection('overview', navBySection('overview'), true);
+    showSection('hoje', navBySection('hoje'), true);
     return true;
   }
   if (!document.getElementById('section-' + id)) return false;
@@ -4796,8 +5285,8 @@ function updateWaterProgress() {
   document.getElementById('ov-water').textContent = waterCount + '/' + waterGoal;
 
   const tag = document.getElementById('waterTag');
-  if(waterCount === 0)            tag.innerHTML = '<span class="tag tag-red">sem água ⚠</span>';
-  else if(waterCount < waterGoal/2) tag.innerHTML = '<span class="tag tag-amber">bebe mais</span>';
+  if(waterCount === 0)            tag.innerHTML = '<span class="tag tag-red">ainda sem água</span>';
+  else if(waterCount < waterGoal/2) tag.innerHTML = '<span class="tag tag-amber">um copo sabe bem</span>';
   else if(waterCount < waterGoal)  tag.innerHTML = '<span class="tag tag-sky">a caminho ✓</span>';
   else                            tag.innerHTML = '<span class="tag tag-green">meta atingida! ✓</span>';
 }
@@ -7390,6 +7879,7 @@ function saveMascotConfig(cfg) {
 function mascotStreak() {
   try {
     if (typeof DB === 'undefined' || typeof localDateStr !== 'function') return 0;
+    if (typeof homeElasticStreak === 'function') return homeElasticStreak().dias;
     const start = new Date();
     if (!(DB[localDateStr(start)] && DB[localDateStr(start)].savedAt)) start.setDate(start.getDate() - 1);
     let n = 0;
@@ -7844,7 +8334,12 @@ function exportMascotPNG(size) {
 let onboardingDismissed = false;
 
 function navBySection(id) {
-  return Array.from(document.querySelectorAll('.nav-item')).find(n => (n.getAttribute('onclick') || '').includes("'" + id + "'")) || null;
+  const items = Array.from(document.querySelectorAll('.nav-item'));
+  const direct = items.find(n => (n.getAttribute('onclick') || '').includes("'" + id + "'"));
+  if (direct) return direct;
+  const hub = (typeof HOME_HUB_OF !== 'undefined' && HOME_HUB_OF[id]) || '';
+  if (!hub) return null;
+  return items.find(n => (n.getAttribute('onclick') || '').includes("'" + hub + "'")) || null;
 }
 
 function dismissOnboarding() {
@@ -10233,7 +10728,7 @@ function tmRenderPlanCards() {
     if (it.rest) { cls = 'rest'; status = 'descanso'; badge = '😌'; }
     else if (trained) { cls = 'done'; status = 'feito'; badge = '✓'; }
     else if (it.date === TODAY) { cls = 'today'; status = 'hoje'; badge = '▶'; }
-    else if (it.date && it.date < TODAY) { cls = 'miss'; status = 'falhado'; badge = '✕'; }
+    else if (it.date && it.date < TODAY) { cls = 'miss'; status = 'ficou por fazer'; badge = '·'; }
     if (!it.rest) {
       planned++;
       if (trained) done++;
@@ -10491,7 +10986,7 @@ function renderWeeklyWeight() {
   const statusEl = document.getElementById('weeklyWeightStatus');
   if (statusEl) {
     statusEl.dataset.status = status;
-    statusEl.textContent = status === 'feita' ? 'Feita esta semana' : status === 'atrasada' ? 'Atrasada' : 'Em falta';
+    statusEl.textContent = status === 'feita' ? 'Feita esta semana' : status === 'atrasada' ? 'Por fazer esta semana' : 'Ainda por fazer';
   }
   const dateEl = document.getElementById('weeklyWeightDate');
   if (dateEl) dateEl.textContent = 'Semana de ' + weightShortDate(summary.start) + ' a ' + weightShortDate(summary.end);
@@ -10527,7 +11022,7 @@ function renderWeightHistory() {
   const nextPage = document.getElementById('weeklyWeightPageNext');
   if (statusPage) {
     statusPage.dataset.status = status;
-    statusPage.textContent = status === 'feita' ? 'Feita esta semana' : status === 'atrasada' ? 'Atrasada' : 'Em falta';
+    statusPage.textContent = status === 'feita' ? 'Feita esta semana' : status === 'atrasada' ? 'Por fazer esta semana' : 'Ainda por fazer';
   }
   if (nextPage) nextPage.textContent = 'Próxima pesagem: ' + weightLongDate(nextWeightDate());
   const box = document.getElementById('weightWeekHistory');
@@ -10923,7 +11418,7 @@ let swRegistration = null;
 async function initPWA() {
   if (!('serviceWorker' in navigator)) return;
   try {
-    swRegistration = await navigator.serviceWorker.register('/diario-de-vida/sw.js');
+    swRegistration = await navigator.serviceWorker.register('sw.js');
   } catch(e) { console.log('SW falhou:', e); }
 }
 
@@ -10943,37 +11438,37 @@ async function sendNotification(title, body) {
 }
 
 function scheduleReminders() {
-  const prefs = JSON.parse(localStorage.getItem('dvReminders') || '{}');
+  let prefs = {};
+  try { prefs = JSON.parse(localStorage.getItem('dvReminders') || '{}'); } catch (e) {}
   if (!prefs.enabled) return;
-  const now = new Date();
-  const check = (hourStr, title, body) => {
-    if (!hourStr) return;
-    const [h, m] = hourStr.split(':').map(Number);
-    const target = new Date(); target.setHours(h, m, 0, 0);
-    const diff = target - now;
-    if (diff > 0 && diff < 60000) sendNotification(title, body);
-  };
-  check(prefs.manha, 'Bom dia!', 'Nao te esquecas de registar o sono.');
-  check(prefs.almoco, 'Hora de almoco!', 'Regista o que comeste.');
-  check(prefs.noite, 'Boa noite!', 'Completa o teu diario de hoje.');
+
+  const hp = homeNotifPrefs();
+
+  // Janelas flexíveis: dispara uma vez dentro da hora, não a uma hora exacta.
+  homeRemindOnce('manha', hp.windows.manha, 'Um bom dia para ti',
+    'Se te apetecer, um copo de água sabe bem agora 💧');
+  homeRemindOnce('almoco', hp.windows.tarde, 'Uma pausa a meio',
+    'Se calhar sabia bem comer longe do ecrã.');
+  homeRemindOnce('noite', hp.windows.noite, 'Fim do dia',
+    'Se quiseres, regista como foi. Só isso, sem obrigação.');
+
   const sem = prefs.pesoSemana || { enabled: true, dia: 0, hora: '09:00' };
   const semDia = sem.dia === undefined || sem.dia === null ? 0 : Number(sem.dia);
-  if (sem.enabled !== false && now.getDay() === semDia) {
-    check(sem.hora || '09:00', 'Pesagem semanal', 'Hoje e dia de pesagem. Regista o teu peso no Diario de Vida.');
+  if (sem.enabled !== false && new Date().getDay() === semDia) {
+    homeRemindOnce('peso', sem.hora || '09:00', 'Pesagem semanal',
+      'Quando te der jeito, registar o peso leva um minuto.');
   }
+
   const tr = prefs.treino || { enabled: true, hora: '18:00' };
   if (tr.enabled !== false && !tmReminderSentToday('treino')) {
     const plan = tmCurrentPlan();
-  const items = plan ? tmParsePlan(plan.text).filter(it => it.rest || it.distance || it.minutes) : [];
-  items.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
+    const items = plan ? tmParsePlan(plan.text).filter(it => it.rest || it.distance || it.minutes) : [];
+    items.sort((a, b) => (a.date || '').localeCompare(b.date || ''));
     const todayItem = items.find(it => it.date === TODAY && !it.rest);
     const done = DB[TODAY] && (parseFloat(DB[TODAY].treadmillTime) > 0 || parseFloat(DB[TODAY].treadmillDistance) > 0);
     if (todayItem && !done) {
-      check(tr.hora || '18:00', '🏃 Treino de hoje', (tmPlanReminderText(todayItem)) + ' Abre o Diario de Vida para registar.');
-      const [th, tm2] = (tr.hora || '18:00').split(':').map(Number);
-      const tgt = new Date(); tgt.setHours(th, tm2, 0, 0);
-      const d = tgt - now;
-      if (d > 0 && d < 60000) tmReminderMarkSent('treino');
+      homeRemindOnce('treino', tr.hora || '18:00', '🏃 Treino de hoje',
+        tmPlanReminderText(todayItem) + ' Se hoje não der, fica para outro dia.');
     }
   }
 }
@@ -11270,6 +11765,13 @@ async function saveReminders() {
     }
   });
   cfgSave('dvReminders', JSON.stringify(prefs));
+  try {
+    var _hp = homeNotifPrefs();
+    homeWrite(HOME_NOTIF_KEY, Object.assign({}, _hp, {
+      windows: { manha: prefs.manha, tarde: prefs.almoco, noite: prefs.noite }
+    }));
+    homeRenderPrefs();
+  } catch (e) {}
   closeRemindersModal();
   sendNotification('🔔 Lembretes ativados!', 'Vais receber lembretes diários e a pesagem semanal.');
 }
@@ -11659,23 +12161,23 @@ function renderLast5Days() {
         <span style="font-family:'JetBrains Mono',monospace;font-size: calc(10px * var(--font-scale));color:var(--muted);">${dateLabel}</span>
         ${isToday ? '<span style="font-family:\'JetBrains Mono\',monospace;font-size: calc(10px * var(--font-scale));background:var(--moss);color:#0a0d13;padding:2px 7px;border-radius:20px;margin-left:auto;">hoje</span>' : ''}
       </div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+      <div class="l5-grid">
 
-        <div style="background:var(--bg);border-radius:10px;padding:12px;">
+        <div class="l5-cell" style="background:var(--bg);border-radius:10px;padding:12px;">
           <div style="font-family:'JetBrains Mono',monospace;font-size: calc(10px * var(--font-scale));color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">🌙 Sono</div>
-          <div style="font-size: calc(18px * var(--font-scale));font-weight:700;color:${sonoColor};font-family:'JetBrains Mono',monospace;">${sonoTxt}</div>
+          <div class="l5-val" style="font-size: calc(18px * var(--font-scale));font-weight:700;color:${sonoColor};font-family:'JetBrains Mono',monospace;">${sonoTxt}</div>
           <div style="font-size: calc(10px * var(--font-scale));color:var(--muted);margin-top:3px;font-family:'JetBrains Mono',monospace;">${sonoSub}</div>
         </div>
 
-        <div style="background:var(--bg);border-radius:10px;padding:12px;">
+        <div class="l5-cell" style="background:var(--bg);border-radius:10px;padding:12px;">
           <div style="font-family:'JetBrains Mono',monospace;font-size: calc(10px * var(--font-scale));color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">⚖️ Peso</div>
-          <div style="font-size: calc(18px * var(--font-scale));font-weight:700;color:${pesoColor};font-family:'JetBrains Mono',monospace;">${pesoTxt}</div>
+          <div class="l5-val" style="font-size: calc(18px * var(--font-scale));font-weight:700;color:${pesoColor};font-family:'JetBrains Mono',monospace;">${pesoTxt}</div>
           <div style="font-size: calc(10px * var(--font-scale));color:var(--muted);margin-top:3px;font-family:'JetBrains Mono',monospace;">${pesoSub}</div>
         </div>
 
-        <div style="background:var(--bg);border-radius:10px;padding:12px;">
+        <div class="l5-cell" style="background:var(--bg);border-radius:10px;padding:12px;">
           <div style="font-family:'JetBrains Mono',monospace;font-size: calc(10px * var(--font-scale));color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">💼 Trabalho</div>
-          <div style="font-size: calc(18px * var(--font-scale));font-weight:700;color:${trabalhoColor};font-family:'JetBrains Mono',monospace;">${trabalhoTxt}</div>
+          <div class="l5-val" style="font-size: calc(18px * var(--font-scale));font-weight:700;color:${trabalhoColor};font-family:'JetBrains Mono',monospace;">${trabalhoTxt}</div>
           <div style="font-size: calc(10px * var(--font-scale));color:var(--muted);margin-top:3px;font-family:'JetBrains Mono',monospace;">${trabalhoSub}</div>
         </div>
 
@@ -12322,6 +12824,1167 @@ function clearAllData() {
   location.reload();
 }
 
+// ═══════════════════════════════════════════════════════════════════
+// MODO CASA — Hoje / Semana / Eu
+// Camada nova por cima do que já existe. Não substitui nada.
+// ═══════════════════════════════════════════════════════════════════
+
+var HOME_HUB_OF = {
+  overview: 'hoje', weight: 'hoje', meals: 'hoje', work: 'hoje', treadmill: 'hoje',
+  plan: 'semana', calendar: 'semana', stats: 'semana', last5: 'semana',
+  ai: 'eu', profile: 'eu', settings: 'eu', competition: 'eu', compadmin: 'eu'
+};
+
+var HOME_MOOD_KEY    = 'dvHomeMood';       // espelho local do humor: { 'YYYY-MM-DD': {...} }
+var HOME_NOTIF_KEY   = 'dvHomeNotif';      // orçamento + janelas
+var HOME_NOTIF_STATS = 'dvHomeNotifStats'; // enviadas/ignoradas do dia
+var HOME_DAYOFF_KEY  = 'dvHomeDayOff';     // modo "dia difícil"
+
+var HOME_MOODS = [
+  { v: 1, emoji: '😞', label: 'em baixo' },
+  { v: 2, emoji: '🙁', label: 'assim assim' },
+  { v: 3, emoji: '😐', label: 'neutro' },
+  { v: 4, emoji: '🙂', label: 'bem' },
+  { v: 5, emoji: '😄', label: 'muito bem' }
+];
+
+var HOME_TRIGGERS = [
+  'Não falei com ninguém hoje',
+  'Dia sem sair de casa',
+  'Muito tempo ao ecrã',
+  'Trabalho a invadir o serão',
+  'Dia desorganizado',
+  'Pouca luz natural'
+];
+
+var HOME_DAY_INFO = [
+  { emoji: '🌙', label: 'domingo', note: 'respirar' },
+  { emoji: '🌱', label: 'segunda', note: 'arranque' },
+  { emoji: '🎯', label: 'terça', note: 'concentração' },
+  { emoji: '🌿', label: 'quarta', note: 'meio da semana' },
+  { emoji: '☀️', label: 'quinta', note: 'luz' },
+  { emoji: '🎈', label: 'sexta', note: 'fecho de semana' },
+  { emoji: '🍵', label: 'sábado', note: 'devagar' }
+];
+
+var HOME_BLOCKS = [
+  { id: 'manha', name: 'Manhã', time: '06h–12h', from: 6, to: 12 },
+  { id: 'foco',  name: 'Foco',  time: '12h–16h', from: 12, to: 16 },
+  { id: 'tarde', name: 'Tarde', time: '16h–19h', from: 16, to: 19 },
+  { id: 'noite', name: 'Noite', time: '19h–06h', from: 19, to: 6 }
+];
+
+var _homeMoodPick = 0;
+var _homeMoodTrigger = '';
+var _homeMoodCache = null;
+var _homeMoodSavedId = '';
+var _homeMoodChain = Promise.resolve();
+var _homeBlocksInit = false;
+
+function homeRead(key, fallback) {
+  try { var raw = JSON.parse(localStorage.getItem(key) || 'null'); return raw == null ? fallback : raw; }
+  catch (e) { return fallback; }
+}
+function homeWrite(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {}
+}
+function homeEsc(t) {
+  return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+function homePick(list) { return list[Math.floor(Math.random() * list.length)]; }
+function homeDayObj(create) {
+  if (!DB[TODAY] && create) DB[TODAY] = {};
+  return DB[TODAY] || {};
+}
+
+function homeToast(msg) {
+  var el = document.getElementById('hubToast');
+  if (!el) { return; }
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(homeToast._t);
+  homeToast._t = setTimeout(function () { el.classList.remove('show'); }, 3400);
+}
+function homePop(btn) {
+  if (!btn) { return; }
+  btn.classList.remove('pop');
+  void btn.offsetWidth;
+  btn.classList.add('pop');
+}
+
+/* ── tema do dia ─────────────────────────────────────────────────── */
+
+function homeDayThemeOn() {
+  var p = (typeof uiGetPrefs === 'function') ? uiGetPrefs() : {};
+  if (p.dayTheme === false) { return false; }
+  return !p.accent || p.accent === 'teal';
+}
+function homeApplyDayTheme() {
+  var root = document.documentElement;
+  if (homeDayThemeOn()) {
+    root.setAttribute('data-daytheme', String(new Date().getDay()));
+  } else {
+    root.removeAttribute('data-daytheme');
+  }
+}
+function homeSetDayTheme(on) {
+  var p = (typeof uiGetPrefs === 'function') ? uiGetPrefs() : {};
+  p.dayTheme = !!on;
+  if (typeof uiSavePrefs === 'function') uiSavePrefs(p);
+  homeApplyDayTheme();
+  homeRenderPrefs();
+  renderHojeHub();
+  homeToast(on ? 'Cada dia traz uma cor diferente. 🌿' : 'Fico com a cor que escolheste.');
+}
+
+/* ── ações rápidas (1 toque) ─────────────────────────────────────── */
+
+function qaWater(btn) {
+  homeNotifAck();
+  homePop(btn);
+  if (waterCount >= waterGoal) {
+    homeToast('Já chegaste à meta de hoje. Um copo a mais também conta 💧');
+    return;
+  }
+  waterCount++;
+  try { renderWaterDrops(); } catch (e) {}
+  try { saveData(true); } catch (e) {}
+  homeToast(homePick([
+    'Um copo a mais. O corpo agradece 💧',
+    'Feito. Sem pressa, ao teu ritmo.',
+    'Boa. Um gole de cada vez.'
+  ]));
+  renderHojeHub();
+}
+
+function qaBreak(btn) {
+  homeNotifAck();
+  homePop(btn);
+  counters.pausas = (counters.pausas || 0) + 1;
+  try { saveData(true); } catch (e) {}
+  homeToast(homePick([
+    'Pausa registada. O trabalho espera um bocadinho ☕',
+    'Boa ideia. Levanta os ombros e respira.',
+    'Pausa conta como trabalho feito.'
+  ]));
+  renderHojeHub();
+}
+
+function qaLight(btn) {
+  homeNotifAck();
+  homePop(btn);
+  var d = homeDayObj(true);
+  d.lightCount = (parseFloat(d.lightCount) || 0) + 1;
+  if (!Array.isArray(d.lightAt)) { d.lightAt = []; }
+  d.lightAt.push(new Date().toISOString());
+  d.lightAt = d.lightAt.slice(-20);
+  try { saveData(true); } catch (e) {}
+  homeToast(homePick([
+    'Luz natural registada. Cinco minutos junto à janela já contam 🌤️',
+    'Feito. Se puderes, olha para longe por 20 segundos.',
+    'Anotado. A luz lá fora também mexe com o ânimo.'
+  ]));
+  renderHojeHub();
+}
+
+/* ── humor: folha em 2 passos ────────────────────────────────────── */
+
+function homeMoodsLocal() {
+  var all = homeRead(HOME_MOOD_KEY, {});
+  return (all && typeof all === 'object') ? all : {};
+}
+function homeSaveMoodLocal(date, entry) {
+  var all = homeMoodsLocal();
+  all[date] = entry;
+  homeWrite(HOME_MOOD_KEY, all);
+  _homeMoodCache = null;
+}
+function homeMoodFor(date) {
+  var all = homeMoodsLocal();
+  if (all[date]) { return all[date]; }
+  var d = DB[date] || {};
+  return d.moodCheckin || null;
+}
+function homeMoodMap() {
+  var map = {};
+  var local = homeMoodsLocal();
+  Object.keys(local).forEach(function (d) { map[d] = local[d]; });
+  (_homeMoodCache || []).forEach(function (r) { if (r && r.date && !map[r.date]) { map[r.date] = r; } });
+  try {
+    Object.keys(DB).forEach(function (d) {
+      if (!map[d] && DB[d] && DB[d].moodCheckin) { map[d] = DB[d].moodCheckin; }
+    });
+  } catch (e) {}
+  return map;
+}
+
+function homeRenderMoodSheet() {
+  var grid = document.getElementById('moodGrid');
+  if (grid && !grid.children.length) {
+    grid.innerHTML = HOME_MOODS.map(function (m) {
+      return '<button type="button" class="mood-pick" data-mood="' + m.v + '" aria-label="' + homeEsc(m.label) + '">' +
+        '<span class="em" aria-hidden="true">' + m.emoji + '</span>' +
+        '<span class="nm">' + homeEsc(m.label) + '</span></button>';
+    }).join('');
+    grid.querySelectorAll('.mood-pick').forEach(function (b) {
+      b.addEventListener('click', function () { homePickMood(Number(b.getAttribute('data-mood')), b); });
+    });
+  }
+  var trg = document.getElementById('moodTriggers');
+  if (trg && !trg.children.length) {
+    trg.innerHTML = HOME_TRIGGERS.map(function (t) {
+      return '<button type="button" class="trig" data-trigger="' + homeEsc(t) + '">' + homeEsc(t) + '</button>';
+    }).join('');
+    trg.querySelectorAll('.trig').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var val = b.getAttribute('data-trigger');
+        _homeMoodTrigger = (_homeMoodTrigger === val) ? '' : val;
+        trg.querySelectorAll('.trig').forEach(function (x) {
+          x.classList.toggle('sel', x.getAttribute('data-trigger') === _homeMoodTrigger);
+        });
+      });
+    });
+  }
+}
+
+function openMoodSheet() {
+  homeNotifAck();
+  homeRenderMoodSheet();
+  _homeMoodPick = 0;
+  _homeMoodTrigger = '';
+  _homeMoodSavedId = '';
+  var note = document.getElementById('moodNote');
+  if (note) { note.value = ''; }
+  var step2 = document.getElementById('moodStep2');
+  if (step2) { step2.hidden = true; }
+  var sub = document.getElementById('moodSheetSub');
+  if (sub) { sub.textContent = 'Um toque chega. O resto é opcional.'; }
+  document.querySelectorAll('#moodGrid .mood-pick').forEach(function (b) { b.classList.remove('sel'); });
+  document.querySelectorAll('#moodTriggers .trig').forEach(function (b) { b.classList.remove('sel'); });
+  var sheet = document.getElementById('moodSheet');
+  if (sheet) { sheet.classList.add('open'); }
+  document.body.style.overflow = 'hidden';
+  setTimeout(function () {
+    var first = document.querySelector('#moodGrid .mood-pick');
+    if (first) { first.focus(); }
+  }, 80);
+}
+
+function closeMoodSheet() {
+  var sheet = document.getElementById('moodSheet');
+  if (sheet) { sheet.classList.remove('open'); }
+  document.body.style.overflow = '';
+}
+
+function homePickMood(v, btn) {
+  _homeMoodPick = v;
+  document.querySelectorAll('#moodGrid .mood-pick').forEach(function (b) {
+    b.classList.toggle('sel', Number(b.getAttribute('data-mood')) === v);
+  });
+  var step2 = document.getElementById('moodStep2');
+  if (step2) { step2.hidden = false; }
+  var sub = document.getElementById('moodSheetSub');
+  if (sub) { sub.textContent = 'Guardado. Se quiseres, acrescenta o que contribuiu — ou fecha.'; }
+  homeMoodSaveQuick(v);
+}
+
+function homeMoodFeedback(v) {
+  if (v <= 2) {
+    return homePick([
+      'Registado. Dias assim existem — obrigado por dizeres como estás. 🫂',
+      'Anotado. Não tens de resolver nada agora.',
+      'Obrigado por partilhares. Fica registado, sem julgamento.'
+    ]);
+  }
+  if (v === 3) {
+    return homePick([
+      'Neutro também é um dia. Fica registado. 🙂',
+      'Anotado. Nem todos os dias precisam de ser um pico.',
+      'Obrigado. Um dia normal conta.'
+    ]);
+  }
+  return homePick([
+    'Que bom. Fica registado para te lembrares. 😄',
+    'Anotado. Boa energia para hoje.',
+    'Obrigado por partilhares. 🌿'
+  ]);
+}
+
+async function homeMoodPushCloud(entry, updateId) {
+  try {
+    if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+      var res = await supabaseClient.auth.getSession();
+      var session = res && res.data ? res.data.session : null;
+      if (session && session.user) {
+        if (updateId) {
+          var up = await supabaseClient.from('mood_checkins')
+            .update({ mood: entry.mood, trigger: entry.trigger || null, note: entry.note || null })
+            .eq('id', updateId).eq('user_id', session.user.id);
+          if (!up.error) { return updateId; }
+          console.warn('mood_checkins update:', up.error.message);
+        }
+        var ins = await supabaseClient.from('mood_checkins')
+          .insert({
+            user_id: session.user.id,
+            mood: entry.mood,
+            trigger: entry.trigger || null,
+            note: entry.note || null
+          })
+          .select('id')
+          .maybeSingle();
+        if (!ins.error && ins.data) { return ins.data.id; }
+        if (ins.error) { console.warn('mood_checkins:', ins.error.message); }
+      }
+    }
+  } catch (e) { console.warn('mood_checkins offline:', e && e.message); }
+  return '';
+}
+
+function homeMoodSaveQuick(v) {
+  var entry = { mood: v, trigger: '', note: '', at: new Date().toISOString() };
+  homeSaveMoodLocal(TODAY, entry);
+  homeDayObj(true).moodCheckin = entry;
+  selectedMood = String(v);
+  homeNotifAck();
+  try { saveData(true); } catch (e) {}
+  var sheet = document.getElementById('moodSheet');
+  var open = sheet && sheet.classList.contains('open');
+  if (open) {
+    var sub = document.getElementById('moodSheetSub');
+    if (sub) { sub.textContent = homeMoodFeedback(v) + ' Podes acrescentar o que contribuiu, se quiseres.'; }
+  } else {
+    homeToast(homeMoodFeedback(v));
+  }
+  renderHojeHub();
+  _homeMoodChain = _homeMoodChain.then(function () {
+    return homeMoodPushCloud(entry, _homeMoodSavedId || '');
+  }).then(function (id) {
+    if (id) { _homeMoodSavedId = id; }
+    _homeMoodCache = null;
+  }).catch(function () {});
+}
+
+async function saveMoodCheckin() {
+  if (!_homeMoodPick) { return; }
+  var noteEl = document.getElementById('moodNote');
+  var note = String((noteEl && noteEl.value) || '').trim().slice(0, 120);
+  var trigger = _homeMoodTrigger || '';
+  if (!note && !trigger) { closeMoodSheet(); return; }
+
+  var entry = { mood: _homeMoodPick, trigger: trigger, note: note, at: new Date().toISOString() };
+  homeSaveMoodLocal(TODAY, entry);
+  homeDayObj(true).moodCheckin = entry;
+  try { saveData(true); } catch (e) {}
+  closeMoodSheet();
+  homeToast('Anotado. Obrigado por contares mais um pouco.');
+  renderHojeHub();
+
+  _homeMoodChain = _homeMoodChain.then(function () {
+    return homeMoodPushCloud(entry, _homeMoodSavedId || '');
+  });
+  var id = await _homeMoodChain;
+  if (id) { _homeMoodSavedId = id; }
+  _homeMoodCache = null;
+  renderEuHub(true);
+}
+
+async function homeLoadMoodRows(force) {
+  if (_homeMoodCache && !force) { return _homeMoodCache; }
+  var rows = [];
+  try {
+    if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+      var res = await supabaseClient.auth.getSession();
+      var session = res && res.data ? res.data.session : null;
+      if (session && session.user) {
+        var q = await supabaseClient
+          .from('mood_checkins')
+          .select('mood,trigger,note,created_at')
+          .order('created_at', { ascending: false })
+          .limit(200);
+        if (!q.error && Array.isArray(q.data)) {
+          rows = q.data.map(function (r) {
+            var at = r.created_at ? new Date(r.created_at) : null;
+            return {
+              mood: r.mood, trigger: r.trigger, note: r.note,
+              at: r.created_at,
+              date: (at && !isNaN(at.getTime())) ? localDateStr(at) : String(r.created_at || '').slice(0, 10)
+            };
+          });
+        } else if (q.error) {
+          console.warn('mood_checkins select:', q.error.message);
+        }
+      }
+    }
+  } catch (e) { console.warn('mood_checkins offline:', e && e.message); }
+  _homeMoodCache = rows;
+  return rows;
+}
+
+function homeRenderMoodHist() {
+  var box = document.getElementById('moodHist');
+  if (!box) { return; }
+  var map = homeMoodMap();
+  var out = '';
+  for (var i = 13; i >= 0; i--) {
+    var d = new Date();
+    d.setDate(d.getDate() - i);
+    var key = localDateStr(d);
+    var row = map[key];
+    var info = row ? HOME_MOODS.filter(function (m) { return Number(m.v) === Number(row.mood); })[0] : null;
+    var cls = 'mh-cell' + (info ? '' : ' empty') + (i === 0 ? ' today' : '');
+    var title = key + (info ? ' · ' + info.label : ' · sem registo') + (row && row.trigger ? ' · ' + row.trigger : '') + (row && row.note ? ' · ' + row.note : '');
+    out += '<div class="' + cls + '" role="listitem" title="' + homeEsc(title) + '">' +
+      (info ? '<span aria-hidden="true">' + info.emoji + '</span>' : '<span aria-hidden="true">·</span>') +
+      '<span class="mh-day">' + key.slice(8, 10) + '</span>' +
+      '</div>';
+  }
+  box.innerHTML = out;
+}
+
+function homeRenderObservation() {
+  var box = document.getElementById('moodObs');
+  if (!box) { return; }
+  var map = homeMoodMap();
+  var rows = [];
+  for (var i = 0; i < 14; i++) {
+    var d = new Date();
+    d.setDate(d.getDate() - i);
+    var key = localDateStr(d);
+    if (map[key] && map[key].mood) { rows.push(map[key]); }
+  }
+  if (rows.length < 3) {
+    box.textContent = rows.length === 0
+      ? 'Ainda não há registos. Quando quiseres, um toque em Humor chega.'
+      : 'Já tenho ' + rows.length + ' registo(s). Com mais alguns consigo dizer algo que preste — sem pressa.';
+    return;
+  }
+  var avg = rows.reduce(function (s, r) { return s + Number(r.mood); }, 0) / rows.length;
+
+  var best = null;
+  HOME_TRIGGERS.forEach(function (t) {
+    var withT = rows.filter(function (r) { return r.trigger === t; });
+    var without = rows.filter(function (r) { return r.trigger !== t; });
+    if (withT.length < 2 || without.length < 2) { return; }
+    var a = withT.reduce(function (s, r) { return s + Number(r.mood); }, 0) / withT.length;
+    var b = without.reduce(function (s, r) { return s + Number(r.mood); }, 0) / without.length;
+    var delta = b - a;
+    if (delta >= 0.4 && (!best || delta > best.delta)) { best = { t: t, a: a, b: b, delta: delta }; }
+  });
+
+  var msg;
+  if (best) {
+    msg = 'Reparei que nos dias em que assinalaste «' + best.t + '» o teu humor ficou em média ' +
+      (best.a.toFixed(1)) + '/5, contra ' + (best.b.toFixed(1)) + '/5 nos outros. ' +
+      'É só o que os teus registos mostram — não é um diagnóstico.';
+  } else if (avg >= 3.6) {
+    msg = 'Estes 14 dias andaram mais para o alto: média de ' + avg.toFixed(1) + '/5 em ' + rows.length + ' registos. ' +
+      'Vale a pena reparar no que tem ajudado.';
+  } else if (avg <= 2.4) {
+    msg = 'Tem sido uma quinzena mais pesada (média ' + avg.toFixed(1) + '/5). ' +
+      'Fica registado. Não tens de fazer mais do que estás a fazer.';
+  } else {
+    msg = 'Altos e baixos, como é normal: média de ' + avg.toFixed(1) + '/5 em ' + rows.length + ' registos. ' +
+      'Só te mostro o que escreveste.';
+  }
+  box.textContent = msg;
+}
+
+/* ── blocos do dia ───────────────────────────────────────────────── */
+
+function homeCurrentBlock() {
+  var h = new Date().getHours();
+  for (var i = 0; i < HOME_BLOCKS.length; i++) {
+    var b = HOME_BLOCKS[i];
+    if (b.from < b.to) { if (h >= b.from && h < b.to) { return b.id; } }
+    else if (h >= b.from || h < b.to) { return b.id; }
+  }
+  return 'manha';
+}
+function homeBlockIndex(id) {
+  for (var i = 0; i < HOME_BLOCKS.length; i++) { if (HOME_BLOCKS[i].id === id) { return i; } }
+  return 0;
+}
+
+function homeBlockItems(id) {
+  var d = DB[TODAY] || {};
+  var mood = homeMoodFor(TODAY);
+  var cups = waterCount || 0;
+  var pauses = (counters && counters.pausas) || 0;
+  var light = parseFloat(d.lightCount) || 0;
+  var lunch = !!(meals && meals.lunch && meals.lunch.length);
+  var closed = !!(d.workEnd || d.workStart);
+
+  if (id === 'manha') {
+    return [
+      { text: 'Um copo de água ao acordar', done: cups >= 1, cta: 'Água', act: 'qaWater' },
+      { text: 'Cinco minutos com a janela aberta', done: light >= 1, cta: 'Luz natural', act: 'qaLight' },
+      { text: 'Como acordaste hoje', done: !!mood, cta: 'Humor', act: 'openMoodSheet' }
+    ];
+  }
+  if (id === 'foco') {
+    return [
+      { text: 'Uma pausa a meio do bloco', done: pauses >= 1, cta: 'Pausa', act: 'qaBreak' },
+      { text: 'Almoço longe do ecrã', done: lunch, cta: 'Refeições', act: "showSection('meals', null)" },
+      { text: 'Olhar para longe por 20 segundos', done: false }
+    ];
+  }
+  if (id === 'tarde') {
+    return [
+      { text: 'Levantar e andar um pouco', done: pauses >= 2, cta: 'Pausa', act: 'qaBreak' },
+      { text: 'Luz natural antes de escurecer', done: light >= 2, cta: 'Luz natural', act: 'qaLight' },
+      { text: 'Fechar o trabalho a horas', done: closed, cta: 'Trabalho', act: "showSection('work', null)" }
+    ];
+  }
+  return [
+    { text: 'Fechar o portátil', done: closed },
+    { text: 'Baixar as luzes da casa', done: false, cta: 'Pausa', act: 'qaBreak' },
+    { text: 'Como foi o teu dia', done: !!mood, cta: 'Humor', act: 'openMoodSheet' }
+  ];
+}
+
+function renderHojeHub() {
+  try { homeApplyDayTheme(); } catch (e) {}
+
+  var now = new Date();
+  var h = now.getHours();
+  var info = HOME_DAY_INFO[now.getDay()] || HOME_DAY_INFO[1];
+  var greet = h < 6 ? 'Boa noite' : (h < 13 ? 'Bom dia' : (h < 20 ? 'Boa tarde' : 'Boa noite'));
+
+  var kick = document.getElementById('hojeKicker');
+  if (kick) { kick.textContent = info.emoji + ' ' + info.label + ' · ' + info.note; }
+
+  var g = document.getElementById('hojeGreeting');
+  if (g) { g.textContent = greet; }
+
+  var sub = document.getElementById('hojeSub');
+  if (sub) {
+    var dateTxt = now.toLocaleDateString('pt-PT', { day: 'numeric', month: 'long' });
+    var off = homeDayOffActive();
+    sub.textContent = dateTxt + (off ? ' · modo dia difícil até amanhã' : ' · só o que te apetecer');
+  }
+
+  // metas das ações rápidas
+  var mood = homeMoodFor(TODAY);
+  var d = DB[TODAY] || {};
+  var wm = document.getElementById('qaWaterMeta');
+  if (wm) { wm.textContent = waterCount + ' / ' + waterGoal + ' copos'; }
+  var bm = document.getElementById('qaBreakMeta');
+  if (bm) { bm.textContent = ((counters && counters.pausas) || 0) + ' hoje'; }
+  var lm = document.getElementById('qaLightMeta');
+  if (lm) { lm.textContent = (parseFloat(d.lightCount) || 0) + ' hoje'; }
+  var mm = document.getElementById('qaMoodMeta');
+  if (mm) {
+    if (mood) {
+      var mi = HOME_MOODS.filter(function (m) { return Number(m.v) === Number(mood.mood); })[0];
+      mm.textContent = (mi ? mi.emoji + ' ' + mi.label : 'registado');
+    } else {
+      mm.textContent = 'como te sentes?';
+    }
+  }
+  var wBtn = document.getElementById('qaBtnWater');
+  if (wBtn) { wBtn.classList.toggle('on', waterCount >= waterGoal && waterGoal > 0); }
+  var bBtn = document.getElementById('qaBtnBreak');
+  if (bBtn) { bBtn.classList.toggle('on', ((counters && counters.pausas) || 0) > 0); }
+  var lBtn = document.getElementById('qaBtnLight');
+  if (lBtn) { lBtn.classList.toggle('on', (parseFloat(d.lightCount) || 0) > 0); }
+  var mBtn = document.getElementById('qaBtnMood');
+  if (mBtn) { mBtn.classList.toggle('on', !!mood); }
+
+  // modo dia difícil: só água e humor
+  var bBreakBtn = document.getElementById('qaBtnBreak');
+  var bLightBtn = document.getElementById('qaBtnLight');
+  var blocksEl = document.getElementById('dayBlocks');
+  var linksEl = document.getElementById('hojeLinks');
+  var minEl = document.getElementById('dayOffMinimal');
+  var qaGridEl = document.querySelector('#section-hoje .qa-grid');
+  var hintEl = document.getElementById('qaHint');
+  if (bBreakBtn) { bBreakBtn.hidden = off; }
+  if (bLightBtn) { bLightBtn.hidden = off; }
+  if (qaGridEl) { qaGridEl.classList.toggle('two', off); }
+  if (blocksEl) { blocksEl.hidden = off; }
+  if (linksEl) { linksEl.hidden = off; }
+  if (minEl) { minEl.hidden = !off; }
+  if (hintEl) {
+    hintEl.textContent = off
+      ? 'Hoje só água e humor. Um toque chega — o resto fica para quando quiseres.'
+      : 'Um toque chega. Se não te apetecer, fica para depois.';
+  }
+
+  var offBtn = document.getElementById('dayOffBtn');
+  if (offBtn) { offBtn.classList.toggle('active', homeDayOffActive()); }
+  var offTxt = document.getElementById('dayOffText');
+  if (offTxt) {
+    offTxt.innerHTML = homeDayOffActive()
+      ? '<b>Modo dia difícil ativo.</b> Toca aqui para voltar ao normal quando quiseres.'
+      : '<b>Dia difícil.</b> Fico só com água e humor e não te chateio com o resto durante 24 h.';
+  }
+
+  // blocos
+  var cur = homeCurrentBlock();
+  var curIdx = homeBlockIndex(cur);
+  HOME_BLOCKS.forEach(function (b, idx) {
+    var map = { manha: 'blkManha', foco: 'blkFoco', tarde: 'blkTarde', noite: 'blkNoite' };
+    var el = document.getElementById(map[b.id]);
+    var cap = b.id.charAt(0).toUpperCase() + b.id.slice(1);
+    var body = document.getElementById('blkBody' + cap);
+    var state = document.getElementById('blkState' + cap);
+    if (state) {
+      if (idx === curIdx) { state.textContent = 'agora'; }
+      else if (idx < curIdx) { state.textContent = 'já passou'; }
+      else if (idx === curIdx + 1) { state.textContent = 'a seguir'; }
+      else { state.textContent = 'mais tarde'; }
+    }
+    if (el) { el.classList.toggle('now', idx === curIdx); }
+    if (body) {
+      var items = homeBlockItems(b.id);
+      var html = items.map(function (it) {
+        return '<div class="blk-item' + (it.done ? ' done' : '') + '">' +
+          '<span class="b-dot" aria-hidden="true"></span>' +
+          '<span>' + homeEsc(it.text) + (it.done ? ' <span aria-hidden="true">·</span> feito' : '') + '</span>' +
+          '</div>';
+      }).join('');
+      var pending = items.filter(function (it) { return !it.done && it.cta; })[0];
+      if (pending) {
+        html += '<button type="button" class="blk-cta" data-act="' + homeEsc(pending.act) + '">' + homeEsc(pending.cta) + ' →</button>';
+      }
+      body.innerHTML = html;
+      body.querySelectorAll('[data-act]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var act = btn.getAttribute('data-act');
+          if (act === 'qaWater') { qaWater(document.getElementById('qaBtnWater')); }
+          else if (act === 'qaLight') { qaLight(document.getElementById('qaBtnLight')); }
+          else if (act === 'qaBreak') { qaBreak(document.getElementById('qaBtnBreak')); }
+          else if (act === 'openMoodSheet') { openMoodSheet(); }
+          else { try { eval(act); } catch (e) {} }
+        });
+      });
+    }
+    if (el && !_homeBlocksInit) { el.open = (b.id === cur); }
+  });
+  _homeBlocksInit = true;
+}
+
+/* ── semana: narrativa ───────────────────────────────────────────── */
+
+function homeWeekDates() {
+  var start = (typeof tmWeekStart === 'function') ? tmWeekStart(TODAY) : TODAY;
+  var p = start.split('-').map(Number);
+  var out = [];
+  for (var i = 0; i < 7; i++) {
+    out.push(localDateStr(new Date(p[0], p[1] - 1, p[2] + i)));
+  }
+  return out;
+}
+
+function renderSemanaHub() {
+  var box = document.getElementById('semanaNarrativa');
+  var sub = document.getElementById('semanaSub');
+  if (!box) { return; }
+
+  var days = homeWeekDates();
+  var past = days.filter(function (d) { return d <= TODAY; });
+  var cups = 0, lights = 0, breaks = 0, moodSum = 0, moodN = 0, trained = 0, saved = 0;
+  var map = homeMoodMap();
+
+  past.forEach(function (d) {
+    var day = DB[d] || {};
+    cups += parseFloat(day.waterCount) || 0;
+    lights += parseFloat(day.lightCount) || 0;
+    breaks += (day.counters && parseFloat(day.counters.pausas)) || 0;
+    if (parseFloat(day.treadmillTime) > 0 || parseFloat(day.treadmillDistance) > 0) { trained++; }
+    if (day.savedAt) { saved++; }
+    if (map[d] && map[d].mood) { moodSum += Number(map[d].mood); moodN++; }
+  });
+
+  if (sub) {
+    var a = days[0].split('-').map(Number);
+    var b = days[6].split('-').map(Number);
+    var d1 = new Date(a[0], a[1] - 1, a[2]);
+    var d2 = new Date(b[0], b[1] - 1, b[2]);
+    sub.textContent = d1.toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' }) +
+      ' – ' + d2.toLocaleDateString('pt-PT', { day: 'numeric', month: 'short' }) + ' · em palavras';
+  }
+
+  if (saved === 0 && cups === 0 && moodN === 0) {
+    box.innerHTML = '<div class="narr-empty">Esta semana ainda está no início. Quando houver registos, conto-te a história em palavras — sem gráficos nem notas.</div>';
+    return;
+  }
+
+  var lines = [];
+  if (lights > 0 || breaks > 0) {
+    var bit = [];
+    if (lights > 0) { bit.push('abriste a janela <b>' + lights + '</b> ' + (lights === 1 ? 'vez' : 'vezes')); }
+    if (breaks > 0) { bit.push('fizeste <b>' + breaks + '</b> ' + (breaks === 1 ? 'pausa' : 'pausas')); }
+    lines.push('<div class="narr-line">Esta semana ' + bit.join(' e ') + '.</div>');
+  }
+  if (cups > 0) {
+    lines.push('<div class="narr-line">Bebeste cerca de <b>' + cups + '</b> ' + (cups === 1 ? 'copo de água' : 'copos de água') + '.</div>');
+  }
+  if (trained > 0) {
+    lines.push('<div class="narr-line">Treinaste <b>' + trained + '</b> ' + (trained === 1 ? 'vez' : 'vezes') + '. Corpo em movimento, mesmo que pouco.</div>');
+  } else {
+    lines.push('<div class="narr-line">Ainda sem treino esta semana — descansar também é uma escolha válida.</div>');
+  }
+  if (moodN > 0) {
+    lines.push('<div class="narr-line">Registaste o humor em <b>' + moodN + '</b> ' + (moodN === 1 ? 'dia' : 'dias') +
+      ', com média de <b>' + (moodSum / moodN).toFixed(1) + '/5</b>.</div>');
+  }
+  lines.push('<div class="narr-line">' + homeStreakSentence() + '</div>');
+
+  box.innerHTML = lines.join('');
+}
+
+function homeStreakSentence() {
+  var s = homeElasticStreak();
+  if (s.dias === 0) {
+    return 'Ainda não há sequência para contar. Um registo hoje é suficiente para começar.';
+  }
+  if (s.pausa) {
+    return 'Vais com <b>' + s.dias + '</b> ' + (s.dias === 1 ? 'dia' : 'dias') + ' com registo — e a sequência está <span class="hl">em pausa</span>, não perdida.';
+  }
+  return 'Vais com <b>' + s.dias + '</b> ' + (s.dias === 1 ? 'dia' : 'dias') + ' com registo. Sem obrigação de manter.';
+}
+
+/* ── eu: preferências e histórico ────────────────────────────────── */
+
+function homeRenderPrefs() {
+  var prefs = homeNotifPrefs();
+
+  var seg = document.getElementById('notifBudgetSeg');
+  if (seg) {
+    seg.querySelectorAll('button').forEach(function (b) {
+      b.classList.toggle('active', Number(b.getAttribute('data-budget')) === prefs.budget);
+    });
+  }
+  ['manha', 'tarde', 'noite'].forEach(function (k) {
+    var el = document.getElementById('notifWin' + k.charAt(0).toUpperCase() + k.slice(1));
+    if (el && document.activeElement !== el) { el.value = prefs.windows[k] || ''; }
+  });
+
+  var toggle = document.getElementById('notifEnabled');
+  if (toggle) {
+    var old = {};
+    try { old = JSON.parse(localStorage.getItem('dvReminders') || '{}'); } catch (e) {}
+    toggle.checked = old.enabled === true;
+  }
+
+  var status = document.getElementById('notifStatus');
+  if (status) {
+    var st = homeNotifStats();
+    var eff = st.ignoredStreak >= 3 ? Math.min(prefs.budget, 1) : prefs.budget;
+    var bits = ['Hoje: ' + st.sent + ' de ' + eff + '.'];
+    if (st.ignoredStreak >= 3) { bits.push('Estou em modo suave — envio menos porque tens ignorado os últimos.'); }
+    if (homeDayOffActive()) { bits.push('Modo dia difícil ativo: só água e humor até amanhã.'); }
+    if (typeof Notification === 'undefined') { bits.push('Este dispositivo não suporta notificações.'); }
+    else if (Notification.permission === 'denied') { bits.push('As notificações estão bloqueadas no browser.'); }
+    else if (Notification.permission !== 'granted') { bits.push('Ainda falta autorizar as notificações.'); }
+    status.textContent = bits.join(' ');
+  }
+
+  var tseg = document.getElementById('dayThemeSeg');
+  if (tseg) {
+    var on = homeDayThemeOn();
+    tseg.querySelectorAll('button').forEach(function (b, i) {
+      b.classList.toggle('active', (i === 0) === on);
+    });
+  }
+
+  var offEu = document.getElementById('dayOffBtnEu');
+  if (offEu) { offEu.classList.toggle('active', homeDayOffActive()); }
+  var offEuTxt = document.getElementById('dayOffTextEu');
+  if (offEuTxt) {
+    offEuTxt.innerHTML = homeDayOffActive()
+      ? '<b>Modo dia difícil ativo.</b> Toca para voltar ao normal quando quiseres.'
+      : '<b>Dia difícil.</b> Silencio tudo menos água e humor durante 24 h.';
+  }
+
+  var compLink = document.getElementById('euCompLink');
+  if (compLink) {
+    var show = false;
+    try { show = !!(typeof _compIsParticipant !== 'undefined' && (_compIsParticipant || _compIsAdmin)); } catch (e) {}
+    compLink.style.display = show ? '' : 'none';
+  }
+}
+
+function renderEuHub(force) {
+  try { homeApplyDayTheme(); } catch (e) {}
+  homeRenderPrefs();
+  homeRenderMoodHist();
+  homeRenderObservation();
+
+  var sub = document.getElementById('euSub');
+  if (sub) {
+    var off = homeDayOffActive();
+    sub.textContent = 'Só tu vês isto.' + (off ? ' · modo dia difícil ativo' : '');
+  }
+
+  if (force || !_homeMoodCache) {
+    homeLoadMoodRows(force).then(function () {
+      homeRenderMoodHist();
+      homeRenderObservation();
+    }).catch(function () {});
+  }
+}
+
+/* ── notificações: orçamento, janelas, dia difícil ───────────────── */
+
+function homeNotifPrefs() {
+  var def = { budget: 3, windows: { manha: '10:00', tarde: '15:00', noite: '21:00' }, enabled: true };
+  var p = homeRead(HOME_NOTIF_KEY, null);
+  if (!p || typeof p !== 'object') {
+    // Primeira vez: respeitar as horas que já estavam nos lembretes antigos.
+    try {
+      var legacy = JSON.parse(localStorage.getItem('dvReminders') || '{}');
+      if (legacy.manha) { def.windows.manha = legacy.manha; }
+      if (legacy.almoco) { def.windows.tarde = legacy.almoco; }
+      if (legacy.noite) { def.windows.noite = legacy.noite; }
+    } catch (e) {}
+    return def;
+  }
+  var b = parseInt(p.budget, 10);
+  return {
+    budget: b >= 1 && b <= 3 ? b : 3,
+    windows: Object.assign({}, def.windows, p.windows || {}),
+    enabled: p.enabled !== false
+  };
+}
+function homeSaveNotifPrefs(patch) {
+  var p = homeNotifPrefs();
+  var next = Object.assign({}, p, patch || {});
+  if (patch && patch.windows) { next.windows = Object.assign({}, p.windows, patch.windows); }
+  homeWrite(HOME_NOTIF_KEY, next);
+  homeRenderPrefs();
+  return next;
+}
+function homeSetBudget(n) {
+  homeSaveNotifPrefs({ budget: Math.min(3, Math.max(1, n)) });
+  homeToast(n === 1 ? 'Combinado: no máximo 1 por dia.' : 'Combinado: no máximo ' + n + ' por dia.');
+}
+function homeSaveWindows() {
+  var w = {};
+  ['manha', 'tarde', 'noite'].forEach(function (k) {
+    var el = document.getElementById('notifWin' + k.charAt(0).toUpperCase() + k.slice(1));
+    if (el && /^\d{1,2}:\d{2}$/.test(el.value)) { w[k] = el.value; }
+  });
+  homeSaveNotifPrefs({ windows: w });
+  homeToast('Janelas guardadas. Escolho eu o momento dentro de cada uma.');
+}
+function homeToggleReminders(on) {
+  var old = {};
+  try { old = JSON.parse(localStorage.getItem('dvReminders') || '{}'); } catch (e) {}
+  old.enabled = !!on;
+  if (old.manha === undefined) { old.manha = '10:00'; }
+  if (old.almoco === undefined) { old.almoco = '13:00'; }
+  if (old.noite === undefined) { old.noite = '22:00'; }
+  if (typeof cfgSave === 'function') { cfgSave('dvReminders', JSON.stringify(old)); }
+  else { localStorage.setItem('dvReminders', JSON.stringify(old)); }
+  if (on) {
+    if (typeof requestNotifications === 'function') {
+      requestNotifications().then(function (ok) {
+        if (!ok) { homeToast('Sem autorização do browser não consigo avisar-te.'); homeRenderPrefs(); }
+      });
+    }
+  }
+  homeToast(on ? 'Lembretes ligados, com calma.' : 'Lembretes desligados. Silêncio total.');
+  homeRenderPrefs();
+}
+
+function homeNotifStats() {
+  var s = homeRead(HOME_NOTIF_STATS, null) || {};
+  var same = s.day === TODAY;
+  return {
+    day: TODAY,
+    sent: same ? (s.sent || 0) : 0,
+    ignored: same ? (s.ignored || 0) : 0,
+    pending: same ? (s.pending || 0) : (s.pending || 0),
+    ignoredStreak: s.ignoredStreak || 0,
+    lastSent: same ? (s.lastSent || '') : ''
+  };
+}
+function homeDayOffActive() {
+  var o = homeRead(HOME_DAYOFF_KEY, null);
+  if (!o || !o.until) { return false; }
+  return new Date(o.until).getTime() > Date.now();
+}
+function homeDayOff() {
+  if (homeDayOffActive()) {
+    homeWrite(HOME_DAYOFF_KEY, null);
+    homeToast('Voltei ao normal. Sem pressa, como sempre.');
+    renderHojeHub(); renderEuHub();
+    return;
+  }
+  homeWrite(HOME_DAYOFF_KEY, { until: new Date(Date.now() + 24 * 3600 * 1000).toISOString(), at: new Date().toISOString() });
+  homeToast('Está bem. Fico só com água e humor até amanhã. 🌧️');
+  renderHojeHub(); renderEuHub();
+}
+
+function homeNotifAck() {
+  var s = homeNotifStats();
+  if (s.pending > 0) {
+    s.pending = 0;
+    s.ignoredStreak = 0;
+    homeWrite(HOME_NOTIF_STATS, s);
+    homeRenderPrefs();
+  }
+}
+
+function homeNotifAllowed(kind) {
+  if (typeof Notification === 'undefined') { return false; }
+  if (Notification.permission !== 'granted') { return false; }
+  var prefs = homeNotifPrefs();
+  if (!prefs.enabled) { return false; }
+  if (homeDayOffActive() && kind !== 'agua' && kind !== 'humor') { return false; }
+  var s = homeNotifStats();
+  var budget = s.ignoredStreak >= 3 ? Math.min(prefs.budget, 1) : prefs.budget;
+  if (s.sent >= budget) { return false; }
+  if (s.lastSent) {
+    var min = (Date.now() - new Date(s.lastSent).getTime()) / 60000;
+    if (min < 45) { return false; }
+  }
+  return true;
+}
+
+function homeNotify(kind, title, body) {
+  if (!homeNotifAllowed(kind)) { return false; }
+  var s = homeNotifStats();
+  if (s.pending > 0) {
+    s.ignored = (s.ignored || 0) + s.pending;
+    s.ignoredStreak = (s.ignoredStreak || 0) + 1;
+    s.pending = 0;
+  }
+  try { sendNotification(title, body); } catch (e) { return false; }
+  s.day = TODAY;
+  s.sent = (s.sent || 0) + 1;
+  s.pending = 1;
+  s.lastSent = new Date().toISOString();
+  homeWrite(HOME_NOTIF_STATS, s);
+  return true;
+}
+
+function homeInWindow(start, minutes) {
+  var m = String(start || '').match(/^(\d{1,2}):(\d{2})$/);
+  if (!m) { return false; }
+  var t = new Date();
+  t.setHours(Number(m[1]), Number(m[2]), 0, 0);
+  var diff = (Date.now() - t.getTime()) / 60000;
+  return diff >= 0 && diff < (minutes || 60);
+}
+
+function homeRemindOnce(kind, start, title, body) {
+  if (!start || tmReminderSentToday(kind)) { return false; }
+  if (!homeInWindow(start, 60)) { return false; }
+  if (!homeNotify(kind, title, body)) { return false; }
+  tmReminderMarkSent(kind);
+  return true;
+}
+
+/* ── privacidade ─────────────────────────────────────────────────── */
+
+async function homeFetchMoodAll() {
+  var rows = [];
+  try {
+    if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+      var res = await supabaseClient.auth.getSession();
+      var session = res && res.data ? res.data.session : null;
+      if (session && session.user) {
+        var q = await supabaseClient
+          .from('mood_checkins')
+          .select('mood,trigger,note,created_at')
+          .order('created_at', { ascending: false })
+          .limit(1000);
+        if (!q.error && Array.isArray(q.data)) { rows = q.data; }
+      }
+    }
+  } catch (e) {}
+  var local = homeMoodsLocal();
+  var seen = {};
+  var dayOf = function (iso, fallbackDate) {
+    var dt = iso ? new Date(iso) : null;
+    if (dt && !isNaN(dt.getTime())) { return localDateStr(dt); }
+    return fallbackDate || String(iso || '').slice(0, 10);
+  };
+  rows.forEach(function (r) { seen[dayOf(r.created_at)] = true; });
+  Object.keys(local).forEach(function (d) {
+    if (!seen[d]) {
+      rows.push({ mood: local[d].mood, trigger: local[d].trigger, note: local[d].note, created_at: local[d].at || (d + 'T12:00:00.000Z') });
+      seen[d] = true;
+    }
+  });
+  // Registos que só existem no snapshot diário (nunca chegaram à nuvem nem ao espelho local).
+  try {
+    Object.keys(DB).forEach(function (d) {
+      var e = DB[d] && DB[d].moodCheckin;
+      if (e && !seen[d]) {
+        rows.push({ mood: e.mood, trigger: e.trigger, note: e.note, created_at: e.at || (d + 'T12:00:00.000Z') });
+        seen[d] = true;
+      }
+    });
+  } catch (e) {}
+  return rows;
+}
+
+async function homeExportMood() {
+  var st = document.getElementById('privacyStatus');
+  if (st) { st.textContent = 'A preparar o ficheiro…'; }
+  var rows = await homeFetchMoodAll();
+  var payload = {
+    app: 'Diário de Vida',
+    tipo: 'humor e notas',
+    exportado_em: new Date().toISOString(),
+    registos: rows
+  };
+  try {
+    var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = 'diario-humor-' + TODAY + '.json';
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(function () { URL.revokeObjectURL(url); }, 3000);
+    if (st) { st.textContent = 'Ficheiro com ' + rows.length + ' registo(s) exportado para o teu dispositivo.'; }
+  } catch (e) {
+    if (st) { st.textContent = 'Não consegui gerar o ficheiro: ' + (e && e.message ? e.message : e); }
+  }
+}
+
+async function homeDeleteMood() {
+  if (!confirm('Apagar todos os registos de humor e notas? Não há como recuperar.')) { return; }
+  if (!confirm('Confirmas? Vou apagar neste dispositivo e na tua conta.')) { return; }
+
+  var affected = [];
+  homeWrite(HOME_MOOD_KEY, {});
+  try {
+    Object.keys(DB).forEach(function (d) {
+      var day = DB[d];
+      if (!day) { return; }
+      var touched = false;
+      if (day.moodCheckin) { day.moodCheckin = null; touched = true; }
+      if (day.selectedMood) { day.selectedMood = null; touched = true; }
+      if (touched) { affected.push(d); }
+    });
+    selectedMood = '';
+    localStorage.setItem(DB_KEY, JSON.stringify(DB));
+  } catch (e) {}
+  _homeMoodCache = null;
+
+  var msg = 'Apagado neste dispositivo.';
+  var session = null;
+  try {
+    if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+      var res = await supabaseClient.auth.getSession();
+      session = res && res.data ? res.data.session : null;
+      if (session && session.user) {
+        var del = await supabaseClient.from('mood_checkins').delete().eq('user_id', session.user.id);
+        msg = (del && del.error)
+          ? 'Apagado no dispositivo. Na conta ainda não foi possível: ' + del.error.message
+          : 'Apagado no dispositivo e na tua conta.';
+      }
+    }
+  } catch (e) {}
+
+  // As notas também viajam no snapshot diário: reescrever os dias afectados
+  // para que a cópia na nuvem deixe de as ter.
+  if (session && session.user && affected.length) {
+    try {
+      if (typeof SyncManager !== 'undefined' && SyncManager && typeof SyncManager.saveDay === 'function') {
+        Promise.all(affected.map(function (d) { return SyncManager.saveDay(d); })).catch(function () {});
+      }
+    } catch (e) {}
+  }
+
+  var st = document.getElementById('privacyStatus');
+  if (st) { st.textContent = msg; }
+  homeToast('Feito. O que ficou para trás já não está aqui.');
+  renderEuHub(true);
+  renderHojeHub();
+}
+
+/* ── streak elástico ─────────────────────────────────────────────── */
+
+function homeHasRecord(date) {
+  var d = DB[date];
+  if (!d) { return false; }
+  if (d.moodCheckin) { return true; }
+  if (parseFloat(d.waterCount) > 0) { return true; }
+  if (parseFloat(d.lightCount) > 0) { return true; }
+  if (d.counters && parseFloat(d.counters.pausas) > 0) { return true; }
+  if (parseFloat(d.treadmillTime) > 0 || parseFloat(d.treadmillDistance) > 0) { return true; }
+  if (parseFloat(d.weight) > 0) { return true; }
+  if (d.selectedMood) { return true; }
+  if (d.workStart || d.workEnd) { return true; }
+  var meals = d.meals || {};
+  if (Object.keys(meals).some(function (k) { return (meals[k] || []).length > 0; })) { return true; }
+  if (d.exercises && d.exercises.length) { return true; }
+  if (d.habitsDone && Object.keys(d.habitsDone).length) { return true; }
+  if (d.hobbies && d.hobbies.some(function (h) { return (h.seconds || 0) > 0; })) { return true; }
+  return false;
+}
+
+function homeElasticStreak() {
+  var count = 0, gaps = 0, paused = false;
+  for (var i = 0; i < 365; i++) {
+    var d = new Date();
+    d.setDate(d.getDate() - i);
+    var k = localDateStr(d);
+    if (homeHasRecord(k)) {
+      count++;
+      if (gaps > 0) { paused = true; }   // houve uma falha, mas a sequência continua
+      gaps = 0;
+      continue;
+    }
+    if (i === 0) { continue; }           // hoje ainda pode ser registado
+    gaps++;
+    if (gaps >= 3) { break; }            // 3 dias seguidos sem registo: a sequência perde-se
+  }
+  return { dias: count, pausa: paused, ativo: count > 0 };
+}
+
+/* ── voltar ao hub ───────────────────────────────────────────────── */
+
+function homeEnsureBackLink(id) {
+  var sec = document.getElementById('section-' + id);
+  if (!sec || sec.classList.contains('hub')) { return; }
+  var hub = HOME_HUB_OF[id] || 'hoje';
+  var label = hub === 'eu' ? 'Eu' : (hub === 'semana' ? 'Semana' : 'Hoje');
+  var btn = sec.querySelector('.hub-back');
+  if (!btn) {
+    btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'hub-back';
+    btn.addEventListener('click', function () {
+      showSection(HOME_HUB_OF[id] || 'hoje', null);
+    });
+    sec.insertBefore(btn, sec.firstElementChild);
+  }
+  btn.textContent = '← ' + label;
+  btn.setAttribute('aria-label', 'Voltar a ' + label);
+}
+
+setTimeout(function () {
+  try { homeApplyDayTheme(); } catch (e) {}
+  try { renderHojeHub(); } catch (e) {}
+  try { homeRenderPrefs(); } catch (e) {}
+  try { updateOverview(); } catch (e) {}
+}, 0);
+
+document.addEventListener('visibilitychange', function () {
+  if (!document.hidden) { try { homeNotifAck(); } catch (e) {} }
+});
+
+document.addEventListener('keydown', function (e) {
+  if (e.key !== 'Escape') { return; }
+  var sheet = document.getElementById('moodSheet');
+  if (sheet && sheet.classList.contains('open')) {
+    closeMoodSheet();
+    var trigger = document.getElementById('qaBtnMood');
+    if (trigger) { trigger.focus(); }
+  }
+});
+
 // Inicializar página de configurações ao abrir
 // Monkey-patch showSection depois de definida
 (function() {
@@ -12339,6 +14002,10 @@ function clearAllData() {
     if (id === 'compadmin')   renderCompAdmin();
     if (id === 'stats')       renderAchievements();
     if (id === 'calendar')    renderCalendarSection();
+    if (id === 'hoje')        { try { renderHojeHub(); } catch (e) {} }
+    if (id === 'semana')      { try { renderSemanaHub(); } catch (e) {} }
+    if (id === 'eu')          { try { renderEuHub(); } catch (e) {} }
+    try { homeEnsureBackLink(id); } catch (e) {}
   };
 })();
 
