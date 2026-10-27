@@ -2165,6 +2165,24 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
 }
 .hx-toast.show { opacity: 1; transform: translate(-50%, 0); }
 
+/* ecrã Eu */
+.hx-p { font-size: calc(12.5px * var(--font-scale)); color: var(--text2); line-height: 1.6; margin-bottom: 14px; }
+.hx-shorts { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+.hx-short { padding: 11px 14px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--text2); font-family: inherit; font-size: calc(12.5px * var(--font-scale)); text-align: left; cursor: pointer; }
+.hx-short:hover { border-color: var(--moss); color: var(--text); }
+.hx-short:focus-visible { outline: 2px solid var(--moss-l); outline-offset: 2px; }
+
+/* cor do dia — só decorativa (ícones e traço do cartão), nunca no texto */
+html[data-hxday="0"] { --hx-day: 167,139,250; }
+html[data-hxday="1"] { --hx-day: 74,222,128; }
+html[data-hxday="2"] { --hx-day: 56,189,248; }
+html[data-hxday="3"] { --hx-day: 45,212,191; }
+html[data-hxday="4"] { --hx-day: 251,191,36; }
+html[data-hxday="5"] { --hx-day: 244,114,182; }
+html[data-hxday="6"] { --hx-day: 148,163,184; }
+.hx-ico { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: rgba(var(--hx-day, 45,212,191), .15); }
+.hx-hist { border-top: 2px solid rgba(var(--hx-day, 45,212,191), .35); }
+
 /* correções de transbordo a 375 px (já existiam antes desta camada) */
 .tm-bar { min-width: 0; }
 @media (max-width: 480px) { .tm-bars { gap: 2px; } }
@@ -2410,6 +2428,9 @@ body.hx-dayoff .hx-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     <button type="button" class="nav-item" onclick="showSection('profile',this)">
       <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-6 8-6s8 2 8 6"/></svg></span> Perfil
     </button>
+    <button type="button" class="nav-item" onclick="showSection('eu',this)">
+      <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-4.4-7-9.5A4.5 4.5 0 0 1 12 8a4.5 4.5 0 0 1 7 3.5C19 16.6 12 21 12 21Z"/></svg></span> Eu
+    </button>
 
     <button type="button" class="nav-item" id="navCompeticao" style="display:none" onclick="showSection('competition',this)">
       <span class="nav-icon" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8 21h8M12 17v4"/><path d="M7 4h10v5a5 5 0 0 1-10 0V4Z"/><path d="M7 6H4a3 3 0 0 0 3 5M17 6h3a3 3 0 0 1-3 5"/></svg></span> Competição
@@ -2525,8 +2546,8 @@ body.hx-dayoff .hx-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
       </div>
       <button type="button" class="hx-mini" onclick="hxOpenMood()">Registar</button>
     </div>
-    <div class="hx-days" id="hxDays" role="list" aria-label="Últimos 14 dias"></div>
-    <div class="hx-obs" id="hxObs">Ainda não há registos. Quando quiseres, um toque em Humor chega.</div>
+    <div class="hx-days" data-hx-days role="list" aria-label="Últimos 14 dias"></div>
+    <div class="hx-obs" data-hx-obs>Ainda não há registos. Quando quiseres, um toque em Humor chega.</div>
   </section>
 
   <div class="onboarding-card" id="onboardingCard" hidden>
@@ -3476,6 +3497,46 @@ body.hx-dayoff .hx-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   <div id="last5Container"></div>
 </div>
 
+<!-- EU -->
+<div class="section" id="section-eu">
+  <div class="section-header">
+    <div class="section-title">Eu</div>
+    <div class="section-sub">humor · privacidade · atalhos</div>
+  </div>
+
+  <section class="card hx-hist" aria-labelledby="euHistTitle">
+    <div class="hx-hist-head">
+      <div>
+        <div class="hx-kicker">Humor</div>
+        <div class="hx-title" id="euHistTitle">Como tens estado</div>
+      </div>
+      <button type="button" class="hx-mini" onclick="hxOpenMood()">Registar</button>
+    </div>
+    <div class="hx-days" data-hx-days role="list" aria-label="Últimos 14 dias"></div>
+    <div class="hx-obs" data-hx-obs>Ainda não há registos. Quando quiseres, um toque em Humor chega.</div>
+  </section>
+
+  <section class="card" aria-labelledby="euPrivTitle">
+    <div class="card-title" id="euPrivTitle">Privacidade</div>
+    <p class="hx-p">O humor e as notas são teus. Ficam neste dispositivo e, com sessão iniciada, na tua conta — só tu os vês.</p>
+    <div class="hx-actions">
+      <button type="button" class="btn btn-secondary" onclick="hxExportMood()">Exportar os meus dados</button>
+      <button type="button" class="btn btn-secondary" onclick="hxDeleteMood()">Apagar humor e notas</button>
+    </div>
+    <div class="hx-obs" id="hxPrivStatus" role="status" aria-live="polite"></div>
+  </section>
+
+  <section class="card" aria-labelledby="euLigTitle">
+    <div class="card-title" id="euLigTitle">Atalhos</div>
+    <div class="hx-shorts">
+      <button type="button" class="hx-short" onclick="showSection('settings', navBySection('settings'))">⚙️ Configurações</button>
+      <button type="button" class="hx-short" onclick="showSection('profile', navBySection('profile'))">👤 Perfil</button>
+      <button type="button" class="hx-short" onclick="openRemindersModal()">🔔 Lembretes</button>
+      <button type="button" class="hx-short" onclick="showSection('stats', navBySection('stats'))">📊 Estatísticas</button>
+    </div>
+  </section>
+</div>
+
 <!-- SETTINGS -->
 <div class="section" id="section-settings">
   <div class="section-header">
@@ -3513,6 +3574,12 @@ body.hx-dayoff .hx-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         <button type="button" class="mascot-swatch" data-ui-accent="green" onclick="setUiAccent('green')" style="background:#4ade80" title="Verde" aria-label="Verde"></button>
         <button type="button" class="mascot-swatch" data-ui-accent="amber" onclick="setUiAccent('amber')" style="background:#f59e0b" title="Âmbar" aria-label="Âmbar"></button>
       </div>
+    </div>
+    <div style="margin-bottom:14px;">
+      <label style="display:flex;align-items:center;gap:10px;font-size: calc(12.5px * var(--font-scale));color:var(--text2);cursor:pointer;">
+        <input type="checkbox" id="uiDayTheme" onchange="setUiDayTheme(this.checked)" style="width:18px;height:18px;accent-color:var(--moss);">
+        <span>Cor do dia <span style="color:var(--muted);">— um toque de cor diferente em cada dia da semana</span></span>
+      </label>
     </div>
     <div class="ui-preview" id="uiPreview">A rápida raposa castanha salta sobre o cão preguiçoso. <b>Hoje é um bom dia.</b></div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px;">
@@ -3834,6 +3901,19 @@ hf_... (2ª chave)" style="width:100%;background:var(--surface);border:1px solid
           <label style="display:flex;align-items:center;gap:6px;font-size: calc(12px * var(--font-scale));color:var(--text2);"><input type="checkbox" id="remTreinoEnabled" style="width:16px;height:16px;accent-color:var(--moss);"> Avisar nos dias com plano</label>
         </div>
       </div>
+    </div>
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">
+      <div style="font-size: calc(12px * var(--font-scale));color:var(--text2);margin-bottom:6px;">Quantos por dia, no máximo?</div>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+        <select id="remMaxDia" aria-label="Máximo de lembretes por dia" style="flex:1;min-width:150px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size: calc(13px * var(--font-scale));outline:none;">
+          <option value="1">1 por dia</option>
+          <option value="2">2 por dia</option>
+          <option value="3" selected>3 por dia (recomendado)</option>
+          <option value="4">4 por dia</option>
+          <option value="5">5 por dia</option>
+        </select>
+      </div>
+      <div style="margin-top:8px;font-size: calc(11px * var(--font-scale));color:var(--muted);line-height:1.55;">Nunca chegam dois com menos de 45 minutos. Se ignorares 3 seguidos, passo a mandar só 1 por dia — sem precisares de mexer em nada.</div>
     </div>
     <div style="margin-top:16px;display:flex;justify-content:space-between;gap:8px;">
       <button class="btn btn-secondary" onclick="closeRemindersModal()" style="font-size: calc(12px * var(--font-scale));">Fechar</button>
@@ -4733,7 +4813,7 @@ const SECTION_LABELS = {
   overview: 'Resumo', ai: 'Chat IA', weight: 'Peso', meals: 'Refeições',
   work: 'Trabalho', treadmill: 'Passadeira', plan: 'Plano', calendar: 'Calendário',
   profile: 'Perfil', competition: 'Competição', compadmin: 'Gerir competição',
-  last5: 'Últimos 5 Dias', stats: 'Estatísticas', settings: 'Configurações'
+  last5: 'Últimos 5 Dias', stats: 'Estatísticas', settings: 'Configurações', eu: 'Eu'
 };
 
 function initSectionA11y() {
@@ -11419,6 +11499,8 @@ function openRemindersModal() {
   const trEnabled = document.getElementById('remTreinoEnabled');
   if (trHora) trHora.value = tr.hora || '18:00';
   if (trEnabled) trEnabled.checked = tr.enabled !== false;
+  const maxEl = document.getElementById('remMaxDia');
+  if (maxEl) maxEl.value = String(hxNotifMax());
   document.getElementById('remEnabled').checked = prefs.enabled!==false;
   modal.classList.add('open');
 }
@@ -11448,8 +11530,10 @@ async function saveReminders() {
     }
   });
   cfgSave('dvReminders', JSON.stringify(prefs));
+  const maxEl = document.getElementById('remMaxDia');
+  hxWrite(HX_NOTIF_MAX_KEY, maxEl ? Math.max(1, Math.min(5, parseInt(maxEl.value, 10) || 3)) : hxNotifMax());
   closeRemindersModal();
-  sendNotification('🔔 Lembretes ativados!', 'Vais receber lembretes diários e a pesagem semanal.');
+  sendNotification('🔔 Lembretes ativados!', 'Vais receber lembretes diários, no máximo ' + hxNotifMax() + ' por dia.', true);
 }
 
 // Inicializar
@@ -11925,6 +12009,7 @@ function applyUiPrefs() {
   document.querySelectorAll('[data-ui-accent]').forEach(b => b.classList.toggle('active', b.dataset.uiAccent === accent));
   const st = document.getElementById('uiAppearanceStatus');
   if (st) st.textContent = `Tipo de letra: ${UI_FONTS[font].label} · tamanho: ${UI_TEXT_SIZES[textSize].label} · cor: ${a.label}.`;
+  try { hxApplyDayTheme(); } catch (e) {}
 }
 function setUiFont(key) {
   if (!UI_FONTS[key]) return;
@@ -12599,6 +12684,7 @@ function hxPop(btn) {
 
 function hxWater(btn) {
   hxPop(btn);
+  try { hxNotifAck(); } catch (e) {}
   if (waterCount >= waterGoal) {
     hxToast('Já chegaste à meta de hoje. Um copo a mais também conta 💧');
     return;
@@ -12617,6 +12703,7 @@ function hxWater(btn) {
 
 function hxBreak(btn) {
   hxPop(btn);
+  try { hxNotifAck(); } catch (e) {}
   counters.pausas = (counters.pausas || 0) + 1;
   try { saveData(true); } catch (e) {}
   hxMetaUpdate();
@@ -12629,6 +12716,7 @@ function hxBreak(btn) {
 
 function hxLight(btn) {
   hxPop(btn);
+  try { hxNotifAck(); } catch (e) {}
   if (!DB[TODAY]) { DB[TODAY] = {}; }
   var d = DB[TODAY];
   d.lightCount = (parseFloat(d.lightCount) || 0) + 1;
@@ -12746,6 +12834,7 @@ function hxRenderMoodSheet() {
 }
 
 function hxOpenMood() {
+  try { hxNotifAck(); } catch (e) {}
   hxRenderMoodSheet();
   _hxPick = 0;
   _hxTrigger = '';
@@ -12898,8 +12987,8 @@ async function hxLoadRows(force) {
 }
 
 function hxRenderDays() {
-  var box = document.getElementById('hxDays');
-  if (!box) { return; }
+  var boxes = document.querySelectorAll('[data-hx-days]');
+  if (!boxes.length) { return; }
   var map = hxMoodMap();
   var out = '';
   for (var i = 13; i >= 0; i--) {
@@ -12917,12 +13006,12 @@ function hxRenderDays() {
       '<span class="hx-day-num">' + key.slice(8, 10) + '</span>' +
       '</div>';
   }
-  box.innerHTML = out;
+  boxes.forEach(function (b) { b.innerHTML = out; });
 }
 
 function hxRenderObs() {
-  var box = document.getElementById('hxObs');
-  if (!box) { return; }
+  var boxes = document.querySelectorAll('[data-hx-obs]');
+  if (!boxes.length) { return; }
   var map = hxMoodMap();
   var rows = [];
   for (var i = 0; i < 14; i++) {
@@ -12932,9 +13021,9 @@ function hxRenderObs() {
     if (map[key] && map[key].mood) { rows.push(map[key]); }
   }
   if (rows.length < 3) {
-    box.textContent = rows.length === 0
+    hxSetObs(rows.length === 0
       ? 'Ainda não há registos. Quando quiseres, um toque em Humor chega.'
-      : 'Já tenho ' + rows.length + ' registo(s). Com mais alguns consigo dizer algo que preste — sem pressa.';
+      : 'Já tenho ' + rows.length + ' registo(s). Com mais alguns consigo dizer algo que preste — sem pressa.');
     return;
   }
   var avg = rows.reduce(function (s, r) { return s + Number(r.mood); }, 0) / rows.length;
@@ -12965,7 +13054,11 @@ function hxRenderObs() {
     msg = 'Altos e baixos, como é normal: média de ' + avg.toFixed(1) + '/5 em ' + rows.length + ' registos. ' +
       'Só te mostro o que escreveste.';
   }
-  box.textContent = msg;
+  hxSetObs(msg);
+}
+
+function hxSetObs(msg) {
+  document.querySelectorAll('[data-hx-obs]').forEach(function (b) { b.textContent = msg; });
 }
 
 /* ── «dia difícil»: só água e humor durante 24 h ─────────────────── */
@@ -13001,6 +13094,163 @@ function hxDayOff() {
   hxToast('Está bem. Fico só com água e humor até amanhã. 🌧️');
 }
 
+/* ── privacidade: exportar e apagar ─────────────────────────────── */
+
+function hxPrivStatus(msg) {
+  var el = document.getElementById('hxPrivStatus');
+  if (el) { el.textContent = msg; }
+  hxToast(msg);
+}
+
+function hxExportMood() {
+  try {
+    var map = hxMoodMap();
+    var rows = Object.keys(map).sort().map(function (k) {
+      var r = map[k] || {};
+      return {
+        data: k,
+        humor: (r.mood === undefined || r.mood === null) ? null : Number(r.mood),
+        gatilho: r.trigger || '',
+        nota: r.note || '',
+        registado_em: r.at || ''
+      };
+    });
+    var payload = { aplicacao: 'Diário de Vida', exportado_em: new Date().toISOString(), registos: rows };
+    var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'diario-humor-' + localDateStr() + '.json';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { try { URL.revokeObjectURL(a.href); a.remove(); } catch (e) {} }, 1500);
+    hxPrivStatus(rows.length
+      ? 'Exportei ' + rows.length + ' registo(s). O ficheiro ficou nas tuas transferências.'
+      : 'Ainda não há registos para exportar. Um toque em Humor chega para começar.');
+  } catch (e) {
+    hxPrivStatus('Não consegui exportar agora. Tenta outra vez.');
+  }
+}
+
+async function hxDeleteMood() {
+  var local = hxMoodsLocal();
+  var nLocal = Object.keys(local).length;
+  var ok = confirm(
+    'Apagar o humor e as notas?\n\n' +
+    'São ' + nLocal + ' registo(s) neste dispositivo' +
+    (typeof supabaseClient !== 'undefined' && supabaseClient ? ' e os que estiverem na tua conta' : '') +
+    '.\n\nIsto não se pode desfazer. O resto do diário fica como está.'
+  );
+  if (!ok) { return; }
+
+  hxWrite(HX_MOOD_KEY, {});
+  try {
+    Object.keys(DB).forEach(function (k) {
+      if (DB[k] && typeof DB[k] === 'object' && DB[k].moodCheckin) { delete DB[k].moodCheckin; }
+    });
+    try { localStorage.setItem(DB_KEY, JSON.stringify(DB)); } catch (e) {}
+  } catch (e) {}
+  _hxRows = null;
+  _hxSavedId = '';
+  hxRenderDays();
+  hxRenderObs();
+  hxMetaUpdate();
+
+  var removedCloud = 0;
+  var hadSession = false;
+  try {
+    if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+      var res = await supabaseClient.auth.getSession();
+      var session = res && res.data ? res.data.session : null;
+      if (session && session.user) {
+        hadSession = true;
+        var del = await supabaseClient.from('mood_checkins')
+          .delete().eq('user_id', session.user.id).select('id');
+        if (!del.error && Array.isArray(del.data)) { removedCloud = del.data.length; }
+        else if (del.error) { console.warn('mood_checkins delete:', del.error.message); }
+      }
+    }
+  } catch (e) { console.warn('mood_checkins delete offline:', e && e.message); }
+
+  if (!hadSession) {
+    hxPrivStatus('Apagado deste dispositivo. O resto do diário ficou como estava.');
+  } else if (removedCloud || !nLocal) {
+    hxPrivStatus('Apagado: ' + nLocal + ' registo(s) no dispositivo e ' + removedCloud + ' na conta.');
+  } else {
+    hxPrivStatus('Apagado: ' + nLocal + ' no dispositivo. Tenta outra vez com sessão para limpar a conta.');
+  }
+}
+
+/* ── cor do dia (só decorativa) ─────────────────────────────────── */
+
+function hxApplyDayTheme() {
+  var p = (typeof uiGetPrefs === 'function') ? uiGetPrefs() : {};
+  var on = p.dayTheme === true;
+  try {
+    if (on) { document.documentElement.setAttribute('data-hxday', String(new Date().getDay())); }
+    else { document.documentElement.removeAttribute('data-hxday'); }
+  } catch (e) {}
+  var box = document.getElementById('uiDayTheme');
+  if (box) { box.checked = on; }
+}
+
+function setUiDayTheme(on) {
+  var p = (typeof uiGetPrefs === 'function') ? uiGetPrefs() : {};
+  p.dayTheme = !!on;
+  if (typeof uiSavePrefs === 'function') { uiSavePrefs(p); }
+  hxApplyDayTheme();
+  hxToast(on ? 'Cada dia traz uma cor diferente. 🌿' : 'Fico com a cor que escolheste.');
+}
+
+/* ── orçamento de notificações ─────────────────────────────────── */
+
+var HX_NOTIF_KEY = 'dvNotifState';
+var HX_NOTIF_MAX_KEY = 'dvNotifMax';
+
+function hxNotifStateRead() {
+  var s = hxRead(HX_NOTIF_KEY, null);
+  var today = localDateStr();
+  if (!s || typeof s !== 'object' || s.day !== today) {
+    s = { day: today, sent: 0, ignored: 0, lastAt: 0, pendingAck: false };
+  }
+  if (typeof s.sent !== 'number') { s.sent = 0; }
+  if (typeof s.ignored !== 'number') { s.ignored = 0; }
+  return s;
+}
+function hxNotifMax() {
+  var n = parseInt(hxRead(HX_NOTIF_MAX_KEY, 3), 10);
+  if (!(n > 0)) { n = 3; }
+  return Math.max(1, Math.min(6, n));
+}
+function hxNotifAck() {
+  var s = hxNotifStateRead();
+  if (s.pendingAck) { s.pendingAck = false; hxWrite(HX_NOTIF_KEY, s); }
+}
+
+(function () {
+  if (typeof sendNotification !== 'function') { return; }
+  var _origSend = sendNotification;
+  sendNotification = function (title, body, force) {
+    try {
+      var s = hxNotifStateRead();
+      if (!force && s.pendingAck) { s.ignored++; s.pendingAck = false; hxWrite(HX_NOTIF_KEY, s); }
+      if (!force) {
+        if (hxDayOffState()) { return; }
+        var max = hxNotifMax();
+        if (s.ignored >= 3) { max = 1; }
+        if (s.sent >= max) { return; }
+        if (s.lastAt && (Date.now() - s.lastAt) < 45 * 60 * 1000) { return; }
+      }
+      s.sent++;
+      s.lastAt = Date.now();
+      s.pendingAck = true;
+      hxWrite(HX_NOTIF_KEY, s);
+      return _origSend.apply(this, arguments);
+    } catch (e) {
+      return _origSend.apply(this, arguments);
+    }
+  };
+})();
+
 /* ── arranque ───────────────────────────────────────────────────── */
 
 document.addEventListener('keydown', function (e) {
@@ -13023,6 +13273,7 @@ document.addEventListener('visibilitychange', function () {
     try { hxApplyDayOff(); } catch (e) {}
     try { hxRenderDays(); } catch (e) {}
     try { hxRenderObs(); } catch (e) {}
+    try { hxApplyDayTheme(); } catch (e) {}
   };
   if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', run); }
   else { run(); }
