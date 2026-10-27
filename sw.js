@@ -1,12 +1,14 @@
 // ═══════════════════════════════════════════════════════════════════
 // DIÁRIO DE VIDA — Service Worker
-// Funcionalidades: cache offline + notificações push
+// Funcionalidades: cache offline + notificações (locais e push)
 // ═══════════════════════════════════════════════════════════════════
 
-const CACHE_NAME = 'diario-v3';
+const CACHE_NAME = 'diario-v4';
 const ASSETS = [
   './',
   './index.html',
+  './styles.css',
+  './app.js',
   './manifest.json',
   './icon-192.png',
   './icon-512.png'
@@ -30,9 +32,8 @@ self.addEventListener('activate', e => {
   self.clients.claim();
 });
 
-// ── Fetch: serve do cache se offline
+// ── Fetch: rede primeiro, cache quando não há rede
 self.addEventListener('fetch', e => {
-  // Apenas pedidos GET locais
   if (e.request.method !== 'GET') return;
   const url = new URL(e.request.url);
   if (url.origin !== self.location.origin) return;
@@ -50,31 +51,60 @@ self.addEventListener('fetch', e => {
   );
 });
 
-// ── Notificações push agendadas
+// ── Abrir a app a partir de uma notificação
+function abrirApp() {
+  return clients.matchAll({ type: 'window', includeUncontrolled: true }).then(list => {
+    for (const c of list) {
+      if ('focus' in c) return c.focus();
+    }
+    if (clients.openWindow) return clients.openWindow('./');
+  });
+}
+
 self.addEventListener('notificationclick', e => {
   e.notification.close();
-  e.waitUntil(
-    clients.matchAll({ type: 'window' }).then(clientList => {
-      if (clientList.length > 0) {
-        clientList[0].focus();
-      } else {
-        clients.openWindow('/diario-de-vida/');
-      }
-    })
-  );
+  e.waitUntil(abrirApp());
 });
 
-// ── Receber mensagem para mostrar notificação
+// ── Notificação enviada pela página (com a app aberta)
 self.addEventListener('message', e => {
   if (e.data && e.data.type === 'SHOW_NOTIFICATION') {
     const { title, body, icon } = e.data;
     self.registration.showNotification(title, {
       body,
-      icon: icon || '/diario-de-vida/icon-192.png',
-      badge: '/diario-de-vida/icon-192.png',
+      icon: icon || './icon-192.png',
+      badge: './icon-192.png',
       vibrate: [200, 100, 200],
       tag: 'diario-lembrete',
       renotify: true,
     });
   }
+});
+
+// ── Push a sério (quando o servidor enviar)
+self.addEventListener('push', e => {
+  let payload = {};
+  try { payload = e.data ? e.data.json() : {}; } catch (err) {
+    try { payload = { body: e.data ? e.data.text() : '' }; } catch (e2) { payload = {}; }
+  }
+  const title = payload.title || 'Diário de Vida';
+  const body = payload.body || 'Um lembrete pequeno, sem pressa.';
+  e.waitUntil(
+    self.registration.showNotification(title, {
+      body,
+      icon: './icon-192.png',
+      badge: './icon-192.png',
+      tag: payload.tag || 'diario-push',
+      data: { url: payload.url || './' },
+      renotify: true,
+    })
+  );
+});
+
+self.addEventListener('pushsubscriptionchange', e => {
+  e.waitUntil(
+    self.clients.matchAll({ type: 'window' }).then(list => {
+      list.forEach(c => c.postMessage({ type: 'PUSH_RESUBSCRIBE' }));
+    })
+  );
 });
