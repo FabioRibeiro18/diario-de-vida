@@ -2069,6 +2069,114 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
 .ui-font.active { border-color: var(--moss); background: rgba(var(--accent-rgb), .16); color: var(--moss-l); }
 .ui-preview { margin-top: 14px; padding: 12px 14px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border); color: var(--text2); font-size: calc(13px * var(--font-scale)); line-height: 1.5; }
 .ui-preview b { color: var(--moss-l); }
+
+/* ══ AÇÕES RÁPIDAS + HUMOR — camada aditiva do Resumo ═══════════════ */
+.hx-wrap { margin: 16px 0 18px; }
+.hx-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+@media (max-width: 780px) { .hx-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.hx-btn {
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+  min-height: 88px; padding: 13px 14px; border-radius: 16px;
+  border: 1px solid var(--border); background: linear-gradient(160deg, var(--surface), var(--card));
+  color: var(--text); font-family: inherit; text-align: left; cursor: pointer; min-width: 0;
+  transition: transform .12s, border-color .12s, box-shadow .12s;
+}
+.hx-btn:hover { border-color: var(--border2); transform: translateY(-2px); box-shadow: 0 10px 22px rgba(0,0,0,.22); }
+.hx-btn:active { transform: scale(.975); }
+.hx-btn:focus-visible { outline: 2px solid var(--moss-l); outline-offset: 2px; }
+.hx-btn.on { border-color: rgba(var(--accent-rgb), .5); background: linear-gradient(160deg, rgba(var(--accent-rgb), .12), var(--card)); }
+.hx-btn.hx-pop { animation: hxPop .28s ease; }
+@keyframes hxPop { 0% { transform: scale(.96); } 55% { transform: scale(1.02); } 100% { transform: scale(1); } }
+.hx-ico { font-size: calc(23px * var(--font-scale)); line-height: 1.15; }
+.hx-lbl { font-size: calc(14px * var(--font-scale)); font-weight: 600; }
+.hx-meta { font-size: calc(11px * var(--font-scale)); color: var(--muted); line-height: 1.35; }
+.hx-hint { margin: 9px 2px 0; font-size: calc(11px * var(--font-scale)); color: var(--faint); }
+.hx-calm {
+  margin-top: 12px; width: 100%; padding: 11px 14px; border-radius: 12px;
+  border: 1px dashed var(--border2); background: transparent; color: var(--text2);
+  font-family: inherit; font-size: calc(12px * var(--font-scale)); text-align: left; line-height: 1.55; cursor: pointer;
+}
+.hx-calm:hover { border-color: var(--moss); color: var(--text); }
+.hx-calm b { color: var(--moss-l); font-weight: 600; }
+
+/* cartão de humor (14 dias) */
+.hx-hist { margin-bottom: 18px; }
+.hx-hist-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 14px; }
+.hx-kicker { font-family: 'JetBrains Mono', monospace; font-size: calc(10px * var(--font-scale)); letter-spacing: 1.4px; text-transform: uppercase; color: var(--muted); }
+.hx-title { font-family: 'Lora', serif; font-size: calc(19px * var(--font-scale)); color: var(--text); margin-top: 3px; }
+.hx-mini {
+  flex: 0 0 auto; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--border2);
+  background: var(--surface); color: var(--moss-l); font-family: inherit;
+  font-size: calc(11px * var(--font-scale)); cursor: pointer; white-space: nowrap;
+}
+.hx-mini:hover { border-color: var(--moss); }
+.hx-days { display: grid; grid-template-columns: repeat(14, minmax(0, 1fr)); gap: 6px; }
+@media (max-width: 560px) { .hx-days { grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; } }
+.hx-day { display: flex; flex-direction: column; align-items: center; gap: 5px; min-width: 0; }
+.hx-dot {
+  width: 100%; max-width: 44px; aspect-ratio: 1 / 1; display: grid; place-items: center;
+  border-radius: 50%; border: 1px solid var(--border); background: var(--surface);
+  font-size: calc(15px * var(--font-scale)); line-height: 1;
+}
+.hx-day.is-today .hx-dot { border-color: var(--moss-l); box-shadow: 0 0 0 2px rgba(var(--accent-rgb), .18); }
+.hx-day.is-empty .hx-dot { color: var(--faint); opacity: .5; }
+.hx-day-num { font-family: 'JetBrains Mono', monospace; font-size: calc(9px * var(--font-scale)); color: var(--muted); }
+.hx-obs { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border); font-size: calc(12.5px * var(--font-scale)); color: var(--text2); line-height: 1.6; }
+
+/* folha de humor (2 passos) */
+.hx-overlay { position: fixed; inset: 0; z-index: 10050; display: none; align-items: flex-end; justify-content: center; background: rgba(5, 7, 12, .72); backdrop-filter: blur(3px); }
+.hx-overlay.open { display: flex; }
+@media (min-width: 640px) { .hx-overlay { align-items: center; padding: 24px; } }
+.hx-sheet {
+  width: 100%; max-width: 540px; max-height: 92vh; overflow-y: auto; padding: 20px;
+  border: 1px solid var(--border); border-radius: 20px 20px 0 0; background: var(--bg2);
+  animation: hxUp .22s ease;
+}
+@media (min-width: 640px) { .hx-sheet { border-radius: 20px; } }
+@keyframes hxUp { from { transform: translateY(16px); opacity: 0; } to { transform: none; opacity: 1; } }
+.hx-sheet-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+.hx-sheet-title { font-family: 'Lora', serif; font-size: calc(20px * var(--font-scale)); color: var(--text); }
+.hx-sheet-sub { margin-top: 4px; font-size: calc(12px * var(--font-scale)); color: var(--muted); line-height: 1.5; }
+.hx-close { flex: 0 0 auto; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--border); background: var(--surface); color: var(--text2); font-size: calc(15px * var(--font-scale)); cursor: pointer; line-height: 1; }
+.hx-moods { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; }
+.hx-mood {
+  display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 4px;
+  border-radius: 14px; border: 1px solid var(--border); background: var(--surface);
+  color: var(--text2); font-family: inherit; cursor: pointer;
+}
+.hx-mood .em { font-size: calc(24px * var(--font-scale)); line-height: 1; }
+.hx-mood .nm { font-size: calc(9.5px * var(--font-scale)); letter-spacing: .2px; text-align: center; }
+.hx-mood:hover { border-color: var(--border2); }
+.hx-mood.sel { border-color: var(--moss); background: rgba(var(--accent-rgb), .12); color: var(--text); }
+.hx-mood:focus-visible { outline: 2px solid var(--moss-l); outline-offset: 2px; }
+.hx-label { margin: 16px 0 8px; font-size: calc(11px * var(--font-scale)); letter-spacing: .6px; text-transform: uppercase; color: var(--muted); }
+.hx-trigs { display: flex; flex-wrap: wrap; gap: 7px; }
+.hx-trig { padding: 7px 12px; border-radius: 999px; border: 1px solid var(--border); background: var(--surface); color: var(--text2); font-family: inherit; font-size: calc(11.5px * var(--font-scale)); cursor: pointer; }
+.hx-trig.sel { border-color: var(--moss); background: rgba(var(--accent-rgb), .14); color: var(--text); }
+.hx-note { width: 100%; padding: 11px 13px; border-radius: 12px; border: 1px solid var(--border); background: var(--surface); color: var(--text); font-family: inherit; font-size: calc(13px * var(--font-scale)); }
+.hx-note:focus { outline: none; border-color: var(--moss); }
+.hx-actions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 18px; }
+.hx-toast {
+  position: fixed; left: 50%; bottom: 26px; transform: translate(-50%, 16px); z-index: 10060;
+  max-width: min(92vw, 480px); padding: 12px 18px; border-radius: 999px; border: 1px solid var(--border2);
+  background: rgba(28, 32, 48, .97); color: var(--text); font-size: calc(12.5px * var(--font-scale));
+  text-align: center; opacity: 0; pointer-events: none; box-shadow: var(--shadow-m);
+  transition: opacity .2s, transform .2s;
+}
+.hx-toast.show { opacity: 1; transform: translate(-50%, 0); }
+
+/* correções de transbordo a 375 px (já existiam antes desta camada) */
+.tm-bar { min-width: 0; }
+@media (max-width: 480px) { .tm-bars { gap: 2px; } }
+
+/* modo «dia difícil»: só água e humor */
+body.hx-dayoff #hxBtnBreak,
+body.hx-dayoff #hxBtnLight,
+body.hx-dayoff .flow-progress,
+body.hx-dayoff #dailyFlow,
+body.hx-dayoff #flowDetail,
+body.hx-dayoff #onboardingCard { display: none !important; }
+body.hx-dayoff .hx-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 </style>
 </head>
 <body>
@@ -2364,6 +2472,36 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
     </div>
   </div>
 
+  <!-- ▸ AÇÕES RÁPIDAS (1 toque) -->
+  <div class="hx-wrap" id="hxQuick">
+    <div class="hx-grid" role="group" aria-label="Ações rápidas">
+      <button type="button" class="hx-btn" id="hxBtnWater" onclick="hxWater(this)" aria-label="Registar um copo de água">
+        <span class="hx-ico" aria-hidden="true">💧</span>
+        <span class="hx-lbl">Água</span>
+        <span class="hx-meta" id="hxMetaWater">0 / 8 copos</span>
+      </button>
+      <button type="button" class="hx-btn" id="hxBtnBreak" onclick="hxBreak(this)" aria-label="Registar uma pausa">
+        <span class="hx-ico" aria-hidden="true">☕</span>
+        <span class="hx-lbl">Pausa</span>
+        <span class="hx-meta" id="hxMetaBreak">0 hoje</span>
+      </button>
+      <button type="button" class="hx-btn" id="hxBtnLight" onclick="hxLight(this)" aria-label="Registar luz natural">
+        <span class="hx-ico" aria-hidden="true">🌤️</span>
+        <span class="hx-lbl">Luz natural</span>
+        <span class="hx-meta" id="hxMetaLight">0 hoje</span>
+      </button>
+      <button type="button" class="hx-btn" id="hxBtnMood" onclick="hxOpenMood()" aria-label="Registar o teu humor">
+        <span class="hx-ico" aria-hidden="true">🙂</span>
+        <span class="hx-lbl">Humor</span>
+        <span class="hx-meta" id="hxMetaMood">como te sentes?</span>
+      </button>
+    </div>
+    <div class="hx-hint" id="hxQuickHint">Um toque chega. Se não te apetecer, fica para depois.</div>
+    <button type="button" class="hx-calm" id="hxCalmBtn" onclick="hxDayOff()">
+      <span aria-hidden="true">🌧️</span> <b>Dia difícil.</b> Fico só com água e humor, sem te chatear com o resto durante 24 h.
+    </button>
+  </div>
+
   <section class="card water-mini" id="waterMini" aria-labelledby="waterMiniTitle">
     <div class="water-mini-head">
       <div>
@@ -2376,6 +2514,19 @@ html[data-font="mono"] body * { font-family: 'JetBrains Mono', ui-monospace, 'Ca
     <div class="water-mini-foot"><span id="waterMl">0 ml</span><span id="waterTag"></span></div>
     <div class="progress-track water-mini-track"><div class="progress-fill" id="waterProgressBar" style="width:0%;background:var(--sky);"></div></div>
     <div class="water-mini-note">Toca nos copos para registar. Cada copo conta 250 ml.</div>
+  </section>
+
+  <!-- ▸ HUMOR · últimos 14 dias -->
+  <section class="card hx-hist" id="hxHist" aria-labelledby="hxHistTitle">
+    <div class="hx-hist-head">
+      <div>
+        <div class="hx-kicker">Humor</div>
+        <div class="hx-title" id="hxHistTitle">Como tens estado</div>
+      </div>
+      <button type="button" class="hx-mini" onclick="hxOpenMood()">Registar</button>
+    </div>
+    <div class="hx-days" id="hxDays" role="list" aria-label="Últimos 14 dias"></div>
+    <div class="hx-obs" id="hxObs">Ainda não há registos. Quando quiseres, um toque em Humor chega.</div>
   </section>
 
   <div class="onboarding-card" id="onboardingCard" hidden>
@@ -3781,6 +3932,33 @@ gsk_... (3ª chave)" style="width:100%;background:var(--surface);border:1px soli
 <!-- Saved indicator -->
 <div class="saved-bar" id="savedBar" role="status" aria-live="polite">✓ Dados guardados</div>
 
+<!-- Check-in de humor · 2 passos -->
+<div class="hx-overlay" id="hxSheet" onclick="if (event.target === this) hxCloseMood()">
+  <div class="hx-sheet" role="dialog" aria-modal="true" aria-labelledby="hxSheetTitle">
+    <div class="hx-sheet-head">
+      <div>
+        <div class="hx-sheet-title" id="hxSheetTitle">Como te sentes agora?</div>
+        <div class="hx-sheet-sub" id="hxSheetSub">Um toque chega. O resto é opcional.</div>
+      </div>
+      <button type="button" class="hx-close" onclick="hxCloseMood()" aria-label="Fechar">✕</button>
+    </div>
+    <div id="hxStep1">
+      <div class="hx-moods" id="hxMoods" role="group" aria-label="Escolhe o teu humor"></div>
+    </div>
+    <div id="hxStep2" hidden>
+      <div class="hx-label">O que contribuiu? (opcional)</div>
+      <div class="hx-trigs" id="hxTrigs" role="group" aria-label="O que contribuiu"></div>
+      <div class="hx-label">Uma linha, se quiseres</div>
+      <input type="text" class="hx-note" id="hxNote" maxlength="120" autocomplete="off" placeholder="ex.: dia de chamadas seguidas">
+      <div class="hx-actions">
+        <button type="button" class="btn btn-primary" onclick="hxSaveMood()">Guardar detalhes</button>
+        <button type="button" class="btn btn-secondary" onclick="hxCloseMood()">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="hx-toast" id="hxToast" role="status" aria-live="polite"></div>
+
 <script>
 // ── Funcionalidades removidas (90 Dias, Hábitos, Hobbys, Casa de Banho, Tempo de Ecrã) ──
 // O código antigo ainda consulta estes elementos; devolve um elemento vazio (fora da página)
@@ -4796,7 +4974,7 @@ function updateWaterProgress() {
   document.getElementById('ov-water').textContent = waterCount + '/' + waterGoal;
 
   const tag = document.getElementById('waterTag');
-  if(waterCount === 0)            tag.innerHTML = '<span class="tag tag-red">sem água ⚠</span>';
+  if(waterCount === 0)            tag.innerHTML = '<span class="tag tag-amber">ainda sem água</span>';
   else if(waterCount < waterGoal/2) tag.innerHTML = '<span class="tag tag-amber">bebe mais</span>';
   else if(waterCount < waterGoal)  tag.innerHTML = '<span class="tag tag-sky">a caminho ✓</span>';
   else                            tag.innerHTML = '<span class="tag tag-green">meta atingida! ✓</span>';
@@ -7392,13 +7570,13 @@ function mascotStreak() {
     if (typeof DB === 'undefined' || typeof localDateStr !== 'function') return 0;
     const start = new Date();
     if (!(DB[localDateStr(start)] && DB[localDateStr(start)].savedAt)) start.setDate(start.getDate() - 1);
-    let n = 0;
+    let n = 0, gaps = 0;
     for (let i = 0; i < 400; i++) {
       const d = new Date(start);
       d.setDate(start.getDate() - i);
       const k = localDateStr(d);
-      if (DB[k] && DB[k].savedAt) n++;
-      else break;
+      if (DB[k] && DB[k].savedAt) { n++; gaps = 0; }
+      else if (++gaps >= 3) break; // até 2 dias em pausa; só se perde ao 3.º seguido
     }
     return n;
   } catch (e) { return 0; }
@@ -10491,7 +10669,7 @@ function renderWeeklyWeight() {
   const statusEl = document.getElementById('weeklyWeightStatus');
   if (statusEl) {
     statusEl.dataset.status = status;
-    statusEl.textContent = status === 'feita' ? 'Feita esta semana' : status === 'atrasada' ? 'Atrasada' : 'Em falta';
+    statusEl.textContent = status === 'feita' ? 'Feita esta semana' : status === 'atrasada' ? 'Por fazer esta semana' : 'Por fazer';
   }
   const dateEl = document.getElementById('weeklyWeightDate');
   if (dateEl) dateEl.textContent = 'Semana de ' + weightShortDate(summary.start) + ' a ' + weightShortDate(summary.end);
@@ -10527,7 +10705,7 @@ function renderWeightHistory() {
   const nextPage = document.getElementById('weeklyWeightPageNext');
   if (statusPage) {
     statusPage.dataset.status = status;
-    statusPage.textContent = status === 'feita' ? 'Feita esta semana' : status === 'atrasada' ? 'Atrasada' : 'Em falta';
+    statusPage.textContent = status === 'feita' ? 'Feita esta semana' : status === 'atrasada' ? 'Por fazer esta semana' : 'Por fazer';
   }
   if (nextPage) nextPage.textContent = 'Próxima pesagem: ' + weightLongDate(nextWeightDate());
   const box = document.getElementById('weightWeekHistory');
@@ -10923,7 +11101,7 @@ let swRegistration = null;
 async function initPWA() {
   if (!('serviceWorker' in navigator)) return;
   try {
-    swRegistration = await navigator.serviceWorker.register('/diario-de-vida/sw.js');
+    swRegistration = await navigator.serviceWorker.register('sw.js');
   } catch(e) { console.log('SW falhou:', e); }
 }
 
@@ -11659,23 +11837,23 @@ function renderLast5Days() {
         <span style="font-family:'JetBrains Mono',monospace;font-size: calc(10px * var(--font-scale));color:var(--muted);">${dateLabel}</span>
         ${isToday ? '<span style="font-family:\'JetBrains Mono\',monospace;font-size: calc(10px * var(--font-scale));background:var(--moss);color:#0a0d13;padding:2px 7px;border-radius:20px;margin-left:auto;">hoje</span>' : ''}
       </div>
-      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+      <div style="display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;">
 
         <div style="background:var(--bg);border-radius:10px;padding:12px;">
           <div style="font-family:'JetBrains Mono',monospace;font-size: calc(10px * var(--font-scale));color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">🌙 Sono</div>
-          <div style="font-size: calc(18px * var(--font-scale));font-weight:700;color:${sonoColor};font-family:'JetBrains Mono',monospace;">${sonoTxt}</div>
+          <div style="font-size: calc(18px * var(--font-scale));font-weight:700;color:${sonoColor};font-family:'JetBrains Mono',monospace;overflow-wrap:anywhere;">${sonoTxt}</div>
           <div style="font-size: calc(10px * var(--font-scale));color:var(--muted);margin-top:3px;font-family:'JetBrains Mono',monospace;">${sonoSub}</div>
         </div>
 
         <div style="background:var(--bg);border-radius:10px;padding:12px;">
           <div style="font-family:'JetBrains Mono',monospace;font-size: calc(10px * var(--font-scale));color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">⚖️ Peso</div>
-          <div style="font-size: calc(18px * var(--font-scale));font-weight:700;color:${pesoColor};font-family:'JetBrains Mono',monospace;">${pesoTxt}</div>
+          <div style="font-size: calc(18px * var(--font-scale));font-weight:700;color:${pesoColor};font-family:'JetBrains Mono',monospace;overflow-wrap:anywhere;">${pesoTxt}</div>
           <div style="font-size: calc(10px * var(--font-scale));color:var(--muted);margin-top:3px;font-family:'JetBrains Mono',monospace;">${pesoSub}</div>
         </div>
 
         <div style="background:var(--bg);border-radius:10px;padding:12px;">
           <div style="font-family:'JetBrains Mono',monospace;font-size: calc(10px * var(--font-scale));color:var(--muted);text-transform:uppercase;letter-spacing:1px;margin-bottom:6px;">💼 Trabalho</div>
-          <div style="font-size: calc(18px * var(--font-scale));font-weight:700;color:${trabalhoColor};font-family:'JetBrains Mono',monospace;">${trabalhoTxt}</div>
+          <div style="font-size: calc(18px * var(--font-scale));font-weight:700;color:${trabalhoColor};font-family:'JetBrains Mono',monospace;overflow-wrap:anywhere;">${trabalhoTxt}</div>
           <div style="font-size: calc(10px * var(--font-scale));color:var(--muted);margin-top:3px;font-family:'JetBrains Mono',monospace;">${trabalhoSub}</div>
         </div>
 
@@ -12356,6 +12534,505 @@ setTimeout(() => {
 setTimeout(renderMascot, 300);
 setTimeout(renderMascot, 2500);
 setInterval(renderMascot, 60000);
+
+/* ═══════════════════════════════════════════════════════════════════
+   AÇÕES RÁPIDAS + CHECK-IN DE HUMOR — camada aditiva do Resumo
+   Não substitui nada: usa o mesmo DB[TODAY], o mesmo saveData() e as
+   mesmas chaves locais. Sem sessão, guarda só no dispositivo.
+   ═══════════════════════════════════════════════════════════════════ */
+var HX_MOOD_KEY   = 'dvHomeMood';    // espelho local: { 'YYYY-MM-DD': {mood, trigger, note, at} }
+var HX_DAYOFF_KEY = 'dvHomeDayOff';  // modo «dia difícil»
+
+var HX_MOODS = [
+  { v: 1, emoji: '😞', label: 'em baixo' },
+  { v: 2, emoji: '🙁', label: 'assim assim' },
+  { v: 3, emoji: '😐', label: 'neutro' },
+  { v: 4, emoji: '🙂', label: 'bem' },
+  { v: 5, emoji: '😄', label: 'muito bem' }
+];
+
+var HX_TRIGGERS = [
+  'Não falei com ninguém hoje',
+  'Dia sem sair de casa',
+  'Muito tempo ao ecrã',
+  'Trabalho a invadir o serão',
+  'Dia desorganizado',
+  'Pouca luz natural'
+];
+
+var _hxPick = 0;
+var _hxTrigger = '';
+var _hxSavedId = '';
+var _hxRows = null;
+var _hxChain = Promise.resolve();
+
+function hxRead(k, f) {
+  try { var v = JSON.parse(localStorage.getItem(k) || 'null'); return v == null ? f : v; }
+  catch (e) { return f; }
+}
+function hxWrite(k, v) {
+  try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {}
+}
+function hxEsc(t) {
+  return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) {
+    return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+  });
+}
+function hxPickMsg(list) { return list[Math.floor(Math.random() * list.length)]; }
+
+function hxToast(msg) {
+  var el = document.getElementById('hxToast');
+  if (!el) { return; }
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(hxToast._t);
+  hxToast._t = setTimeout(function () { el.classList.remove('show'); }, 3600);
+}
+function hxPop(btn) {
+  if (!btn) { return; }
+  btn.classList.remove('hx-pop');
+  void btn.offsetWidth;
+  btn.classList.add('hx-pop');
+}
+
+/* ── ações de 1 toque ───────────────────────────────────────────── */
+
+function hxWater(btn) {
+  hxPop(btn);
+  if (waterCount >= waterGoal) {
+    hxToast('Já chegaste à meta de hoje. Um copo a mais também conta 💧');
+    return;
+  }
+  waterCount++;
+  try { renderWaterDrops(); } catch (e) {}
+  try { updateWaterProgress(); } catch (e) {}
+  try { saveData(true); } catch (e) {}
+  hxMetaUpdate();
+  hxToast(hxPickMsg([
+    'Um copo a mais. O corpo agradece 💧',
+    'Feito. Sem pressa, ao teu ritmo.',
+    'Boa. Um gole de cada vez.'
+  ]));
+}
+
+function hxBreak(btn) {
+  hxPop(btn);
+  counters.pausas = (counters.pausas || 0) + 1;
+  try { saveData(true); } catch (e) {}
+  hxMetaUpdate();
+  hxToast(hxPickMsg([
+    'Pausa registada. O trabalho espera um bocadinho ☕',
+    'Boa ideia. Levanta os ombros e respira.',
+    'Pausa conta como trabalho feito.'
+  ]));
+}
+
+function hxLight(btn) {
+  hxPop(btn);
+  if (!DB[TODAY]) { DB[TODAY] = {}; }
+  var d = DB[TODAY];
+  d.lightCount = (parseFloat(d.lightCount) || 0) + 1;
+  if (!Array.isArray(d.lightAt)) { d.lightAt = []; }
+  d.lightAt.push(new Date().toISOString());
+  d.lightAt = d.lightAt.slice(-20);
+  try { saveData(true); } catch (e) {}
+  hxMetaUpdate();
+  hxToast(hxPickMsg([
+    'Luz natural registada. Cinco minutos junto à janela já contam 🌤️',
+    'Feito. Se puderes, olha para longe por 20 segundos.',
+    'Anotado. A luz lá fora também mexe com o ânimo.'
+  ]));
+}
+
+function hxMetaUpdate() {
+  try {
+    var w = document.getElementById('hxMetaWater');
+    if (w) { w.textContent = waterCount + ' / ' + waterGoal + ' copos'; }
+    var b = document.getElementById('hxBtnWater');
+    if (b) { b.classList.toggle('on', waterCount > 0 && waterCount >= waterGoal); }
+
+    var p = document.getElementById('hxMetaBreak');
+    if (p) { p.textContent = (counters.pausas || 0) + ' hoje'; }
+
+    var day = DB[TODAY] || {};
+    var l = document.getElementById('hxMetaLight');
+    if (l) { l.textContent = (parseFloat(day.lightCount) || 0) + ' hoje'; }
+
+    var m = document.getElementById('hxMetaMood');
+    if (m) {
+      var e = hxMoodFor(TODAY);
+      var info = e ? hxMoodInfo(e.mood) : null;
+      m.textContent = info ? (info.emoji + ' ' + info.label) : 'como te sentes?';
+    }
+  } catch (err) {}
+}
+
+/* manter a meta dos botões sincronizada quando a água é registada nos copos */
+(function () {
+  if (typeof updateWaterProgress !== 'function') { return; }
+  var _origWaterProgress = updateWaterProgress;
+  updateWaterProgress = function () {
+    var r = _origWaterProgress.apply(this, arguments);
+    try { hxMetaUpdate(); } catch (e) {}
+    return r;
+  };
+})();
+
+/* ── humor: guardar, ler e mostrar ──────────────────────────────── */
+
+function hxMoodInfo(v) {
+  for (var i = 0; i < HX_MOODS.length; i++) {
+    if (Number(HX_MOODS[i].v) === Number(v)) { return HX_MOODS[i]; }
+  }
+  return null;
+}
+function hxMoodsLocal() {
+  var all = hxRead(HX_MOOD_KEY, {});
+  return (all && typeof all === 'object') ? all : {};
+}
+function hxSaveMoodLocal(date, entry) {
+  var all = hxMoodsLocal();
+  all[date] = entry;
+  hxWrite(HX_MOOD_KEY, all);
+}
+function hxMoodFor(date) {
+  var all = hxMoodsLocal();
+  if (all[date]) { return all[date]; }
+  var d = DB[date] || {};
+  return d.moodCheckin || null;
+}
+function hxMoodMap() {
+  var map = {};
+  var local = hxMoodsLocal();
+  Object.keys(local).forEach(function (d) { map[d] = local[d]; });
+  (_hxRows || []).forEach(function (r) {
+    if (r && r.date && !map[r.date]) { map[r.date] = r; }
+  });
+  try {
+    Object.keys(DB).forEach(function (d) {
+      if (!map[d] && DB[d] && DB[d].moodCheckin) { map[d] = DB[d].moodCheckin; }
+    });
+  } catch (e) {}
+  return map;
+}
+
+function hxRenderMoodSheet() {
+  var grid = document.getElementById('hxMoods');
+  if (grid && !grid.children.length) {
+    grid.innerHTML = HX_MOODS.map(function (m) {
+      return '<button type="button" class="hx-mood" data-mood="' + m.v + '" aria-label="' + hxEsc(m.label) + '">' +
+        '<span class="em" aria-hidden="true">' + m.emoji + '</span>' +
+        '<span class="nm">' + hxEsc(m.label) + '</span></button>';
+    }).join('');
+    grid.querySelectorAll('.hx-mood').forEach(function (b) {
+      b.addEventListener('click', function () { hxPickMood(Number(b.getAttribute('data-mood'))); });
+    });
+  }
+  var trg = document.getElementById('hxTrigs');
+  if (trg && !trg.children.length) {
+    trg.innerHTML = HX_TRIGGERS.map(function (t) {
+      return '<button type="button" class="hx-trig" data-trigger="' + hxEsc(t) + '">' + hxEsc(t) + '</button>';
+    }).join('');
+    trg.querySelectorAll('.hx-trig').forEach(function (b) {
+      b.addEventListener('click', function () {
+        var val = b.getAttribute('data-trigger');
+        _hxTrigger = (_hxTrigger === val) ? '' : val;
+        trg.querySelectorAll('.hx-trig').forEach(function (x) {
+          x.classList.toggle('sel', x.getAttribute('data-trigger') === _hxTrigger);
+        });
+      });
+    });
+  }
+}
+
+function hxOpenMood() {
+  hxRenderMoodSheet();
+  _hxPick = 0;
+  _hxTrigger = '';
+  _hxSavedId = '';
+  var note = document.getElementById('hxNote');
+  if (note) { note.value = ''; }
+  var step2 = document.getElementById('hxStep2');
+  if (step2) { step2.hidden = true; }
+  var sub = document.getElementById('hxSheetSub');
+  if (sub) { sub.textContent = 'Um toque chega. O resto é opcional.'; }
+  var grid = document.getElementById('hxMoods');
+  if (grid) { grid.querySelectorAll('.hx-mood').forEach(function (b) { b.classList.remove('sel'); }); }
+  var trg = document.getElementById('hxTrigs');
+  if (trg) { trg.querySelectorAll('.hx-trig').forEach(function (b) { b.classList.remove('sel'); }); }
+  var sheet = document.getElementById('hxSheet');
+  if (sheet) { sheet.classList.add('open'); }
+  document.body.style.overflow = 'hidden';
+  setTimeout(function () {
+    var first = document.querySelector('#hxMoods .hx-mood');
+    if (first) { first.focus(); }
+  }, 80);
+}
+
+function hxCloseMood() {
+  var sheet = document.getElementById('hxSheet');
+  if (sheet) { sheet.classList.remove('open'); }
+  document.body.style.overflow = '';
+}
+
+function hxPickMood(v) {
+  _hxPick = v;
+  var grid = document.getElementById('hxMoods');
+  if (grid) {
+    grid.querySelectorAll('.hx-mood').forEach(function (b) {
+      b.classList.toggle('sel', Number(b.getAttribute('data-mood')) === v);
+    });
+  }
+  var step2 = document.getElementById('hxStep2');
+  if (step2) { step2.hidden = false; }
+
+  var info = hxMoodInfo(v);
+  var entry = { mood: v, trigger: '', note: '', at: new Date().toISOString() };
+  hxSaveMoodLocal(TODAY, entry);
+  if (!DB[TODAY]) { DB[TODAY] = {}; }
+  DB[TODAY].moodCheckin = entry;
+  try { selectedMood = String(v); } catch (e) {}
+  try { saveData(true); } catch (e) {}
+  hxMetaUpdate();
+  hxRenderDays();
+  hxRenderObs();
+
+  var sub = document.getElementById('hxSheetSub');
+  if (sub) {
+    sub.textContent = 'Anotado' + (info ? ' · ' + info.label : '') +
+      '. Se quiseres, diz o que contribuiu — ou fecha e fica assim.';
+  }
+
+  _hxChain = _hxChain.then(function () {
+    return hxPushCloud(entry, _hxSavedId || '');
+  }).then(function (id) {
+    if (id) { _hxSavedId = id; }
+  }).catch(function () {});
+}
+
+function hxSaveMood() {
+  if (!_hxPick) { return; }
+  var noteEl = document.getElementById('hxNote');
+  var note = String((noteEl && noteEl.value) || '').trim().slice(0, 120);
+  var trigger = _hxTrigger || '';
+  if (!note && !trigger) { hxCloseMood(); return; }
+
+  var entry = { mood: _hxPick, trigger: trigger, note: note, at: new Date().toISOString() };
+  hxSaveMoodLocal(TODAY, entry);
+  if (!DB[TODAY]) { DB[TODAY] = {}; }
+  DB[TODAY].moodCheckin = entry;
+  try { selectedMood = String(_hxPick); } catch (e) {}
+  try { saveData(true); } catch (e) {}
+  hxCloseMood();
+  hxMetaUpdate();
+  hxRenderDays();
+  hxRenderObs();
+  hxToast('Anotado. Obrigado por contares mais um pouco.');
+
+  _hxChain = _hxChain.then(function () {
+    return hxPushCloud(entry, _hxSavedId || '');
+  }).then(function (id) {
+    if (id) { _hxSavedId = id; }
+  }).catch(function () {});
+}
+
+async function hxPushCloud(entry, updateId) {
+  try {
+    if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+      var res = await supabaseClient.auth.getSession();
+      var session = res && res.data ? res.data.session : null;
+      if (session && session.user) {
+        if (updateId) {
+          var up = await supabaseClient.from('mood_checkins')
+            .update({ mood: entry.mood, trigger: entry.trigger || null, note: entry.note || null })
+            .eq('id', updateId).eq('user_id', session.user.id);
+          if (!up.error) { return updateId; }
+          console.warn('mood_checkins update:', up.error.message);
+        }
+        var ins = await supabaseClient.from('mood_checkins')
+          .insert({
+            user_id: session.user.id,
+            mood: entry.mood,
+            trigger: entry.trigger || null,
+            note: entry.note || null
+          })
+          .select('id')
+          .maybeSingle();
+        if (!ins.error && ins.data) { return ins.data.id; }
+        if (ins.error) { console.warn('mood_checkins:', ins.error.message); }
+      }
+    }
+  } catch (e) { console.warn('mood_checkins offline:', e && e.message); }
+  return '';
+}
+
+async function hxLoadRows(force) {
+  if (_hxRows && !force) { return _hxRows; }
+  var rows = [];
+  try {
+    if (typeof supabaseClient !== 'undefined' && supabaseClient) {
+      var res = await supabaseClient.auth.getSession();
+      var session = res && res.data ? res.data.session : null;
+      if (session && session.user) {
+        var q = await supabaseClient
+          .from('mood_checkins')
+          .select('mood,trigger,note,created_at')
+          .order('created_at', { ascending: false })
+          .limit(120);
+        if (!q.error && Array.isArray(q.data)) {
+          rows = q.data.map(function (r) {
+            var at = r.created_at ? new Date(r.created_at) : null;
+            return {
+              mood: r.mood, trigger: r.trigger, note: r.note, at: r.created_at,
+              date: (at && !isNaN(at.getTime())) ? localDateStr(at) : String(r.created_at || '').slice(0, 10)
+            };
+          });
+        } else if (q.error) {
+          console.warn('mood_checkins select:', q.error.message);
+        }
+      }
+    }
+  } catch (e) { console.warn('mood_checkins offline:', e && e.message); }
+  _hxRows = rows;
+  return rows;
+}
+
+function hxRenderDays() {
+  var box = document.getElementById('hxDays');
+  if (!box) { return; }
+  var map = hxMoodMap();
+  var out = '';
+  for (var i = 13; i >= 0; i--) {
+    var d = new Date();
+    d.setDate(d.getDate() - i);
+    var key = localDateStr(d);
+    var row = map[key];
+    var info = row ? hxMoodInfo(row.mood) : null;
+    var cls = 'hx-day' + (info ? '' : ' is-empty') + (i === 0 ? ' is-today' : '');
+    var label = key + (info ? ' · ' + info.label : ' · sem registo') +
+      (row && row.trigger ? ' · ' + row.trigger : '') +
+      (row && row.note ? ' · ' + row.note : '');
+    out += '<div class="' + cls + '" role="listitem" aria-label="' + hxEsc(label) + '" title="' + hxEsc(label) + '">' +
+      '<span class="hx-dot" aria-hidden="true">' + (info ? info.emoji : '·') + '</span>' +
+      '<span class="hx-day-num">' + key.slice(8, 10) + '</span>' +
+      '</div>';
+  }
+  box.innerHTML = out;
+}
+
+function hxRenderObs() {
+  var box = document.getElementById('hxObs');
+  if (!box) { return; }
+  var map = hxMoodMap();
+  var rows = [];
+  for (var i = 0; i < 14; i++) {
+    var d = new Date();
+    d.setDate(d.getDate() - i);
+    var key = localDateStr(d);
+    if (map[key] && map[key].mood) { rows.push(map[key]); }
+  }
+  if (rows.length < 3) {
+    box.textContent = rows.length === 0
+      ? 'Ainda não há registos. Quando quiseres, um toque em Humor chega.'
+      : 'Já tenho ' + rows.length + ' registo(s). Com mais alguns consigo dizer algo que preste — sem pressa.';
+    return;
+  }
+  var avg = rows.reduce(function (s, r) { return s + Number(r.mood); }, 0) / rows.length;
+
+  var best = null;
+  HX_TRIGGERS.forEach(function (t) {
+    var withT = rows.filter(function (r) { return r.trigger === t; });
+    var without = rows.filter(function (r) { return r.trigger !== t; });
+    if (withT.length < 2 || without.length < 2) { return; }
+    var a = withT.reduce(function (s, r) { return s + Number(r.mood); }, 0) / withT.length;
+    var b = without.reduce(function (s, r) { return s + Number(r.mood); }, 0) / without.length;
+    var delta = b - a;
+    if (delta >= 0.4 && (!best || delta > best.delta)) { best = { t: t, a: a, b: b, delta: delta }; }
+  });
+
+  var msg;
+  if (best) {
+    msg = 'Reparei que nos dias em que assinalaste «' + best.t + '» o teu humor ficou em média ' +
+      best.a.toFixed(1) + '/5, contra ' + best.b.toFixed(1) + '/5 nos outros. ' +
+      'É só o que os teus registos mostram — não é um diagnóstico.';
+  } else if (avg >= 3.6) {
+    msg = 'Estes 14 dias andaram mais para o alto: média de ' + avg.toFixed(1) + '/5 em ' + rows.length + ' registos. ' +
+      'Vale a pena reparar no que tem ajudado.';
+  } else if (avg <= 2.4) {
+    msg = 'Tem sido uma quinzena mais pesada (média ' + avg.toFixed(1) + '/5). ' +
+      'Fica registado. Não tens de fazer mais do que estás a fazer.';
+  } else {
+    msg = 'Altos e baixos, como é normal: média de ' + avg.toFixed(1) + '/5 em ' + rows.length + ' registos. ' +
+      'Só te mostro o que escreveste.';
+  }
+  box.textContent = msg;
+}
+
+/* ── «dia difícil»: só água e humor durante 24 h ─────────────────── */
+
+function hxDayOffState() {
+  var s = hxRead(HX_DAYOFF_KEY, null);
+  if (!s || !s.until) { return null; }
+  if (Date.now() > s.until) { hxWrite(HX_DAYOFF_KEY, null); return null; }
+  return s;
+}
+function hxApplyDayOff() {
+  var s = hxDayOffState();
+  var on = !!s;
+  document.body.classList.toggle('hx-dayoff', on);
+  var btn = document.getElementById('hxCalmBtn');
+  if (btn) {
+    if (on) {
+      btn.innerHTML = '<span aria-hidden="true">🌧️</span> <b>Modo calmo ligado.</b> Só água e humor até amanhã. Toca para voltar ao normal.';
+    } else {
+      btn.innerHTML = '<span aria-hidden="true">🌧️</span> <b>Dia difícil.</b> Fico só com água e humor, sem te chatear com o resto durante 24 h.';
+    }
+  }
+}
+function hxDayOff() {
+  if (hxDayOffState()) {
+    hxWrite(HX_DAYOFF_KEY, null);
+    hxApplyDayOff();
+    hxToast('Voltei ao normal. Sem pressa, como sempre.');
+    return;
+  }
+  hxWrite(HX_DAYOFF_KEY, { until: Date.now() + 24 * 60 * 60 * 1000 });
+  hxApplyDayOff();
+  hxToast('Está bem. Fico só com água e humor até amanhã. 🌧️');
+}
+
+/* ── arranque ───────────────────────────────────────────────────── */
+
+document.addEventListener('keydown', function (e) {
+  if (e.key !== 'Escape') { return; }
+  var sheet = document.getElementById('hxSheet');
+  if (sheet && sheet.classList.contains('open')) {
+    hxCloseMood();
+    var btn = document.getElementById('hxBtnMood');
+    if (btn) { btn.focus(); }
+  }
+});
+document.addEventListener('visibilitychange', function () {
+  if (!document.hidden) { try { hxMetaUpdate(); } catch (e) {} }
+});
+
+(function hxBoot() {
+  var run = function () {
+    try { hxRenderMoodSheet(); } catch (e) {}
+    try { hxMetaUpdate(); } catch (e) {}
+    try { hxApplyDayOff(); } catch (e) {}
+    try { hxRenderDays(); } catch (e) {}
+    try { hxRenderObs(); } catch (e) {}
+  };
+  if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', run); }
+  else { run(); }
+  setTimeout(run, 400);
+  setTimeout(function () {
+    try {
+      hxLoadRows(true).then(function () { hxRenderDays(); hxRenderObs(); });
+    } catch (e) {}
+  }, 1500);
+})();
 
 </script>
 </div><!-- end appContent -->
