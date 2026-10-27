@@ -199,7 +199,7 @@ Para forçar sem esperar pela hora certa, no **SQL Editor**:
 ```sql
 -- põe o lembrete da manhã à hora local de agora
 update public.reminder_settings
-set manha = to_char((now() at time zone tz)::time, 'HH24:MI');
+set manha = date_trunc('minute', now() at time zone tz)::time;
 
 -- limpa o registo de hoje para ele não ser considerado "já enviado"
 delete from public.reminder_log
