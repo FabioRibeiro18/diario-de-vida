@@ -7460,6 +7460,7 @@ function openRemindersModal() {
   const maxEl = document.getElementById('remMaxDia');
   if (maxEl) maxEl.value = String(hxNotifMax());
   document.getElementById('remEnabled').checked = prefs.enabled!==false;
+  try { hxPushStatus(); } catch (e) {}
   modal.classList.add('open');
 }
 
@@ -7490,6 +7491,8 @@ async function saveReminders() {
   cfgSave('dvReminders', JSON.stringify(prefs));
   const maxEl = document.getElementById('remMaxDia');
   hxWrite(HX_NOTIF_MAX_KEY, maxEl ? Math.max(1, Math.min(5, parseInt(maxEl.value, 10) || 3)) : hxNotifMax());
+  try { await hxPushSyncSettings(); } catch (e) {}
+  if (hxRead(HX_PUSH_FLAG, false) === true) { try { await hxPushSubscribe(); } catch (e) {} }
   closeRemindersModal();
   sendNotification('🔔 Lembretes ativados!', 'Vais receber lembretes diários, no máximo ' + hxNotifMax() + ' por dia.', true);
 }
@@ -9336,7 +9339,7 @@ function hxNotifAck() {
 
 /* ── versão ────────────────────────────────────────────────────── */
 
-var APP_VERSION = '2026.10.27.2';
+var APP_VERSION = '2026.10.27.3';
 var APP_BUILT = '27 out 2026';
 
 function hxRenderVersion() {
@@ -9896,6 +9899,182 @@ function hxFoldToggle(id) {
   hxWrite(HX_FOLD_KEY, st);
   hxFoldApply();
 }
+
+/* ── push: avisos com a app fechada ────────────────────────────── */
+
+var HX_VAPID_PUBLIC = 'BGwDndPahI6fqWBTjfz7i3pcCPS_e7933tdYXYmBaVxfKZyI_K4ATv59Pzn5SrMppROIGqD0lUzNR8sCd4SqSqk';
+var HX_PUSH_FLAG = 'dvPushOn';
+
+function hxPushSupported() {
+  return ('serviceWorker' in navigator) && ('PushManager' in window) && ('Notification' in window);
+}
+
+function hxB64ToBytes(b64) {
+  var pad = new Array(((4 - (b64.length % 4)) % 4) + 1).join('=');
+  var s = (b64 + pad).replace(/-/g, '+').replace(/_/g, '/');
+  var raw = atob(s);
+  var out = new Uint8Array(raw.length);
+  for (var i = 0; i < raw.length; i++) { out[i] = raw.charCodeAt(i); }
+  return out;
+}
+
+async function hxPushSession() {
+  try {
+    if (typeof supabaseClient === 'undefined' || !supabaseClient) { return null; }
+    var res = await supabaseClient.auth.getSession();
+    return (res && res.data && res.data.session) ? res.data.session : null;
+  } catch (e) { return null; }
+}
+
+async function hxPushSubscribe() {
+  if (!hxPushSupported()) { return { ok: false, msg: 'Este browser não suporta avisos em segundo plano.' }; }
+  var granted = await requestNotifications();
+  if (!granted) { return { ok: false, msg: 'Falta autorizar as notificações no browser.' }; }
+
+  var reg = swRegistration;
+  if (!reg) {
+    try { reg = await navigator.serviceWorker.ready; } catch (e) { reg = null; }
+  }
+  if (!reg) { return { ok: false, msg: 'O service worker ainda não arrancou. Recarrega a página.' }; }
+
+  var sub = null;
+  try { sub = await reg.pushManager.getSubscription(); } catch (e) {}
+  if (!sub) {
+    try {
+      sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: hxB64ToBytes(HX_VAPID_PUBLIC)
+      });
+    } catch (e) {
+      return { ok: false, msg: 'O browser recusou a subscrição: ' + (e && e.message || 'sem detalhe') };
+    }
+  }
+
+  var session = await hxPushSession();
+  if (!session) {
+    hxWrite(HX_PUSH_FLAG, true);
+    return { ok: true, msg: 'Subscrito neste dispositivo. Inicia sessão para o servidor poder enviar.' };
+  }
+
+  try {
+    var j = sub.toJSON();
+    var up = await supabaseClient.from('push_subscriptions').upsert({
+      user_id: session.user.id,
+      endpoint: j.endpoint,
+      p256dh: j.keys.p256dh,
+      auth: j.keys.auth,
+      user_agent: String(navigator.userAgent || '').slice(0, 180),
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'endpoint' });
+    if (up.error) { return { ok: true, msg: 'Subscrito, mas a conta recusou: ' + up.error.message }; }
+  } catch (e) {
+    return { ok: true, msg: 'Subscrito só neste dispositivo (servidor indisponível).' };
+  }
+
+  hxWrite(HX_PUSH_FLAG, true);
+  return { ok: true, msg: 'Ligado. Os lembretes chegam mesmo com a app fechada.' };
+}
+
+async function hxPushUnsubscribe() {
+  hxWrite(HX_PUSH_FLAG, false);
+  var session = await hxPushSession();
+  try {
+    var reg = swRegistration || (await navigator.serviceWorker.ready);
+    var sub = reg ? await reg.pushManager.getSubscription() : null;
+    if (sub) {
+      var ep = sub.endpoint;
+      try { await sub.unsubscribe(); } catch (e) {}
+      if (session && supabaseClient) {
+        await supabaseClient.from('push_subscriptions').delete().eq('endpoint', ep);
+      }
+    }
+  } catch (e) { console.warn('push off:', e && e.message); }
+  return { ok: true, msg: 'Desligado. Os lembretes ficam só com a app aberta.' };
+}
+
+async function hxPushStatus() {
+  var el = document.getElementById('hxPushStatus');
+  var btn = document.getElementById('hxPushBtn');
+  if (!el || !btn) { return; }
+  var on = hxRead(HX_PUSH_FLAG, false) === true;
+
+  if (!hxPushSupported()) {
+    el.textContent = 'Este browser não suporta avisos com a app fechada.';
+    btn.textContent = 'Indisponível';
+    btn.disabled = true;
+    return;
+  }
+  btn.disabled = false;
+  if ('Notification' in window && Notification.permission === 'denied') {
+    el.textContent = 'As notificações estão bloqueadas nas definições do browser.';
+    btn.textContent = 'Bloqueado';
+    return;
+  }
+  if (!on) {
+    el.textContent = 'Opcional: um toque para receberes no telemóvel, sem abrires a app.';
+    btn.textContent = 'Ativar';
+    return;
+  }
+  var session = await hxPushSession();
+  el.textContent = session
+    ? 'Ligado. Chega ao telemóvel mesmo com a app fechada.'
+    : 'Ligado neste dispositivo. Inicia sessão para o servidor enviar.';
+  btn.textContent = 'Desligar';
+}
+
+async function hxPushToggle(btn) {
+  if (btn) { btn.disabled = true; }
+  var on = hxRead(HX_PUSH_FLAG, false) === true;
+  var r = on ? await hxPushUnsubscribe() : await hxPushSubscribe();
+  if (btn) { btn.disabled = false; }
+  await hxPushStatus();
+  hxToast(r.msg);
+}
+
+/* envia as preferências para o servidor (só com sessão) */
+async function hxPushSyncSettings() {
+  var session = await hxPushSession();
+  if (!session) { return false; }
+  var prefs = {};
+  try { prefs = JSON.parse(localStorage.getItem('dvReminders') || '{}'); } catch (e) {}
+  var tz = 'Europe/Lisbon';
+  try { tz = Intl.DateTimeFormat().resolvedOptions().timeZone || tz; } catch (e) {}
+  var sem = prefs.pesoSemana || {};
+  var tr = prefs.treino || {};
+  try {
+    var r = await supabaseClient.from('reminder_settings').upsert({
+      user_id: session.user.id,
+      enabled: prefs.enabled !== false,
+      manha: prefs.manha || null,
+      almoco: prefs.almoco || null,
+      noite: prefs.noite || null,
+      peso_enabled: sem.enabled !== false,
+      peso_dia: Number(sem.dia == null ? 0 : sem.dia),
+      peso_hora: sem.hora || '09:00',
+      treino_enabled: tr.enabled !== false,
+      treino_hora: tr.hora || '18:00',
+      max_dia: hxNotifMax(),
+      tz: tz,
+      updated_at: new Date().toISOString()
+    }, { onConflict: 'user_id' });
+    if (r.error) { console.warn('reminder_settings:', r.error.message); return false; }
+    return true;
+  } catch (e) { console.warn('reminder_settings:', e && e.message); return false; }
+}
+
+(function hxPushBoot() {
+  try {
+    navigator.serviceWorker.addEventListener('message', function (e) {
+      if (e.data && e.data.type === 'PUSH_RESUBSCRIBE') { hxPushSubscribe(); }
+    });
+  } catch (e) {}
+  setTimeout(function () {
+    try { hxPushStatus(); } catch (e) {}
+    if (hxRead(HX_PUSH_FLAG, false) === true && hxPushSupported()) {
+      hxPushSubscribe().then(function (r) { if (!r.ok) { console.warn('push:', r.msg); } }).catch(function () {});
+    }
+  }, 3200);
+})();
 
 /* ── arranque ───────────────────────────────────────────────────── */
 

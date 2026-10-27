@@ -1736,6 +1736,15 @@ hf_... (2ª chave)" style="width:100%;background:var(--surface);border:1px solid
       </div>
     </div>
     <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;">
+        <div style="min-width:0;">
+          <div style="font-size: calc(12px * var(--font-scale));color:var(--text2);">Avisar mesmo com a app fechada</div>
+          <div id="hxPushStatus" style="font-size: calc(11px * var(--font-scale));color:var(--muted);margin-top:3px;line-height:1.5;">—</div>
+        </div>
+        <button type="button" class="hx-mini" id="hxPushBtn" onclick="hxPushToggle(this)">Ativar</button>
+      </div>
+    </div>
+    <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border);">
       <div style="font-size: calc(12px * var(--font-scale));color:var(--text2);margin-bottom:6px;">Quantos por dia, no máximo?</div>
       <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
         <select id="remMaxDia" aria-label="Máximo de lembretes por dia" style="flex:1;min-width:150px;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size: calc(13px * var(--font-scale));outline:none;">
