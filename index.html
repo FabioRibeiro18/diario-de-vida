@@ -54,26 +54,26 @@
 .tmp-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
 .tmp-stat{font-family:'JetBrains Mono',monospace;font-size: calc(10px * var(--font-scale));color:var(--text2);background:var(--surface);border:1px solid var(--border);border-radius:999px;padding:4px 9px}
 .tmp-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
-.tmp-day{position:relative;display:flex;flex-direction:column;gap:12px;padding:14px;border:1px solid var(--border);border-radius:16px;background:linear-gradient(160deg,var(--surface),var(--card));transition:transform .12s,border-color .12s,box-shadow .12s;min-height:150px}
+.tmp-day{position:relative;display:flex;flex-direction:column;gap:12px;padding:14px;border:1px solid var(--border);border-radius:16px;background:linear-gradient(160deg,var(--surface),var(--card));transition:transform .12s,border-color .12s,box-shadow .12s;min-height:150px;min-width:0;overflow:hidden}
 .tmp-day.click{cursor:pointer}
 .tmp-day.click:hover{transform:translateY(-2px);border-color:var(--border2);box-shadow:0 12px 26px rgba(0,0,0,.22)}
 .tmp-day.done{border-color:rgba(var(--accent-rgb),.45);background:linear-gradient(160deg,rgba(var(--accent-rgb),.08),var(--card))}
 .tmp-day.today{border-color:var(--moss);background:linear-gradient(160deg,rgba(var(--accent-rgb),.14),var(--card));box-shadow:0 0 0 1px var(--moss-d),0 12px 26px rgba(0,0,0,.2)}
 .tmp-day.miss{border-color:rgba(244,114,182,.35);opacity:.9}
 .tmp-day.rest{opacity:.72}
-.tmp-top{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}
-.tmp-date{flex:0 0 auto;text-align:left;background:none;border:0;padding:0}
+.tmp-top{display:flex;align-items:flex-start;justify-content:space-between;gap:6px 8px;flex-wrap:wrap}
+.tmp-date{flex:0 1 auto;min-width:0;text-align:left;background:none;border:0;padding:0}
 .tmp-date b{display:block;font-family:'JetBrains Mono',monospace;font-size: calc(24px * var(--font-scale));color:var(--text);line-height:1}
 .tmp-date span{display:block;font-size: calc(10px * var(--font-scale));text-transform:uppercase;letter-spacing:1px;color:var(--muted);margin-top:4px}
 .tmp-info{flex:1;display:flex;flex-direction:column;justify-content:flex-end;gap:5px;min-width:0}
 .tmp-title{font-size: calc(10px * var(--font-scale));text-transform:uppercase;letter-spacing:1px;color:var(--muted);white-space:normal}
-.tmp-metrics{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap}
+.tmp-metrics{display:flex;align-items:baseline;gap:6px 14px;flex-wrap:wrap}
 .tmp-metric{display:flex;align-items:baseline;gap:4px}
 .tmp-metric b{font-family:'JetBrains Mono',monospace;font-size: calc(23px * var(--font-scale));color:var(--text);line-height:1}
 .tmp-metric span{font-family:'JetBrains Mono',monospace;font-size: calc(10px * var(--font-scale));color:var(--muted)}
 .tmp-metric.rest b{color:var(--muted)}
 .tmp-stats{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px}
-.tmp-status{flex:0 0 auto;font-family:'JetBrains Mono',monospace;font-size: calc(10px * var(--font-scale));text-transform:uppercase;letter-spacing:.4px;padding:4px 8px;border-radius:999px;border:1px solid var(--border);color:var(--text2);background:var(--surface);white-space:nowrap}
+.tmp-status{flex:0 1 auto;min-width:0;max-width:100%;overflow:hidden;text-overflow:ellipsis;font-family:'JetBrains Mono',monospace;font-size: calc(10px * var(--font-scale));text-transform:uppercase;letter-spacing:.4px;padding:4px 8px;border-radius:999px;border:1px solid var(--border);color:var(--text2);background:var(--surface);white-space:nowrap}
 .tmp-status.done{color:var(--moss-l);border-color:rgba(var(--accent-rgb),.5);background:rgba(var(--accent-rgb),.12)}
 .tmp-status.today{color:var(--moss-l);border-color:var(--moss);background:rgba(var(--accent-rgb),.18)}
 .tmp-status.miss{color:var(--rose);border-color:rgba(244,114,182,.4);background:rgba(244,114,182,.1)}
@@ -10240,16 +10240,22 @@ function tmRenderPlanCards() {
       plannedKm += it.distance || 0;
       plannedMin += it.minutes || 0;
     }
+    // Dias já feitos: mostrar o que foi realmente registado (fallback para o plano)
+    const dayData = (trained && DB[it.date]) ? DB[it.date] : {};
+    const realKm = parseFloat(dayData.treadmillDistance) || 0;
+    const realMin = parseFloat(dayData.treadmillTime) || 0;
+    const shownKm = (trained && realKm > 0) ? realKm : it.distance;
+    const shownMin = (trained && realMin > 0) ? realMin : it.minutes;
     const metrics = [];
-    if (it.distance) metrics.push('<div class="tmp-metric"><b>' + it.distance + '</b> <span>km</span></div>');
-    if (it.minutes) metrics.push('<div class="tmp-metric"><b>' + Math.round(it.minutes) + '</b> <span>min</span></div>');
+    if (shownKm) metrics.push('<div class="tmp-metric"><b>' + (Math.round(shownKm * 10) / 10) + '</b> <span>km</span></div>');
+    if (shownMin) metrics.push('<div class="tmp-metric"><b>' + Math.round(shownMin) + '</b> <span>min</span></div>');
     const statsHtml = it.rest
       ? '<div class="tmp-metrics"><div class="tmp-metric rest"><b>—</b></div></div>'
       : '<div class="tmp-metrics">' + (metrics.join('') || '<div class="tmp-metric rest"><b>—</b> <span>livre</span></div>') + '</div>';
     const weekday = it.date ? tmDayName(it.date) : '';
     const dayNum = it.date ? it.date.slice(8, 10) : '·';
     const clickable = !!(it.date && it.date <= TODAY);
-    const canComplete = !!(it.date && it.date <= TODAY && !trained);
+    const canComplete = !!(it.date && it.date <= TODAY && !trained && !it.rest);
     return '<div class="tmp-day ' + cls + (clickable ? ' click' : '') + '"' +
         (it.date ? ' data-date="' + it.date + '"' : '') +
         (clickable ? ' onclick="tmSetDay(\'' + it.date + '\')"' : '') + '>' +
@@ -10257,7 +10263,7 @@ function tmRenderPlanCards() {
         '<div class="tmp-date"><b>' + dayNum + '</b><span>' + (weekday || '—') + '</span></div>' +
         '<div class="tmp-status ' + cls + '">' + badge + ' ' + status + '</div>' +
       '</div>' +
-      '<div class="tmp-info"><div class="tmp-title">' + tmEsc(tmPlanLabel(it)) + '</div>' + statsHtml + '</div>' +
+      '<div class="tmp-info">' + (it.rest ? '' : '<div class="tmp-title">' + tmEsc(tmPlanLabel(it)) + '</div>') + statsHtml + '</div>' +
       (canComplete ? '<button type="button" class="tm-do" title="Registar esta sessão com os valores do plano" onclick="event.stopPropagation();tmCompletePlanned(\'' + it.date + '\',' + (it.distance || 0) + ',' + (it.minutes || 0) + ')">Concluir</button>' : '') +
     '</div>';
   }).join('');
