@@ -140,6 +140,10 @@ pessoa (`tz` em `reminder_settings`, por omissão `Europe/Lisbon`).
 4. Confirma no **Table Editor** que apareceu uma linha em `push_subscriptions` e outra
    em `reminder_settings`.
 
+Debaixo do botão **Ativar** há uma linha que diz o que aconteceu à sincronização:
+"Preferências guardadas na nuvem às HH:MM" ou "A nuvem não recebeu: <motivo>". Se
+disser "sem sessão iniciada", é porque estás em modo convidado.
+
 ### 6.2 Teste 1 — está viva?
 
 Abre no browser (troca o segredo):

@@ -7461,6 +7461,7 @@ function openRemindersModal() {
   if (maxEl) maxEl.value = String(hxNotifMax());
   document.getElementById('remEnabled').checked = prefs.enabled!==false;
   try { hxPushStatus(); } catch (e) {}
+  try { hxSyncStatus(); } catch (e) {}
   modal.classList.add('open');
 }
 
@@ -7470,7 +7471,6 @@ function closeRemindersModal() {
 
 async function saveReminders() {
   const granted = await requestNotifications();
-  if (!granted) { alert('Precisas de permitir notificações primeiro.'); return; }
   let old = {};
   try { old = JSON.parse(localStorage.getItem('dvReminders') || '{}'); } catch (e) {}
   const prefs = Object.assign({}, old, {
@@ -7491,9 +7491,20 @@ async function saveReminders() {
   cfgSave('dvReminders', JSON.stringify(prefs));
   const maxEl = document.getElementById('remMaxDia');
   hxWrite(HX_NOTIF_MAX_KEY, maxEl ? Math.max(1, Math.min(5, parseInt(maxEl.value, 10) || 3)) : hxNotifMax());
-  try { await hxPushSyncSettings(); } catch (e) {}
-  if (hxRead(HX_PUSH_FLAG, false) === true) { try { await hxPushSubscribe(); } catch (e) {} }
+
+  // guarda na nuvem mesmo sem autorização de notificações: são coisas diferentes
+  const sync = await hxPushSyncSettings().catch(() => ({ ok: false, msg: 'falha de rede' }));
+  if (granted && hxRead(HX_PUSH_FLAG, false) === true) { try { await hxPushSubscribe(); } catch (e) {} }
   closeRemindersModal();
+
+  if (!sync.ok) {
+    hxToast('Guardado neste dispositivo. A nuvem não recebeu: ' + sync.msg + '.');
+    return;
+  }
+  if (!granted) {
+    hxToast('Preferências guardadas. Falta autorizar as notificações no browser para receberes os avisos.');
+    return;
+  }
   sendNotification('🔔 Lembretes ativados!', 'Vais receber lembretes diários, no máximo ' + hxNotifMax() + ' por dia.', true);
 }
 
@@ -9339,7 +9350,7 @@ function hxNotifAck() {
 
 /* ── versão ────────────────────────────────────────────────────── */
 
-var APP_VERSION = '2026.10.27.3';
+var APP_VERSION = '2026.10.27.4';
 var APP_BUILT = '27 out 2026';
 
 function hxRenderVersion() {
@@ -9496,6 +9507,10 @@ async function hxRunDiagnostic() {
   var sb = await hxDiagCloud();
   hxDiagRow(sb.kind, sb.txt, sb.det);
 
+  // 7b) lembretes na nuvem
+  var rem = await hxDiagReminders();
+  hxDiagRow(rem.kind, rem.txt, rem.det);
+
   // 8) contexto
   var sessao = 'sem sessão (só este dispositivo)';
   try {
@@ -9562,6 +9577,33 @@ function hxDiagWidth(larg, wait) {
     };
     document.body.appendChild(f);
   });
+}
+
+async function hxDiagReminders() {
+  var session = null;
+  try { session = await hxPushSession(); } catch (e) {}
+  if (!session) {
+    return { kind: 'warn', txt: 'Lembretes na nuvem por confirmar', det: 'sem sessão iniciada — só este dispositivo' };
+  }
+  try {
+    var s = await supabaseClient.from('reminder_settings')
+      .select('enabled,manha,almoco,noite,max_dia')
+      .eq('user_id', session.user.id)
+      .maybeSingle();
+    if (s.error) { return { kind: 'bad', txt: 'Não consegui ler as preferências', det: s.error.message }; }
+    if (!s.data) { return { kind: 'warn', txt: 'Ainda não guardaste os lembretes na nuvem', det: 'Lembretes → Guardar' }; }
+    if (s.data.enabled === false) { return { kind: 'warn', txt: 'Lembretes desligados na nuvem', det: 'liga o toggle e Guardar' }; }
+
+    var p = await supabaseClient.from('push_subscriptions').select('id').eq('user_id', session.user.id);
+    var n = (p && !p.error && Array.isArray(p.data)) ? p.data.length : 0;
+    var horas = 'manhã ' + (s.data.manha || '—') + ' · almoço ' + (s.data.almoco || '—') + ' · noite ' + (s.data.noite || '—');
+    if (!n) {
+      return { kind: 'warn', txt: 'Preferências na nuvem, sem push', det: horas + ' · falta Ativar' };
+    }
+    return { kind: 'ok', txt: 'Lembretes sincronizados', det: n + (n === 1 ? ' dispositivo' : ' dispositivos') + ' · ' + horas };
+  } catch (e) {
+    return { kind: 'warn', txt: 'Não consegui verificar a nuvem', det: String((e && e.message) || e) };
+  }
 }
 
 async function hxDiagCloud() {
@@ -9904,6 +9946,25 @@ function hxFoldToggle(id) {
 
 var HX_VAPID_PUBLIC = 'BGwDndPahI6fqWBTjfz7i3pcCPS_e7933tdYXYmBaVxfKZyI_K4ATv59Pzn5SrMppROIGqD0lUzNR8sCd4SqSqk';
 var HX_PUSH_FLAG = 'dvPushOn';
+var HX_SYNC_LAST = { at: 0, ok: null, msg: '' };
+
+function hxSyncStatus() {
+  var el = document.getElementById('hxSyncStatus');
+  if (!el) { return; }
+  if (!HX_SYNC_LAST.at) {
+    el.textContent = 'Preferências na nuvem: por confirmar.';
+    el.style.color = 'var(--muted)';
+    return;
+  }
+  if (HX_SYNC_LAST.ok) {
+    el.textContent = 'Preferências guardadas na nuvem às ' +
+      new Date(HX_SYNC_LAST.at).toLocaleTimeString('pt-PT', { hour: '2-digit', minute: '2-digit' }) + '.';
+    el.style.color = 'var(--moss-l)';
+  } else {
+    el.textContent = 'A nuvem não recebeu: ' + HX_SYNC_LAST.msg + '.';
+    el.style.color = 'var(--sand)';
+  }
+}
 
 function hxPushSupported() {
   return ('serviceWorker' in navigator) && ('PushManager' in window) && ('Notification' in window);
@@ -10034,7 +10095,11 @@ async function hxPushToggle(btn) {
 /* envia as preferências para o servidor (só com sessão) */
 async function hxPushSyncSettings() {
   var session = await hxPushSession();
-  if (!session) { return false; }
+  if (!session) {
+    HX_SYNC_LAST = { at: Date.now(), ok: false, msg: 'sem sessão iniciada' };
+    hxSyncStatus();
+    return { ok: false, msg: 'sem sessão iniciada' };
+  }
   var prefs = {};
   try { prefs = JSON.parse(localStorage.getItem('dvReminders') || '{}'); } catch (e) {}
   var tz = 'Europe/Lisbon';
@@ -10057,9 +10122,22 @@ async function hxPushSyncSettings() {
       tz: tz,
       updated_at: new Date().toISOString()
     }, { onConflict: 'user_id' });
-    if (r.error) { console.warn('reminder_settings:', r.error.message); return false; }
-    return true;
-  } catch (e) { console.warn('reminder_settings:', e && e.message); return false; }
+    if (r.error) {
+      console.warn('reminder_settings:', r.error.message);
+      HX_SYNC_LAST = { at: Date.now(), ok: false, msg: r.error.message };
+      hxSyncStatus();
+      return { ok: false, msg: r.error.message };
+    }
+    HX_SYNC_LAST = { at: Date.now(), ok: true, msg: '' };
+    hxSyncStatus();
+    return { ok: true, msg: 'preferências na nuvem' };
+  } catch (e) {
+    var m = (e && e.message) || 'sem rede';
+    console.warn('reminder_settings:', m);
+    HX_SYNC_LAST = { at: Date.now(), ok: false, msg: m };
+    hxSyncStatus();
+    return { ok: false, msg: m };
+  }
 }
 
 (function hxPushBoot() {
