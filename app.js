@@ -5216,7 +5216,7 @@ async function loadSheetsUrlFromCloud() {
 }
 
 // ── VERSÃO DA APP E ATUALIZAÇÃO FORÇADA (limpa a cache do service worker; não apaga registos) ──
-var APP_VERSION = '2026.10.30.6';
+var APP_VERSION = '2026.10.30.7';
 var APP_BUILT = '30 out 2026';
 (function() {
   const el = document.getElementById('appVersionLabel');
@@ -11051,6 +11051,23 @@ function hxShopShareWhats() {
   } catch (e) { w = null; }
   if (!w) { hxToast('O browser bloqueou a janela. Copia o texto.'); return; }
   hxShopShareClose();
+}
+
+function hxShopShareSmsHref(txt, apple) {
+  var corpo = encodeURIComponent(String(txt || ''));
+  var ios = (apple == null) ? /iPad|iPhone|iPod/.test(navigator.userAgent || '') : !!apple;
+  return ios ? ('sms:&body=' + corpo) : ('sms:?body=' + corpo);
+}
+
+function hxShopShareSms() {
+  var txt = hxShopShareText();
+  if (!txt) { hxShopShareClose(); hxToast('Não há nada por comprar para partilhar.'); return; }
+  try {
+    window.location.href = hxShopShareSmsHref(txt);
+    hxShopShareClose();
+  } catch (e) {
+    hxToast('Não consegui abrir as mensagens. Copia o texto.');
+  }
 }
 
 function hxShopShareMail() {
