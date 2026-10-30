@@ -5216,7 +5216,7 @@ async function loadSheetsUrlFromCloud() {
 }
 
 // ── VERSÃO DA APP E ATUALIZAÇÃO FORÇADA (limpa a cache do service worker; não apaga registos) ──
-var APP_VERSION = '2026.10.30.3';
+var APP_VERSION = '2026.10.30.4';
 var APP_BUILT = '30 out 2026';
 (function() {
   const el = document.getElementById('appVersionLabel');
@@ -5236,6 +5236,12 @@ async function forceUpdateApp() {
   } catch(e) {
     console.error('Erro ao limpar a cache:', e);
   }
+  try {
+    const url = new URL(location.href);
+    url.searchParams.set('fresh', Date.now().toString(36));
+    location.replace(url.toString());
+    return;
+  } catch (e) {}
   location.reload();
 }
 

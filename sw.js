@@ -3,7 +3,7 @@
 // Funcionalidades: cache offline + notificações (locais e push)
 // ═══════════════════════════════════════════════════════════════════
 
-const CACHE_NAME = 'diario-v5';
+const CACHE_NAME = 'diario-v6';
 const ASSETS = [
   './',
   './index.html',
@@ -47,7 +47,7 @@ self.addEventListener('fetch', e => {
         }
         return response;
       })
-      .catch(() => caches.match(e.request))
+      .catch(() => caches.match(e.request, { ignoreSearch: true }))
   );
 });
 
