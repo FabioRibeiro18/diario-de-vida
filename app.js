@@ -772,7 +772,7 @@ const SECTION_LABELS = {
   work: 'Trabalho', treadmill: 'Passadeira', plan: 'Plano', calendar: 'Calendário',
   profile: 'Perfil', competition: 'Competição', compadmin: 'Gerir competição',
   last5: 'Últimos 5 Dias', stats: 'Estatísticas', settings: 'Configurações', eu: 'Eu',
-  report: 'Relatório do mês'
+  report: 'Relatório do mês', shopping: 'Lista de compras'
 };
 
 function initSectionA11y() {
@@ -8577,6 +8577,7 @@ function clearAllData() {
     if (id === 'calendar')    renderCalendarSection();
     if (id === 'meals')       { try { hxMealSuggestAll(); } catch (e) {} }
     if (id === 'report')      { try { hxRenderReport(); } catch (e) {} }
+    if (id === 'shopping')    { try { hxShopRender(); } catch (e) {} }
     try { hxFoldApply(); } catch (e) {}
   };
 })();
@@ -9352,7 +9353,7 @@ function hxNotifAck() {
 
 /* ── versão ────────────────────────────────────────────────────── */
 
-var APP_VERSION = '2026.10.30.1';
+var APP_VERSION = '2026.10.30.2';
 var APP_BUILT = '27 out 2026';
 
 function hxRenderVersion() {
@@ -10156,6 +10157,387 @@ async function hxPushSyncSettings() {
   }, 3200);
 })();
 
+/* ── lista de compras ─────────────────────────────────────────── */
+
+var HX_SHOP_KEY = 'dvShopping';
+var HX_SHOP_MAX = 300;
+
+var HX_SHOP_CATS = [
+  { id: 'frescos',    label: 'Frescos',    icon: '🥬' },
+  { id: 'padaria',    label: 'Padaria',    icon: '🥖' },
+  { id: 'mercearia',  label: 'Mercearia',  icon: '🥫' },
+  { id: 'congelados', label: 'Congelados', icon: '🧊' },
+  { id: 'higiene',    label: 'Higiene',    icon: '🧼' },
+  { id: 'casa',       label: 'Casa',       icon: '🧹' },
+  { id: 'outros',     label: 'Outros',     icon: '🛒' }
+];
+
+/* ordem importa: o primeiro grupo que casar ganha */
+var HX_SHOP_GUESS = [
+  ['congelados', ['congelad', 'gelado', 'gelados', 'pizza']],
+  ['padaria', ['pao', 'broa', 'croissant', 'bolo', 'tosta', 'baguete', 'bolachas']],
+  ['higiene', ['champu', 'sabao', 'gel de banho', 'pasta de dentes', 'escova', 'desodorizante', 'papel higienico', 'fralda', 'creme', 'absorvente']],
+  ['casa', ['detergente', 'lixivia', 'sacos', 'esponja', 'papel de cozinha', 'velas', 'pilhas', 'toalhas de papel']],
+  ['mercearia', ['arroz', 'massa', 'esparguete', 'atum', 'grao', 'feijao', 'azeite', 'oleo', 'sal', 'acucar', 'cafe', 'cha', 'cereais', 'farinha', 'mel', 'manteiga de amendoim', 'molho', 'vinagre']],
+  ['frescos', ['leite', 'iogurte', 'queijo', 'manteiga', 'ovos', 'ovo', 'frango', 'carne', 'peixe', 'fruta', 'maca', 'banana', 'tomate', 'alface', 'cebola', 'batata', 'cenoura', 'legumes', 'salada', 'sumo', 'agua']]
+];
+
+function hxShopId() {
+  return 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+function hxShopCatOk(id) {
+  return HX_SHOP_CATS.some(function (c) { return c.id === id; });
+}
+function hxShopCatLabel(id) {
+  var c = HX_SHOP_CATS.filter(function (x) { return x.id === id; })[0];
+  return c ? c.label : 'Outros';
+}
+function hxShopGuess(name) {
+  var k = hxNorm(name);
+  for (var i = 0; i < HX_SHOP_GUESS.length; i++) {
+    var cat = HX_SHOP_GUESS[i][0];
+    var words = HX_SHOP_GUESS[i][1];
+    for (var j = 0; j < words.length; j++) {
+      if (k.indexOf(words[j]) !== -1) { return cat; }
+    }
+  }
+  return 'outros';
+}
+
+function hxShopLoad() {
+  var raw = hxRead(HX_SHOP_KEY, null);
+  var out = { items: [], seen: {}, updatedAt: 0 };
+  if (!raw || typeof raw !== 'object') { return out; }
+  if (Array.isArray(raw.items)) {
+    out.items = raw.items.filter(function (it) {
+      return it && typeof it.name === 'string' && it.name.trim();
+    }).map(function (it) {
+      return {
+        id: String(it.id || hxShopId()),
+        name: String(it.name).slice(0, 60),
+        qty: String(it.qty == null ? '' : it.qty).slice(0, 14),
+        cat: hxShopCatOk(it.cat) ? it.cat : 'outros',
+        done: !!it.done,
+        at: Number(it.at) || Date.now(),
+        doneAt: Number(it.doneAt) || 0
+      };
+    });
+  }
+  if (raw.seen && typeof raw.seen === 'object') {
+    Object.keys(raw.seen).forEach(function (k) {
+      var s = raw.seen[k];
+      if (!s || !s.name) { return; }
+      out.seen[k] = {
+        name: String(s.name).slice(0, 60),
+        cat: hxShopCatOk(s.cat) ? s.cat : 'outros',
+        n: Math.max(1, Number(s.n) || 1),
+        last: Number(s.last) || 0
+      };
+    });
+  }
+  out.updatedAt = Number(raw.updatedAt) || 0;
+  return out;
+}
+
+function hxShopSave(d) {
+  if (!d || !Array.isArray(d.items)) { return; }
+  while (d.items.length > HX_SHOP_MAX) {
+    var idx = -1;
+    d.items.forEach(function (x, i) { if (x.done && (idx < 0 || x.doneAt < d.items[idx].doneAt)) { idx = i; } });
+    if (idx < 0) { idx = 0; }
+    d.items.splice(idx, 1);
+  }
+  d.updatedAt = Date.now();
+  hxWrite(HX_SHOP_KEY, d);
+}
+
+function hxShopSeen(d, name, cat) {
+  var k = hxNorm(name);
+  if (!k) { return; }
+  var s = d.seen[k] || { name: name, cat: cat, n: 0, last: 0 };
+  s.name = name;
+  s.cat = cat;
+  s.n = (Number(s.n) || 0) + 1;
+  s.last = Date.now();
+  d.seen[k] = s;
+  var keys = Object.keys(d.seen);
+  if (keys.length > 120) {
+    keys.sort(function (a, b) {
+      return (d.seen[a].n - d.seen[b].n) || (d.seen[a].last - d.seen[b].last);
+    });
+    keys.slice(0, keys.length - 120).forEach(function (k2) { delete d.seen[k2]; });
+  }
+}
+
+function hxShopInit() {
+  var sel = document.getElementById('hxShopCat');
+  if (!sel) { return; }
+  if (sel.options.length > 1) { return; }
+  HX_SHOP_CATS.forEach(function (c) {
+    var o = document.createElement('option');
+    o.value = c.id;
+    o.textContent = c.icon + ' ' + c.label;
+    sel.appendChild(o);
+  });
+  try { hxShopRender(); } catch (e) {}
+}
+
+function hxOpenShopping() {
+  showSection('shopping', navBySection('shopping'));
+  hxShopRender();
+  if (window.innerWidth > 768) {
+    setTimeout(function () {
+      var el = document.getElementById('hxShopName');
+      if (el) { try { el.focus(); } catch (e) {} }
+    }, 80);
+  }
+}
+
+function hxShopAdd() {
+  var el = document.getElementById('hxShopName');
+  if (!el) { return; }
+  var name = String(el.value || '').replace(/\s+/g, ' ').trim();
+  if (!name) { el.focus(); return; }
+  var qtyEl = document.getElementById('hxShopQty');
+  var catEl = document.getElementById('hxShopCat');
+  var qty = qtyEl ? String(qtyEl.value || '').replace(/\s+/g, ' ').trim() : '';
+  var cat = catEl ? catEl.value : 'auto';
+  if (cat === 'auto' || !hxShopCatOk(cat)) { cat = hxShopGuess(name); }
+
+  var d = hxShopLoad();
+  var key = hxNorm(name);
+  var existente = d.items.filter(function (x) {
+    return !x.done && hxNorm(x.name) === key;
+  })[0];
+
+  if (existente) {
+    if (qty && !existente.qty) { existente.qty = qty.slice(0, 14); }
+    hxShopSave(d);
+    el.value = '';
+    if (qtyEl) { qtyEl.value = ''; }
+    hxShopRender();
+    hxShopFlash(existente.name);
+    hxToast('“' + existente.name + '” já está na lista.');
+    el.focus();
+    return;
+  }
+
+  d.items.push({
+    id: hxShopId(),
+    name: name.slice(0, 60),
+    qty: qty.slice(0, 14),
+    cat: cat,
+    done: false,
+    at: Date.now(),
+    doneAt: 0
+  });
+  hxShopSeen(d, name, cat);
+  hxShopSave(d);
+  el.value = '';
+  if (qtyEl) { qtyEl.value = ''; }
+  if (catEl) { catEl.value = 'auto'; }
+  hxShopRender();
+  el.focus();
+  hxToast('Adicionado: ' + name + '.');
+}
+
+function hxShopQuick(name, cat) {
+  var el = document.getElementById('hxShopName');
+  if (!el) { return; }
+  el.value = name;
+  var catEl = document.getElementById('hxShopCat');
+  if (catEl && hxShopCatOk(cat)) { catEl.value = cat; }
+  hxShopAdd();
+}
+
+function hxShopToggle(id) {
+  var d = hxShopLoad();
+  var it = d.items.filter(function (x) { return x.id === id; })[0];
+  if (!it) { return; }
+  it.done = !it.done;
+  it.doneAt = it.done ? Date.now() : 0;
+  hxShopSave(d);
+  hxShopRender();
+}
+
+function hxShopDel(id) {
+  var d = hxShopLoad();
+  var idx = -1;
+  d.items.forEach(function (x, i) { if (x.id === id) { idx = i; } });
+  if (idx < 0) { return; }
+  var removed = d.items[idx];
+  d.items.splice(idx, 1);
+  hxShopSave(d);
+  hxShopRender();
+  hxShowUndo('Removido: ' + removed.name, 20000, function () {
+    var dd = hxShopLoad();
+    dd.items.splice(Math.min(idx, dd.items.length), 0, removed);
+    hxShopSave(dd);
+    hxShopRender();
+    hxToast('De volta: ' + removed.name + '.');
+  });
+}
+
+function hxShopClearDone() {
+  var d = hxShopLoad();
+  var done = d.items.filter(function (x) { return x.done; });
+  if (!done.length) { hxToast('Ainda não há nada no carrinho.'); return; }
+  d.items = d.items.filter(function (x) { return !x.done; });
+  hxShopSave(d);
+  hxShopRender();
+  hxShowUndo(done.length === 1 ? '1 comprado removido' : done.length + ' comprados removidos', 20000, function () {
+    var dd = hxShopLoad();
+    dd.items = dd.items.concat(done);
+    hxShopSave(dd);
+    hxShopRender();
+    hxToast('Lista reposta.');
+  });
+}
+
+function hxShopFlash(name) {
+  var key = hxNorm(name).replace(/"/g, '');
+  var node = document.querySelector('#hxShopList .hx-shop-item[data-key="' + key + '"]');
+  if (!node) { return; }
+  node.classList.add('flash');
+  setTimeout(function () { node.classList.remove('flash'); }, 1200);
+  try { node.scrollIntoView({ block: 'nearest' }); } catch (e) {}
+}
+
+function hxShopItemHTML(x) {
+  return '<div class="hx-shop-item' + (x.done ? ' done' : '') + '" role="listitem" data-key="' + hxEsc(hxNorm(x.name)).replace(/"/g, '') + '">' +
+    '<button type="button" class="hx-shop-check" aria-pressed="' + (x.done ? 'true' : 'false') + '"' +
+    ' aria-label="' + (x.done ? 'Marcar como por comprar: ' : 'Marcar como comprado: ') + hxEsc(x.name) + '"' +
+    ' onclick="hxShopToggle(\'' + x.id + '\')">' + (x.done ? '✓' : '') + '</button>' +
+    '<div class="hx-shop-main">' +
+      '<span class="hx-shop-name">' + hxEsc(x.name) + '</span>' +
+      (x.qty ? '<span class="hx-shop-qty">' + hxEsc(x.qty) + '</span>' : '') +
+    '</div>' +
+    '<button type="button" class="hx-shop-del" aria-label="Remover ' + hxEsc(x.name) + '"' +
+    ' onclick="hxShopDel(\'' + x.id + '\')">×</button>' +
+  '</div>';
+}
+
+function hxShopRender() {
+  var box = document.getElementById('hxShopList');
+  if (!box) { return; }
+  var d = hxShopLoad();
+  var pend = d.items.filter(function (x) { return !x.done; });
+  var done = d.items.filter(function (x) { return x.done; });
+
+  var count = document.getElementById('hxShopCount');
+  if (count) {
+    count.textContent = !d.items.length
+      ? 'A lista está vazia.'
+      : (pend.length ? pend.length + ' por comprar' : 'Tudo comprado') +
+        (done.length ? ' · ' + done.length + ' no carrinho' : '');
+  }
+
+  var entry = document.getElementById('hxShopEntryCount');
+  if (entry) {
+    entry.textContent = pend.length
+      ? pend.length + (pend.length === 1 ? ' item por comprar' : ' itens por comprar') +
+        (done.length ? ' · ' + done.length + ' no carrinho' : '') + '.'
+      : (d.items.length ? 'Tudo comprado.' : 'O que falta comprar, num sítio só.');
+  }
+
+  var html = '';
+  HX_SHOP_CATS.forEach(function (c) {
+    var items = pend.filter(function (x) { return x.cat === c.id; });
+    if (!items.length) { return; }
+    html += '<section class="hx-shop-group" role="group" aria-label="' + hxEsc(c.label) + '">' +
+      '<div class="hx-shop-gh">' + c.icon + ' ' + hxEsc(c.label) + ' <span>' + items.length + '</span></div>' +
+      items.map(hxShopItemHTML).join('') +
+    '</section>';
+  });
+
+  if (!pend.length) {
+    html += '<div class="hx-shop-empty">' + (d.items.length
+      ? 'Nada por comprar. A lista está em dia.'
+      : 'Ainda não tens nada na lista. Escreve acima e carrega em Adicionar.') + '</div>';
+  }
+
+  if (done.length) {
+    html += '<section class="hx-shop-group hx-shop-done" role="group" aria-label="Comprados">' +
+      '<div class="hx-shop-gh">✓ Comprados <span>' + done.length + '</span></div>' +
+      done.map(hxShopItemHTML).join('') +
+    '</section>';
+  }
+
+  box.innerHTML = html;
+  hxShopSugRender(d);
+}
+
+function hxShopSugRender(d) {
+  var box = document.getElementById('hxShopSug');
+  if (!box) { return; }
+  d = d || hxShopLoad();
+  var pend = {};
+  d.items.forEach(function (x) { if (!x.done) { pend[hxNorm(x.name)] = 1; } });
+
+  var sug = Object.keys(d.seen)
+    .map(function (k) { return d.seen[k]; })
+    .filter(function (s) { return s && s.name && !pend[hxNorm(s.name)]; })
+    .sort(function (a, b) { return (b.n - a.n) || (b.last - a.last); })
+    .slice(0, 6);
+
+  if (!sug.length) { box.innerHTML = ''; return; }
+
+  box.innerHTML = '<div class="hx-shop-lbl">Do teu histórico</div><div class="hx-shop-chips">' +
+    sug.map(function (s) {
+      return '<button type="button" class="hx-shop-chip" data-name="' + hxEsc(s.name) + '" data-cat="' + s.cat + '"' +
+        ' title="' + hxEsc(s.name) + '"' +
+        ' onclick="hxShopQuick(this.getAttribute(\'data-name\'), this.getAttribute(\'data-cat\'))">' +
+        hxEsc(s.name) + '</button>';
+    }).join('') + '</div>';
+}
+
+function hxShopText() {
+  var d = hxShopLoad();
+  var pend = d.items.filter(function (x) { return !x.done; });
+  if (!pend.length) { return ''; }
+  var agora = new Date();
+  var dia = (agora.getDate() < 10 ? '0' : '') + agora.getDate();
+  var mes = (agora.getMonth() + 1 < 10 ? '0' : '') + (agora.getMonth() + 1);
+  var linhas = ['Lista de compras — ' + dia + '/' + mes, ''];
+  HX_SHOP_CATS.forEach(function (c) {
+    var items = pend.filter(function (x) { return x.cat === c.id; });
+    if (!items.length) { return; }
+    linhas.push(c.label);
+    items.forEach(function (x) {
+      linhas.push('• ' + x.name + (x.qty ? ' (' + x.qty + ')' : ''));
+    });
+    linhas.push('');
+  });
+  return linhas.join('\n').trim();
+}
+
+function hxShopCopy() {
+  var txt = hxShopText();
+  if (!txt) { hxToast('A lista está vazia.'); return; }
+  var feito = function () { hxToast('Lista copiada. Cola onde precisares.'); };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(feito, function () { hxShopCopyFallback(txt, feito); });
+    return;
+  }
+  hxShopCopyFallback(txt, feito);
+}
+
+function hxShopCopyFallback(txt, feito) {
+  try {
+    var ta = document.createElement('textarea');
+    ta.value = txt;
+    ta.setAttribute('readonly', '');
+    ta.style.cssText = 'position:fixed;left:-9999px;top:0';
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    ta.remove();
+    feito();
+  } catch (e) {
+    hxToast('Não consegui copiar. Seleciona o texto à mão.');
+  }
+}
+
 /* ── relatório do mês ─────────────────────────────────────────── */
 
 var HX_REP = { y: 0, m: 0 };
@@ -10482,6 +10864,7 @@ document.addEventListener('visibilitychange', function () {
     try { hxRenderObs(); } catch (e) {}
     try { hxApplyDayTheme(); } catch (e) {}
     try { hxRenderVersion(); } catch (e) {}
+    try { hxShopInit(); } catch (e) {}
     try { hxUndoCheck(); } catch (e) {}
     try { hxFoldApply(); } catch (e) {}
   };

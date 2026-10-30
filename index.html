@@ -545,6 +545,14 @@ window.addEventListener('unhandledrejection', function (ev) {
     <div class="section-sub">o que comeste hoje</div>
   </div>
 
+  <div class="hx-rep-entry">
+    <div>
+      <div class="hx-rep-entry-t">Lista de compras</div>
+      <div class="hx-rep-entry-s" id="hxShopEntryCount">O que falta comprar, num sítio só.</div>
+    </div>
+    <button type="button" class="hx-mini" onclick="hxOpenShopping()">Abrir</button>
+  </div>
+
   <!-- Conselheiro de Jantar -->
   <div class="dinner-advisor" id="dinnerAdvisor">
     <div class="advisor-verdict">
@@ -1372,6 +1380,37 @@ window.addEventListener('unhandledrejection', function (ev) {
       <button type="button" class="hx-short" onclick="showSection('stats', navBySection('stats'))">📊 Estatísticas</button>
     </div>
   </section>
+</div>
+
+<!-- LISTA DE COMPRAS -->
+<div class="section" id="section-shopping">
+  <div class="section-header">
+    <div class="section-title">Lista de <em>compras</em></div>
+    <div class="section-sub">o que falta e o que já está no carrinho</div>
+  </div>
+
+  <div class="hx-shop-add">
+    <input type="text" id="hxShopName" placeholder="o que precisas de comprar..." maxlength="60" autocomplete="off" aria-label="Novo item" onkeydown="if(event.key==='Enter'){event.preventDefault();hxShopAdd();}">
+    <input type="text" id="hxShopQty" placeholder="qtd (opcional)" maxlength="14" autocomplete="off" aria-label="Quantidade" onkeydown="if(event.key==='Enter'){event.preventDefault();hxShopAdd();}">
+    <select id="hxShopCat" aria-label="Categoria">
+      <option value="auto">Automático</option>
+    </select>
+    <button type="button" class="btn btn-primary" onclick="hxShopAdd()">Adicionar</button>
+  </div>
+
+  <div class="hx-shop-bar">
+    <div class="hx-shop-count" id="hxShopCount" aria-live="polite">—</div>
+    <div class="hx-shop-tools">
+      <button type="button" class="hx-mini" onclick="hxShopClearDone()">Limpar comprados</button>
+      <button type="button" class="hx-mini" onclick="hxShopCopy()">Copiar lista</button>
+      <button type="button" class="hx-mini" onclick="showSection('meals', navBySection('meals'))">Voltar</button>
+    </div>
+  </div>
+
+  <div class="hx-shop-sug" id="hxShopSug"></div>
+  <div class="hx-shop-list" id="hxShopList" role="list"></div>
+
+  <p class="hx-shop-foot">Fica só neste dispositivo. Sem contas e sem pressão: compra o que der.</p>
 </div>
 
 <!-- RELATÓRIO -->
