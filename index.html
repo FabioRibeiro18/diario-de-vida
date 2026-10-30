@@ -1196,6 +1196,14 @@ window.addEventListener('unhandledrejection', function (ev) {
     <div class="section-sub">o teu progresso ao longo do tempo</div>
   </div>
 
+  <div class="hx-rep-entry">
+    <div>
+      <div class="hx-rep-entry-t">Relatório do mês</div>
+      <div class="hx-rep-entry-s">Sono, peso, água, humor e treino num só sítio. Pronto a imprimir ou guardar em PDF.</div>
+    </div>
+    <button type="button" class="hx-mini" onclick="hxOpenReport()">Abrir</button>
+  </div>
+
   <!-- ▸ WEIGHT GOAL COUNTER -->
   <div class="goal-counter" id="goalCounter">
     <div class="goal-counter-title">🎯 objetivo de peso — 102.1 kg → 75 kg</div>
@@ -1364,6 +1372,26 @@ window.addEventListener('unhandledrejection', function (ev) {
       <button type="button" class="hx-short" onclick="showSection('stats', navBySection('stats'))">📊 Estatísticas</button>
     </div>
   </section>
+</div>
+
+<!-- RELATÓRIO -->
+<div class="section" id="section-report">
+  <div class="section-header">
+    <div class="section-title">Relatório <em>do mês</em></div>
+    <div class="section-sub">números apenas, sem interpretações</div>
+  </div>
+
+  <div class="hx-rep-bar">
+    <button type="button" class="hx-mini" onclick="hxReportMonth(-1)" aria-label="Mês anterior">‹</button>
+    <div class="hx-rep-month" id="hxRepMonth" aria-live="polite">—</div>
+    <button type="button" class="hx-mini" onclick="hxReportMonth(1)" aria-label="Mês seguinte">›</button>
+    <button type="button" class="btn btn-secondary" onclick="hxReportPrint()">Imprimir / PDF</button>
+    <button type="button" class="hx-mini" onclick="showSection('stats', navBySection('stats'))">Voltar</button>
+  </div>
+
+  <div id="hxReportBody"></div>
+
+  <p class="hx-rep-foot" id="hxRepFoot">Números apenas. Sem interpretações e sem diagnóstico. Não substitui aconselhamento médico.</p>
 </div>
 
 <!-- SETTINGS -->

@@ -771,7 +771,8 @@ const SECTION_LABELS = {
   overview: 'Resumo', ai: 'Chat IA', weight: 'Peso', meals: 'Refeições',
   work: 'Trabalho', treadmill: 'Passadeira', plan: 'Plano', calendar: 'Calendário',
   profile: 'Perfil', competition: 'Competição', compadmin: 'Gerir competição',
-  last5: 'Últimos 5 Dias', stats: 'Estatísticas', settings: 'Configurações', eu: 'Eu'
+  last5: 'Últimos 5 Dias', stats: 'Estatísticas', settings: 'Configurações', eu: 'Eu',
+  report: 'Relatório do mês'
 };
 
 function initSectionA11y() {
@@ -8575,6 +8576,7 @@ function clearAllData() {
     if (id === 'stats')       renderAchievements();
     if (id === 'calendar')    renderCalendarSection();
     if (id === 'meals')       { try { hxMealSuggestAll(); } catch (e) {} }
+    if (id === 'report')      { try { hxRenderReport(); } catch (e) {} }
     try { hxFoldApply(); } catch (e) {}
   };
 })();
@@ -9350,7 +9352,7 @@ function hxNotifAck() {
 
 /* ── versão ────────────────────────────────────────────────────── */
 
-var APP_VERSION = '2026.10.27.4';
+var APP_VERSION = '2026.10.30.1';
 var APP_BUILT = '27 out 2026';
 
 function hxRenderVersion() {
@@ -10153,6 +10155,306 @@ async function hxPushSyncSettings() {
     }
   }, 3200);
 })();
+
+/* ── relatório do mês ─────────────────────────────────────────── */
+
+var HX_REP = { y: 0, m: 0 };
+var HX_REP_MONTHS = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
+  'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+
+function hxRepPad2(n) { return (n < 10 ? '0' : '') + n; }
+function hxRepNum(v, d) { return Number(v).toFixed(d).replace('.', ','); }
+function hxRepHM(h) {
+  var mins = Math.round(h * 60);
+  return Math.floor(mins / 60) + 'h' + hxRepPad2(mins % 60);
+}
+function hxRepAvg(a) {
+  if (!a || !a.length) { return null; }
+  return a.reduce(function (s, x) { return s + x; }, 0) / a.length;
+}
+function hxRepDias(n) { return n + (n === 1 ? ' dia' : ' dias'); }
+
+function hxRepInit() {
+  if (!HX_REP.y) {
+    var now = new Date();
+    HX_REP.y = now.getFullYear();
+    HX_REP.m = now.getMonth();
+  }
+}
+
+function hxOpenReport() {
+  hxRepInit();
+  showSection('report', navBySection('report'));
+  hxRenderReport();
+}
+
+function hxReportMonth(delta) {
+  hxRepInit();
+  var alvo = new Date(HX_REP.y, HX_REP.m + delta, 1);
+  var now = new Date();
+  var limite = new Date(now.getFullYear(), now.getMonth(), 1);
+  if (alvo.getTime() > limite.getTime()) { return; }
+  if (alvo.getFullYear() < 2020) { return; }
+  HX_REP.y = alvo.getFullYear();
+  HX_REP.m = alvo.getMonth();
+  hxRenderReport();
+}
+
+function hxRepData(y, m) {
+  var last = new Date(y, m + 1, 0).getDate();
+  var out = {
+    last: last, records: 0, moodDays: 0, mealDays: 0, waterDays: 0, trainDays: 0,
+    sleep: [], weights: [], waters: [], kcals: [],
+    moods: [0, 0, 0, 0, 0], triggers: {},
+    mealsCount: 0, trainMin: 0, trainKm: 0, trainSessions: 0
+  };
+
+  for (var d = 1; d <= last; d++) {
+    var key = y + '-' + hxRepPad2(m + 1) + '-' + hxRepPad2(d);
+    var day = DB[key];
+    if (!day) { continue; }
+    var any = false;
+
+    var h = 0;
+    try { h = (typeof getSleepH === 'function') ? getSleepH(day) : 0; } catch (e) { h = 0; }
+    if (h > 0) { out.sleep.push(h); any = true; }
+
+    var w = parseFloat(day.weight);
+    if (w > 0) { out.weights.push({ key: key, v: w }); any = true; }
+
+    var wc = parseInt(day.waterCount, 10) || 0;
+    if (wc > 0) { out.waters.push(wc); out.waterDays++; any = true; }
+
+    if (day.meals) {
+      var mv = (typeof day.meals === 'object' && !Array.isArray(day.meals))
+        ? Object.values(day.meals).flat()
+        : day.meals;
+      mv = (mv || []).filter(function (x) { return x && x.name; });
+      if (mv.length) {
+        out.mealsCount += mv.length;
+        out.mealDays++;
+        any = true;
+      }
+      var kc = mv.reduce(function (s, x) { return s + (Number(x.cal) || 0); }, 0);
+      if (kc > 0) { out.kcals.push(kc); }
+    }
+
+    var tm = parseFloat(day.treadmillTime) || 0;
+    var tk = parseFloat(day.treadmillDistance) || 0;
+    if (tm > 0 || tk > 0) {
+      out.trainSessions++;
+      out.trainMin += tm;
+      out.trainKm += tk;
+      out.trainDays++;
+      any = true;
+    }
+
+    var mc = day.moodCheckin;
+    if (mc && mc.mood) {
+      out.moodDays++;
+      var mi = Math.round(Number(mc.mood)) - 1;
+      if (mi >= 0 && mi <= 4) { out.moods[mi]++; }
+      if (mc.trigger) {
+        var t = String(mc.trigger);
+        out.triggers[t] = (out.triggers[t] || 0) + 1;
+      }
+      any = true;
+    }
+
+    if (any) { out.records++; }
+  }
+  return out;
+}
+
+function hxRenderReport() {
+  hxRepInit();
+  var body = document.getElementById('hxReportBody');
+  var rotulo = document.getElementById('hxRepMonth');
+  if (!body) { return; }
+
+  var y = HX_REP.y, m = HX_REP.m;
+  var nomeMes = HX_REP_MONTHS[m];
+  var nome = nomeMes.charAt(0).toUpperCase() + nomeMes.slice(1) + ' de ' + y;
+  if (rotulo) { rotulo.textContent = nome; }
+
+  var now = new Date();
+  var gerado = hxRepPad2(now.getDate()) + '/' + hxRepPad2(now.getMonth() + 1) + '/' + now.getFullYear();
+  var emCurso = (y === now.getFullYear() && m === now.getMonth());
+  var r = hxRepData(y, m);
+
+  var topo =
+    '<div class="hx-rep-top">' +
+      '<div><div class="hx-rep-kicker">Diário de Vida</div>' +
+      '<div class="hx-rep-h1">' + hxEsc(nome) + '</div></div>' +
+      '<div class="hx-rep-meta">gerado a ' + gerado + '</div>' +
+    '</div>';
+
+  if (!r.records) {
+    body.innerHTML = '<div class="hx-rep-sheet">' + topo +
+      '<div class="hx-rep-empty">Não há registos em ' + hxEsc(nome) + '.</div>' +
+      '<p class="hx-rep-hint">Quando registares sono, peso, água, refeições, treino ou humor, este relatório preenche-se sozinho.</p>' +
+      '</div>';
+    return;
+  }
+
+  var avgSleep = hxRepAvg(r.sleep);
+  var avgWater = hxRepAvg(r.waters);
+  var avgKcal = hxRepAvg(r.kcals);
+  var w0 = r.weights.length ? r.weights[0] : null;
+  var w1 = r.weights.length ? r.weights[r.weights.length - 1] : null;
+  var deltaW = (r.weights.length > 1) ? (w1.v - w0.v) : null;
+  var topTrigger = Object.keys(r.triggers).sort(function (a, b) {
+    return r.triggers[b] - r.triggers[a];
+  })[0] || null;
+
+  var card = function (titulo, grande, pequeno, extra) {
+    return '<section class="hx-rep-card"><h3>' + hxEsc(titulo) + '</h3>' +
+      '<div class="hx-rep-big">' + grande + '</div>' +
+      (pequeno ? '<div class="hx-rep-sub">' + pequeno + '</div>' : '') +
+      (extra || '') + '</section>';
+  };
+
+  var presenca = card(
+    'Presença',
+    r.records + ' <span>de ' + r.last + ' dias</span>',
+    'com pelo menos um registo' + (emCurso ? ' · mês a decorrer' : ''),
+    '<dl class="hx-rep-dl">' +
+      '<div><dt>humor</dt><dd>' + hxRepDias(r.moodDays) + '</dd></div>' +
+      '<div><dt>refeições</dt><dd>' + hxRepDias(r.mealDays) + '</dd></div>' +
+      '<div><dt>treino</dt><dd>' + hxRepDias(r.trainDays) + '</dd></div>' +
+    '</dl>'
+  );
+
+  var sono = card(
+    'Sono',
+    avgSleep === null ? '—' : hxRepHM(avgSleep) + ' <span>por noite</span>',
+    r.sleep.length
+      ? r.sleep.length + (r.sleep.length === 1 ? ' noite' : ' noites') +
+        ' · mín ' + hxRepHM(Math.min.apply(null, r.sleep)) +
+        ' · máx ' + hxRepHM(Math.max.apply(null, r.sleep))
+      : 'sem noites registadas'
+  );
+
+  var peso = card(
+    'Peso',
+    deltaW === null ? '—' : (deltaW > 0 ? '+' : '') + hxRepNum(deltaW, 1) + ' <span>kg</span>',
+    r.weights.length
+      ? r.weights.length + (r.weights.length === 1 ? ' pesagem' : ' pesagens') +
+        (r.weights.length > 1 ? ' · ' + hxRepNum(w0.v, 1) + ' → ' + hxRepNum(w1.v, 1) + ' kg' : '')
+      : 'sem pesagens'
+  );
+
+  var agua = card(
+    'Água',
+    avgWater === null ? '—' : hxRepNum(avgWater, 1) + ' <span>copos/dia</span>',
+    r.waterDays
+      ? r.waterDays + (r.waterDays === 1 ? ' dia com registo' : ' dias com registo') +
+        ' · ' + r.waters.reduce(function (s, x) { return s + x; }, 0) + ' no total'
+      : 'sem registos de água'
+  );
+
+  var refeicoes = card(
+    'Refeições',
+    avgKcal === null ? '—' : Math.round(avgKcal) + ' <span>kcal/dia</span>',
+    r.mealsCount
+      ? r.mealsCount + (r.mealsCount === 1 ? ' refeição' : ' refeições') +
+        ' · ' + (r.kcals.length === 1
+          ? 'num dia com calorias'
+          : 'média em ' + r.kcals.length + ' dias com calorias')
+      : 'sem refeições registadas'
+  );
+
+  var passadeira = card(
+    'Passadeira',
+    r.trainSessions + ' <span>' + (r.trainSessions === 1 ? 'sessão' : 'sessões') + '</span>',
+    r.trainSessions
+      ? Math.round(r.trainMin) + ' min · ' + hxRepNum(r.trainKm, 1) + ' km'
+      : 'sem sessões registadas'
+  );
+
+  var barras = HX_MOODS.map(function (mo, i) {
+    var n = r.moods[i];
+    var pct = r.moodDays ? Math.round(n * 100 / r.moodDays) : 0;
+    return '<div class="hx-rep-mrow">' +
+      '<span class="hx-rep-mlbl">' + mo.emoji + ' ' + hxEsc(mo.label) + '</span>' +
+      '<span class="hx-rep-mbar"><i style="width:' + pct + '%"></i></span>' +
+      '<span class="hx-rep-mn">' + n + '</span></div>';
+  }).join('');
+
+  var humor =
+    '<section class="hx-rep-card hx-rep-wide"><h3>Humor</h3>' +
+      (r.moodDays
+        ? barras + '<div class="hx-rep-note">' + r.moodDays + (r.moodDays === 1 ? ' check-in' : ' check-ins') +
+          (topTrigger ? ' · gatilho mais anotado: ' + hxEsc(topTrigger) + ' (' + r.triggers[topTrigger] + ')' : '') +
+          '</div>'
+        : '<div class="hx-rep-sub">sem check-ins de humor neste mês.</div>') +
+      '<div class="hx-rep-note">O humor é o que registaste, não uma avaliação.</div>' +
+    '</section>';
+
+  body.innerHTML = '<div class="hx-rep-sheet">' + topo +
+    '<div class="hx-rep-grid">' + presenca + sono + peso + agua + refeicoes + passadeira + '</div>' +
+    '<div class="hx-rep-grid" style="margin-top:12px;">' + humor + '</div>' +
+    '</div>';
+}
+
+function hxReportSheetHTML() {
+  var el = document.querySelector('#hxReportBody .hx-rep-sheet');
+  return el ? el.outerHTML : '';
+}
+
+var HX_REP_PRINT_CSS = [
+  'body{margin:0;background:#fff;color:#111;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}',
+  '.hx-rep-sheet{max-width:780px;margin:0 auto;padding:26px}',
+  '.hx-rep-top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;border-bottom:2px solid #111;padding-bottom:10px;margin-bottom:16px}',
+  '.hx-rep-kicker{font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:#555}',
+  '.hx-rep-h1{font-family:Georgia,serif;font-size:25px;font-weight:700;margin-top:2px}',
+  '.hx-rep-meta{font-size:10.5px;color:#555}',
+  '.hx-rep-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px}',
+  '.hx-rep-card{border:1px solid #ccc;border-radius:8px;padding:11px 13px;break-inside:avoid;background:#fff}',
+  '.hx-rep-card h3{font-size:9.5px;letter-spacing:1px;text-transform:uppercase;color:#555;margin:0 0 6px;font-weight:600}',
+  '.hx-rep-big{font-size:23px;font-weight:700;line-height:1.15}',
+  '.hx-rep-big span{font-size:11px;font-weight:400;color:#555}',
+  '.hx-rep-sub{font-size:11px;color:#555;margin-top:3px}',
+  '.hx-rep-dl{margin:9px 0 0;display:flex;flex-direction:column;gap:3px}',
+  '.hx-rep-dl div{display:flex;justify-content:space-between;gap:10px;font-size:11px}',
+  '.hx-rep-dl dt{color:#555}.hx-rep-dl dd{margin:0}',
+  '.hx-rep-wide{grid-column:1 / -1}',
+  '.hx-rep-mrow{display:flex;align-items:center;gap:8px;margin:4px 0;font-size:11px}',
+  '.hx-rep-mlbl{flex:0 0 108px;color:#333}',
+  '.hx-rep-mbar{flex:1;height:6px;background:#eee;border-radius:3px;overflow:hidden}',
+  '.hx-rep-mbar i{display:block;height:100%;background:#0f766e}',
+  '.hx-rep-mn{flex:0 0 22px;text-align:right;color:#555}',
+  '.hx-rep-note{margin-top:8px;font-size:10.5px;color:#555}',
+  '.hx-rep-empty{padding:16px 2px;color:#333;font-size:13px}',
+  '.hx-rep-hint{margin-top:4px;color:#555;font-size:11px}',
+  '@page{margin:15mm}',
+  '*{-webkit-print-color-adjust:exact;print-color-adjust:exact}'
+].join('\n');
+
+function hxReportPrint() {
+  var sheet = hxReportSheetHTML();
+  if (!sheet) { hxToast('Abre o relatório de um mês com registos primeiro.'); return; }
+  if (!document.querySelector('#hxReportBody .hx-rep-card')) {
+    hxToast('Este mês ainda não tem registos para imprimir.');
+    return;
+  }
+  var rotulo = (document.getElementById('hxRepMonth') || {}).textContent || 'Relatório';
+  var titulo = 'Relatório ' + rotulo + ' · Diário de Vida';
+  var w = null;
+  try { w = window.open('', '_blank'); } catch (e) { w = null; }
+  if (!w) { hxToast('O browser bloqueou a janela. Permite pop-ups para imprimir.'); return; }
+  try {
+    w.document.open();
+    w.document.write('<!DOCTYPE html><html lang="pt"><head><meta charset="utf-8">' +
+      '<title>' + hxEsc(titulo) + '</title><style>' + HX_REP_PRINT_CSS + '</style></head>' +
+      '<body>' + sheet + '</body></html>');
+    w.document.close();
+    w.focus();
+    setTimeout(function () { try { w.print(); } catch (e) {} }, 350);
+  } catch (e) {
+    hxToast('Não consegui preparar a impressão: ' + ((e && e.message) || 'erro') + '.');
+  }
+}
 
 /* ── arranque ───────────────────────────────────────────────────── */
 
