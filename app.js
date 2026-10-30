@@ -5216,10 +5216,11 @@ async function loadSheetsUrlFromCloud() {
 }
 
 // ── VERSÃO DA APP E ATUALIZAÇÃO FORÇADA (limpa a cache do service worker; não apaga registos) ──
-var APP_VERSION = '2026-10-18.2';
+var APP_VERSION = '2026.10.30.3';
+var APP_BUILT = '30 out 2026';
 (function() {
   const el = document.getElementById('appVersionLabel');
-  if (el) el.textContent = APP_VERSION;
+  if (el) el.textContent = APP_VERSION + ' · ' + APP_BUILT;
 })();
 
 async function forceUpdateApp() {
@@ -7140,7 +7141,7 @@ let swRegistration = null;
 async function initPWA() {
   if (!('serviceWorker' in navigator)) return;
   try {
-    swRegistration = await navigator.serviceWorker.register('sw.js');
+    swRegistration = await navigator.serviceWorker.register('sw.js?v=' + encodeURIComponent(APP_VERSION));
   } catch(e) { console.log('SW falhou:', e); }
 }
 
@@ -9353,14 +9354,13 @@ function hxNotifAck() {
 
 /* ── versão ────────────────────────────────────────────────────── */
 
-var APP_VERSION = '2026.10.30.2';
-var APP_BUILT = '27 out 2026';
-
 function hxRenderVersion() {
   var el = document.getElementById('appVersionLine');
   if (el) { el.textContent = 'Versão ' + APP_VERSION + ' · ' + APP_BUILT; }
   var meta = document.getElementById('appVersionMeta');
   if (meta) { meta.setAttribute('content', APP_VERSION); }
+  var lab = document.getElementById('appVersionLabel');
+  if (lab) { lab.textContent = APP_VERSION + ' · ' + APP_BUILT; }
 }
 
 /* ── diagnóstico: prova de que a app está inteira ──────────────── */
