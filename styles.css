@@ -2578,3 +2578,33 @@ body.hx-shop-lock { overflow: hidden; }
   }
   .hx-shop-modal-actions .btn { flex: 1 1 auto; }
 }
+
+/* ── lista de compras: partilhar ────────────────────────────────── */
+
+.hx-shop-share-preview {
+  display: block; width: 100%; box-sizing: border-box; resize: vertical;
+  min-height: 132px; max-height: 40vh; margin-bottom: 14px;
+  padding: 12px 13px; border: 1px dashed var(--border2); border-radius: 12px;
+  background: var(--surface); color: var(--text2);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: calc(11px * var(--font-scale)); line-height: 1.65;
+  white-space: pre-wrap; overflow-wrap: anywhere;
+}
+.hx-shop-share-preview:focus { outline: 2px solid var(--moss-l); outline-offset: 1px; }
+
+.hx-shop-share-opts {
+  display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px; margin-bottom: 12px;
+}
+.hx-shop-share-opt {
+  min-width: 0; padding: 12px 10px; border-radius: 12px;
+  border: 1px solid var(--border2); background: var(--surface); color: var(--text);
+  font-family: inherit; font-size: calc(12.5px * var(--font-scale));
+  line-height: 1.3; cursor: pointer; text-align: center;
+  overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+}
+.hx-shop-share-opt:hover { border-color: var(--moss); color: var(--moss-l); }
+.hx-shop-share-opt:focus-visible { outline: 2px solid var(--moss-l); outline-offset: 2px; }
+.hx-shop-share-opt.wide { grid-column: 1 / -1; }
+#hxShopShareNative { background: rgba(var(--accent-rgb), .12); border-color: var(--moss); color: var(--moss-l); }
+.hx-shop-share-opts .hx-shop-hint { margin: 0; }

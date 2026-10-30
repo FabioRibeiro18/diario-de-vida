@@ -5216,7 +5216,7 @@ async function loadSheetsUrlFromCloud() {
 }
 
 // ── VERSÃO DA APP E ATUALIZAÇÃO FORÇADA (limpa a cache do service worker; não apaga registos) ──
-var APP_VERSION = '2026.10.30.5';
+var APP_VERSION = '2026.10.30.6';
 var APP_BUILT = '30 out 2026';
 (function() {
   const el = document.getElementById('appVersionLabel');
@@ -10960,12 +10960,14 @@ function hxShopBuyDel(id) {
   });
 }
 
-function hxShopText() {
+function hxShopText(opts) {
+  opts = opts || {};
+  var soPendentes = !!opts.soPendentes;
   var d = hxShopLoad();
   var rec = hxShopRec(d, hxShopViewKey(), false);
   var pend = rec.items.filter(function (x) { return !x.done; });
   var total = hxShopSum(rec.buys);
-  if (!pend.length && !rec.buys.length) { return ''; }
+  if (!pend.length && (soPendentes || !rec.buys.length)) { return ''; }
 
   var linhas = ['Lista de compras — ' + hxShopMonthLabel(HX_SHOP.y, HX_SHOP.m), ''];
   HX_SHOP_CATS.forEach(function (c) {
@@ -10978,11 +10980,100 @@ function hxShopText() {
     linhas.push('');
   });
   if (!pend.length) { linhas.push('Nada por comprar.', ''); }
-  if (rec.buys.length) {
+  if (!soPendentes && rec.buys.length) {
     linhas.push('Gasto registado: ' + hxShopEur(total) + ' (' + rec.buys.length +
       (rec.buys.length === 1 ? ' compra' : ' compras') + ')');
   }
   return linhas.join('\n').trim();
+}
+
+function hxShopShareText() {
+  return hxShopText({ soPendentes: true });
+}
+
+function hxShopShareOpen() {
+  var txt = hxShopShareText();
+  if (!txt) { hxToast('Não há nada por comprar para partilhar.'); return; }
+  var m = document.getElementById('hxShopShareModal');
+  if (!m) { return; }
+  var rec = hxShopRec(hxShopLoad(), hxShopViewKey(), false);
+  var pend = rec.items.filter(function (x) { return !x.done; });
+  var sub = document.getElementById('hxShopShareSub');
+  if (sub) {
+    sub.textContent = pend.length + (pend.length === 1 ? ' item por comprar' : ' itens por comprar') +
+      ' · ' + hxShopMonthLabel(HX_SHOP.y, HX_SHOP.m) + '.';
+  }
+  var prev = document.getElementById('hxShopSharePreview');
+  if (prev) { prev.value = txt; }
+  var nat = document.getElementById('hxShopShareNative');
+  if (nat) { nat.style.display = navigator.share ? '' : 'none'; }
+  m.classList.add('open');
+  m.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('hx-shop-lock');
+  setTimeout(function () {
+    var el = (nat && navigator.share) ? nat : m.querySelector('.hx-shop-share-opt:not(#hxShopShareNative)');
+    if (el) { try { el.focus(); } catch (e) {} }
+  }, 80);
+}
+
+function hxShopShareClose() {
+  var m = document.getElementById('hxShopShareModal');
+  if (!m) { return; }
+  m.classList.remove('open');
+  m.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('hx-shop-lock');
+  var btn = document.querySelector('.hx-shop-sharebtn');
+  if (btn) { try { btn.focus(); } catch (e) {} }
+}
+
+function hxShopShareNative() {
+  var txt = hxShopShareText();
+  if (!txt) { hxShopShareClose(); hxToast('Não há nada por comprar para partilhar.'); return; }
+  if (!navigator.share) { hxToast('Este browser não tem partilha direta. Usa WhatsApp ou copia o texto.'); return; }
+  navigator.share({
+    title: 'Lista de compras — ' + hxShopMonthLabel(HX_SHOP.y, HX_SHOP.m),
+    text: txt
+  }).then(function () {
+    hxShopShareClose();
+    hxToast('Lista partilhada.');
+  }).catch(function (err) {
+    if (err && err.name === 'AbortError') { return; }
+    hxToast('Não consegui partilhar. Usa WhatsApp ou copia o texto.');
+  });
+}
+
+function hxShopShareWhats() {
+  var txt = hxShopShareText();
+  if (!txt) { hxShopShareClose(); hxToast('Não há nada por comprar para partilhar.'); return; }
+  var w = null;
+  try {
+    w = window.open('https://wa.me/?text=' + encodeURIComponent(txt), '_blank', 'noopener');
+  } catch (e) { w = null; }
+  if (!w) { hxToast('O browser bloqueou a janela. Copia o texto.'); return; }
+  hxShopShareClose();
+}
+
+function hxShopShareMail() {
+  var txt = hxShopShareText();
+  if (!txt) { hxShopShareClose(); hxToast('Não há nada por comprar para partilhar.'); return; }
+  var assunto = 'Lista de compras — ' + hxShopMonthLabel(HX_SHOP.y, HX_SHOP.m);
+  try {
+    window.location.href = 'mailto:?subject=' + encodeURIComponent(assunto) + '&body=' + encodeURIComponent(txt);
+    hxShopShareClose();
+  } catch (e) {
+    hxToast('Não consegui abrir o email. Copia o texto.');
+  }
+}
+
+function hxShopShareCopy() {
+  var txt = hxShopShareText();
+  if (!txt) { hxShopShareClose(); hxToast('Não há nada por comprar para partilhar.'); return; }
+  var feito = function () { hxShopShareClose(); hxToast('Lista copiada. Cola onde precisares.'); };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(txt).then(feito, function () { hxShopCopyFallback(txt, feito); });
+    return;
+  }
+  hxShopCopyFallback(txt, feito);
 }
 
 function hxShopCopy() {
@@ -11014,6 +11105,8 @@ function hxShopCopyFallback(txt, feito) {
 
 document.addEventListener('keydown', function (e) {
   if (e.key !== 'Escape') { return; }
+  var s = document.getElementById('hxShopShareModal');
+  if (s && s.classList.contains('open')) { hxShopShareClose(); return; }
   var m = document.getElementById('hxShopBuyModal');
   if (m && m.classList.contains('open')) { hxShopBuyClose(); }
 });
