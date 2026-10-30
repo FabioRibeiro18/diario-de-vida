@@ -24,7 +24,7 @@ window.addEventListener('unhandledrejection', function (ev) {
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Source+Serif+4:ital,wght@0,300;0,400;1,300&family=JetBrains+Mono:wght@300;400&family=Inter:wght@400;500;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<link rel="stylesheet" href="styles.css?v=2026103004">
+<link rel="stylesheet" href="styles.css?v=2026103005">
 </head>
 <body>
 
@@ -548,7 +548,7 @@ window.addEventListener('unhandledrejection', function (ev) {
   <div class="hx-rep-entry">
     <div>
       <div class="hx-rep-entry-t">Lista de compras</div>
-      <div class="hx-rep-entry-s" id="hxShopEntryCount">O que falta comprar, num sítio só.</div>
+      <div class="hx-rep-entry-s" id="hxShopEntryCount">Mensal: o que falta e o que já gastaste.</div>
     </div>
     <button type="button" class="hx-mini" onclick="hxOpenShopping()">Abrir</button>
   </div>
@@ -1386,8 +1386,18 @@ window.addEventListener('unhandledrejection', function (ev) {
 <div class="section" id="section-shopping">
   <div class="section-header">
     <div class="section-title">Lista de <em>compras</em></div>
-    <div class="section-sub">o que falta e o que já está no carrinho</div>
+    <div class="section-sub">mensal · o que falta e o que já gastaste</div>
   </div>
+
+  <div class="hx-shop-monthbar">
+    <button type="button" class="hx-mini" onclick="hxShopMoveMonth(-1)" aria-label="Mês anterior">‹</button>
+    <div class="hx-shop-month" id="hxShopMonth" aria-live="polite">—</div>
+    <button type="button" class="hx-mini" id="hxShopNext" onclick="hxShopMoveMonth(1)" aria-label="Mês seguinte">›</button>
+    <button type="button" class="hx-mini" id="hxShopThisBtn" onclick="hxShopThisMonth()">Este mês</button>
+    <button type="button" class="hx-mini" onclick="showSection('meals', navBySection('meals'))">Voltar</button>
+  </div>
+
+  <div class="hx-shop-spend" id="hxShopSpend" aria-live="polite"></div>
 
   <div class="hx-shop-add">
     <input type="text" id="hxShopName" placeholder="o que precisas de comprar..." maxlength="60" autocomplete="off" aria-label="Novo item" onkeydown="if(event.key==='Enter'){event.preventDefault();hxShopAdd();}">
@@ -1401,16 +1411,17 @@ window.addEventListener('unhandledrejection', function (ev) {
   <div class="hx-shop-bar">
     <div class="hx-shop-count" id="hxShopCount" aria-live="polite">—</div>
     <div class="hx-shop-tools">
+      <button type="button" class="btn btn-primary hx-shop-buybtn" onclick="hxShopBuyOpen()">Registar compra</button>
       <button type="button" class="hx-mini" onclick="hxShopClearDone()">Limpar comprados</button>
       <button type="button" class="hx-mini" onclick="hxShopCopy()">Copiar lista</button>
-      <button type="button" class="hx-mini" onclick="showSection('meals', navBySection('meals'))">Voltar</button>
     </div>
   </div>
 
   <div class="hx-shop-sug" id="hxShopSug"></div>
   <div class="hx-shop-list" id="hxShopList" role="list"></div>
+  <div id="hxShopBuys"></div>
 
-  <p class="hx-shop-foot">Fica só neste dispositivo. Sem contas e sem pressão: compra o que der.</p>
+  <p class="hx-shop-foot">Fica só neste dispositivo. Muda de mês com ‹ ›. Sem contas e sem pressão: compra o que der.</p>
 </div>
 
 <!-- RELATÓRIO -->
@@ -1751,6 +1762,44 @@ hf_... (2ª chave)" style="width:100%;background:var(--surface);border:1px solid
 </main>
 </div>
 
+<!-- Registar compra -->
+<div class="hx-shop-modal" id="hxShopBuyModal" role="dialog" aria-modal="true" aria-labelledby="hxShopBuyTitle" aria-hidden="true" onclick="if(event.target===this){hxShopBuyClose();}">
+  <div class="hx-shop-modal-box">
+    <div class="hx-shop-modal-head">
+      <h3 id="hxShopBuyTitle">Registar compra</h3>
+      <button type="button" class="hx-shop-modal-x" aria-label="Fechar" onclick="hxShopBuyClose()">×</button>
+    </div>
+    <p class="hx-shop-modal-sub" id="hxShopBuySub"></p>
+
+    <label class="hx-shop-lbl" for="hxShopBuyAmount">Valor gasto</label>
+    <div class="hx-shop-money">
+      <input type="text" id="hxShopBuyAmount" inputmode="decimal" autocomplete="off" placeholder="0,00" aria-describedby="hxShopBuyAmountHint" onkeydown="if(event.key==='Enter'){event.preventDefault();hxShopBuySave();}">
+      <span aria-hidden="true">€</span>
+    </div>
+    <p class="hx-shop-hint" id="hxShopBuyAmountHint">Podes escrever 12,50 ou 12.50.</p>
+
+    <div class="hx-shop-lbl" id="hxShopStoresLbl">Loja</div>
+    <div class="hx-shop-stores" id="hxShopStores" role="radiogroup" aria-labelledby="hxShopStoresLbl"></div>
+
+    <label class="hx-shop-lbl" for="hxShopBuyDate">Data</label>
+    <input type="date" id="hxShopBuyDate" class="hx-shop-date">
+
+    <label class="hx-shop-lbl" for="hxShopBuyNote">Nota (opcional)</label>
+    <input type="text" id="hxShopBuyNote" class="hx-shop-note" maxlength="60" placeholder="ex.: compra grande do mês" autocomplete="off">
+
+    <label class="hx-shop-rem" id="hxShopBuyRemoveWrap" for="hxShopBuyRemove">
+      <input type="checkbox" id="hxShopBuyRemove">
+      <span>Remover da lista os <b id="hxShopBuyDoneN">0</b> já comprados</span>
+    </label>
+
+    <div class="hx-shop-modal-actions">
+      <button type="button" class="btn btn-secondary" onclick="hxShopBuyClose()">Cancelar</button>
+      <button type="button" class="btn btn-primary" onclick="hxShopBuySave()">Guardar compra</button>
+    </div>
+    <p class="hx-shop-err" id="hxShopBuyErr" role="alert"></p>
+  </div>
+</div>
+
 <!-- Lembretes Modal -->
 <div class="sync-modal-overlay" id="remindersModal">
   <div class="sync-modal">
@@ -1949,7 +1998,7 @@ gsk_... (3ª chave)" style="width:100%;background:var(--surface);border:1px soli
 </div>
 <div class="hx-toast" id="hxToast" role="status" aria-live="polite"></div>
 
-<script src="app.js?v=2026103004"></script>
+<script src="app.js?v=2026103005"></script>
 </div><!-- end appContent -->
 </body>
 </html>

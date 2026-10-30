@@ -5216,7 +5216,7 @@ async function loadSheetsUrlFromCloud() {
 }
 
 // ── VERSÃO DA APP E ATUALIZAÇÃO FORÇADA (limpa a cache do service worker; não apaga registos) ──
-var APP_VERSION = '2026.10.30.4';
+var APP_VERSION = '2026.10.30.5';
 var APP_BUILT = '30 out 2026';
 (function() {
   const el = document.getElementById('appVersionLabel');
@@ -9772,7 +9772,10 @@ function hxPaletteItems() {
   Object.keys(SECTION_LABELS).forEach(function (id) {
     if (id === 'competition' || id === 'compadmin') { return; }
     if (!document.getElementById('section-' + id)) { return; }
-    out.push({ group: 'Ir para', label: SECTION_LABELS[id], run: function () { showSection(id, navBySection(id)); } });
+    out.push({ group: 'Ir para', label: SECTION_LABELS[id], run: function () {
+      if (id === 'shopping') { hxOpenShopping(); return; }
+      showSection(id, navBySection(id));
+    } });
   });
   out.push({ group: 'Fazer', label: 'Registar um copo de água', run: function () { showSection('overview', navBySection('overview')); hxWater(document.getElementById('hxBtnWater')); } });
   out.push({ group: 'Fazer', label: 'Registar uma pausa', run: function () { showSection('overview', navBySection('overview')); hxBreak(document.getElementById('hxBtnBreak')); } });
@@ -10163,10 +10166,25 @@ async function hxPushSyncSettings() {
   }, 3200);
 })();
 
-/* ── lista de compras ─────────────────────────────────────────── */
+/* ── lista de compras (mensal) ────────────────────────────────── */
 
 var HX_SHOP_KEY = 'dvShopping';
 var HX_SHOP_MAX = 300;
+var HX_SHOP_BUY_MAX = 200;
+var HX_SHOP_STORE_KEY = 'dvShoppingLastStore';
+
+/* mês em visualização */
+var HX_SHOP = { y: 0, m: 0 };
+var HX_SHOP_STORE = 'normal';
+
+var HX_SHOP_MONTHS = ['janeiro', 'fevereiro', 'março', 'abril', 'maio', 'junho',
+  'julho', 'agosto', 'setembro', 'outubro', 'novembro', 'dezembro'];
+
+var HX_SHOP_STORES = [
+  { id: 'normal',     label: 'Normal' },
+  { id: 'continente', label: 'Continente' },
+  { id: 'mercadona',  label: 'Mercadona' }
+];
 
 var HX_SHOP_CATS = [
   { id: 'frescos',    label: 'Frescos',    icon: '🥬' },
@@ -10188,9 +10206,35 @@ var HX_SHOP_GUESS = [
   ['frescos', ['leite', 'iogurte', 'queijo', 'manteiga', 'ovos', 'ovo', 'frango', 'carne', 'peixe', 'fruta', 'maca', 'banana', 'tomate', 'alface', 'cebola', 'batata', 'cenoura', 'legumes', 'salada', 'sumo', 'agua']]
 ];
 
+function hxShopPad2(n) { return (n < 10 ? '0' : '') + n; }
 function hxShopId() {
   return 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
 }
+function hxShopBuyId() {
+  return 'b' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+}
+function hxShopNow() {
+  var d = new Date();
+  return { y: d.getFullYear(), m: d.getMonth(), day: d.getDate() };
+}
+function hxShopMonthKey(y, m) { return y + '-' + hxShopPad2(m + 1); }
+function hxShopLastDay(y, m) { return new Date(y, m + 1, 0).getDate(); }
+function hxShopMonthLabel(y, m) {
+  var n = HX_SHOP_MONTHS[m] || '';
+  return n.charAt(0).toUpperCase() + n.slice(1) + ' de ' + y;
+}
+function hxShopEnsureState() {
+  if (!HX_SHOP.y) {
+    var n = hxShopNow();
+    HX_SHOP.y = n.y;
+    HX_SHOP.m = n.m;
+  }
+}
+function hxShopViewKey() {
+  hxShopEnsureState();
+  return hxShopMonthKey(HX_SHOP.y, HX_SHOP.m);
+}
+
 function hxShopCatOk(id) {
   return HX_SHOP_CATS.some(function (c) { return c.id === id; });
 }
@@ -10209,26 +10253,105 @@ function hxShopGuess(name) {
   }
   return 'outros';
 }
+function hxShopStoreOk(id) {
+  return HX_SHOP_STORES.some(function (s) { return s.id === id; });
+}
+function hxShopStoreLabel(id) {
+  var s = HX_SHOP_STORES.filter(function (x) { return x.id === id; })[0];
+  return s ? s.label : 'Normal';
+}
+function hxShopEur(cents) {
+  var v = (Number(cents) || 0) / 100;
+  try {
+    return new Intl.NumberFormat('pt-PT', { style: 'currency', currency: 'EUR' }).format(v);
+  } catch (e) {
+    return v.toFixed(2).replace('.', ',') + ' €';
+  }
+}
+/* aceita 12,50 · 12.50 · 1.234,56 · 12 € */
+function hxShopParseAmount(v) {
+  var s = String(v == null ? '' : v).replace(/[€\s\u00a0]/g, '');
+  if (!s || !/^[0-9.,]+$/.test(s)) { return null; }
+  if (s.indexOf(',') !== -1) { s = s.replace(/\./g, '').replace(',', '.'); }
+  if (!/^\d*\.?\d{0,2}$/.test(s)) { return null; }
+  var n = Number(s);
+  if (!isFinite(n) || n <= 0 || n > 100000) { return null; }
+  return Math.round(n * 100);
+}
+function hxShopSum(buys) {
+  return (buys || []).reduce(function (s, b) { return s + (Number(b.amount) || 0); }, 0);
+}
+function hxShopDateShort(date) {
+  var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(date || ''));
+  return m ? m[3] + '/' + m[2] : '';
+}
+
+function hxShopItemNorm(it) {
+  if (!it || typeof it.name !== 'string' || !it.name.trim()) { return null; }
+  return {
+    id: String(it.id || hxShopId()),
+    name: String(it.name).trim().slice(0, 60),
+    qty: String(it.qty == null ? '' : it.qty).replace(/\s+/g, ' ').trim().slice(0, 14),
+    cat: hxShopCatOk(it.cat) ? it.cat : 'outros',
+    done: !!it.done,
+    at: Number(it.at) || Date.now(),
+    doneAt: Number(it.doneAt) || 0
+  };
+}
+function hxShopBuyNorm(b) {
+  if (!b || typeof b !== 'object') { return null; }
+  var amount = Number(b.amount);
+  if (!isFinite(amount) || amount <= 0) { return null; }
+  var date = /^\d{4}-\d{2}-\d{2}$/.test(String(b.date || '')) ? String(b.date) : '';
+  return {
+    id: String(b.id || hxShopBuyId()),
+    date: date,
+    amount: Math.round(amount),
+    store: hxShopStoreOk(b.store) ? b.store : 'normal',
+    note: String(b.note == null ? '' : b.note).replace(/\s+/g, ' ').trim().slice(0, 60),
+    at: Number(b.at) || Date.now()
+  };
+}
 
 function hxShopLoad() {
   var raw = hxRead(HX_SHOP_KEY, null);
-  var out = { items: [], seen: {}, updatedAt: 0 };
+  var out = { months: {}, seen: {}, updatedAt: 0 };
   if (!raw || typeof raw !== 'object') { return out; }
-  if (Array.isArray(raw.items)) {
-    out.items = raw.items.filter(function (it) {
-      return it && typeof it.name === 'string' && it.name.trim();
-    }).map(function (it) {
-      return {
-        id: String(it.id || hxShopId()),
-        name: String(it.name).slice(0, 60),
-        qty: String(it.qty == null ? '' : it.qty).slice(0, 14),
-        cat: hxShopCatOk(it.cat) ? it.cat : 'outros',
-        done: !!it.done,
-        at: Number(it.at) || Date.now(),
-        doneAt: Number(it.doneAt) || 0
-      };
+
+  if (raw.months && typeof raw.months === 'object') {
+    Object.keys(raw.months).forEach(function (k) {
+      if (!/^\d{4}-\d{2}$/.test(k)) { return; }
+      var src = raw.months[k];
+      if (!src || typeof src !== 'object') { return; }
+      var rec = { items: [], buys: [] };
+      if (Array.isArray(src.items)) {
+        src.items.forEach(function (it) {
+          var n = hxShopItemNorm(it);
+          if (n) { rec.items.push(n); }
+        });
+      }
+      if (Array.isArray(src.buys)) {
+        src.buys.forEach(function (b) {
+          var n = hxShopBuyNorm(b);
+          if (n) { rec.buys.push(n); }
+        });
+      }
+      if (rec.items.length || rec.buys.length) { out.months[k] = rec; }
     });
   }
+
+  /* migração da lista antiga, que não tinha meses */
+  if (!Object.keys(out.months).length && Array.isArray(raw.items)) {
+    var n0 = hxShopNow();
+    var k0 = hxShopMonthKey(n0.y, n0.m);
+    var rec0 = { items: [], buys: [] };
+    raw.items.forEach(function (it) {
+      var n = hxShopItemNorm(it);
+      if (n) { rec0.items.push(n); }
+    });
+    if (rec0.items.length) { out.months[k0] = rec0; }
+  }
+
   if (raw.seen && typeof raw.seen === 'object') {
     Object.keys(raw.seen).forEach(function (k) {
       var s = raw.seen[k];
@@ -10246,15 +10369,37 @@ function hxShopLoad() {
 }
 
 function hxShopSave(d) {
-  if (!d || !Array.isArray(d.items)) { return; }
-  while (d.items.length > HX_SHOP_MAX) {
-    var idx = -1;
-    d.items.forEach(function (x, i) { if (x.done && (idx < 0 || x.doneAt < d.items[idx].doneAt)) { idx = i; } });
-    if (idx < 0) { idx = 0; }
-    d.items.splice(idx, 1);
-  }
+  if (!d || !d.months) { return; }
+  Object.keys(d.months).forEach(function (k) {
+    var rec = d.months[k];
+    if (!rec || !Array.isArray(rec.items)) { return; }
+    while (rec.items.length > HX_SHOP_MAX) {
+      var idx = -1;
+      rec.items.forEach(function (x, i) {
+        if (x.done && (idx < 0 || x.doneAt < rec.items[idx].doneAt)) { idx = i; }
+      });
+      if (idx < 0) { idx = 0; }
+      rec.items.splice(idx, 1);
+    }
+    if (Array.isArray(rec.buys) && rec.buys.length > HX_SHOP_BUY_MAX) {
+      rec.buys = rec.buys.slice(rec.buys.length - HX_SHOP_BUY_MAX);
+    }
+    if (!rec.items.length && (!rec.buys || !rec.buys.length)) { delete d.months[k]; }
+  });
   d.updatedAt = Date.now();
   hxWrite(HX_SHOP_KEY, d);
+}
+
+function hxShopRec(d, key, create) {
+  d = d || hxShopLoad();
+  key = key || hxShopViewKey();
+  if (!d.months[key]) {
+    if (!create) { return { items: [], buys: [] }; }
+    d.months[key] = { items: [], buys: [] };
+  }
+  if (!Array.isArray(d.months[key].items)) { d.months[key].items = []; }
+  if (!Array.isArray(d.months[key].buys)) { d.months[key].buys = []; }
+  return d.months[key];
 }
 
 function hxShopSeen(d, name, cat) {
@@ -10275,20 +10420,42 @@ function hxShopSeen(d, name, cat) {
   }
 }
 
+function hxShopStoreRender() {
+  var box = document.getElementById('hxShopStores');
+  if (!box) { return; }
+  box.innerHTML = HX_SHOP_STORES.map(function (s) {
+    var sel = s.id === HX_SHOP_STORE;
+    return '<button type="button" class="hx-shop-store st-' + s.id + (sel ? ' sel' : '') + '"' +
+      ' role="radio" aria-checked="' + (sel ? 'true' : 'false') + '"' +
+      ' data-store="' + s.id + '" onclick="hxShopBuyStore(this.getAttribute(\'data-store\'))">' +
+      hxEsc(s.label) + '</button>';
+  }).join('');
+}
+
 function hxShopInit() {
+  hxShopEnsureState();
   var sel = document.getElementById('hxShopCat');
-  if (!sel) { return; }
-  if (sel.options.length > 1) { return; }
-  HX_SHOP_CATS.forEach(function (c) {
-    var o = document.createElement('option');
-    o.value = c.id;
-    o.textContent = c.icon + ' ' + c.label;
-    sel.appendChild(o);
-  });
+  if (sel && sel.options.length <= 1) {
+    HX_SHOP_CATS.forEach(function (c) {
+      var o = document.createElement('option');
+      o.value = c.id;
+      o.textContent = c.icon + ' ' + c.label;
+      sel.appendChild(o);
+    });
+  }
+  try {
+    var last = localStorage.getItem(HX_SHOP_STORE_KEY);
+    if (last && hxShopStoreOk(last)) { HX_SHOP_STORE = last; }
+  } catch (e) {}
+  hxShopStoreRender();
   try { hxShopRender(); } catch (e) {}
 }
 
 function hxOpenShopping() {
+  hxShopEnsureState();
+  var n = hxShopNow();
+  HX_SHOP.y = n.y;
+  HX_SHOP.m = n.m;
   showSection('shopping', navBySection('shopping'));
   hxShopRender();
   if (window.innerWidth > 768) {
@@ -10297,6 +10464,61 @@ function hxOpenShopping() {
       if (el) { try { el.focus(); } catch (e) {} }
     }, 80);
   }
+}
+
+function hxShopMoveMonth(delta) {
+  hxShopEnsureState();
+  var alvo = new Date(HX_SHOP.y, HX_SHOP.m + delta, 1);
+  var now = new Date();
+  var limite = new Date(now.getFullYear(), now.getMonth(), 1);
+  if (alvo.getTime() > limite.getTime()) { return; }
+  if (alvo.getFullYear() < 2020) { return; }
+  HX_SHOP.y = alvo.getFullYear();
+  HX_SHOP.m = alvo.getMonth();
+  hxShopRender();
+}
+
+function hxShopThisMonth() {
+  var n = hxShopNow();
+  HX_SHOP.y = n.y;
+  HX_SHOP.m = n.m;
+  hxShopRender();
+}
+
+function hxShopCarry() {
+  hxShopEnsureState();
+  var curKey = hxShopViewKey();
+  var pd = new Date(HX_SHOP.y, HX_SHOP.m - 1, 1);
+  var prevKey = hxShopMonthKey(pd.getFullYear(), pd.getMonth());
+  var d = hxShopLoad();
+  var prev = hxShopRec(d, prevKey, false);
+  var cur = hxShopRec(d, curKey, true);
+  var have = {};
+  cur.items.forEach(function (x) { have[hxNorm(x.name)] = 1; });
+  var add = prev.items.filter(function (x) {
+    return !x.done && !have[hxNorm(x.name)];
+  });
+  if (!add.length) { hxToast('Não há nada por comprar no mês anterior.'); return; }
+  var ids = [];
+  add.forEach(function (x) {
+    var nid = hxShopId();
+    ids.push(nid);
+    cur.items.push({
+      id: nid, name: x.name, qty: x.qty, cat: x.cat,
+      done: false, at: Date.now(), doneAt: 0
+    });
+  });
+  hxShopSave(d);
+  hxShopRender();
+  var mes = HX_SHOP_MONTHS[pd.getMonth()] || '';
+  hxShowUndo(add.length + (add.length === 1 ? ' item trazido de ' : ' itens trazidos de ') + mes, 20000, function () {
+    var dd = hxShopLoad();
+    var rr = hxShopRec(dd, curKey, false);
+    rr.items = rr.items.filter(function (x) { return ids.indexOf(x.id) === -1; });
+    hxShopSave(dd);
+    hxShopRender();
+    hxToast('Itens removidos.');
+  });
 }
 
 function hxShopAdd() {
@@ -10311,8 +10533,9 @@ function hxShopAdd() {
   if (cat === 'auto' || !hxShopCatOk(cat)) { cat = hxShopGuess(name); }
 
   var d = hxShopLoad();
+  var rec = hxShopRec(d, hxShopViewKey(), true);
   var key = hxNorm(name);
-  var existente = d.items.filter(function (x) {
+  var existente = rec.items.filter(function (x) {
     return !x.done && hxNorm(x.name) === key;
   })[0];
 
@@ -10328,7 +10551,7 @@ function hxShopAdd() {
     return;
   }
 
-  d.items.push({
+  rec.items.push({
     id: hxShopId(),
     name: name.slice(0, 60),
     qty: qty.slice(0, 14),
@@ -10358,7 +10581,8 @@ function hxShopQuick(name, cat) {
 
 function hxShopToggle(id) {
   var d = hxShopLoad();
-  var it = d.items.filter(function (x) { return x.id === id; })[0];
+  var rec = hxShopRec(d, hxShopViewKey(), true);
+  var it = rec.items.filter(function (x) { return x.id === id; })[0];
   if (!it) { return; }
   it.done = !it.done;
   it.doneAt = it.done ? Date.now() : 0;
@@ -10368,16 +10592,19 @@ function hxShopToggle(id) {
 
 function hxShopDel(id) {
   var d = hxShopLoad();
+  var rec = hxShopRec(d, hxShopViewKey(), false);
   var idx = -1;
-  d.items.forEach(function (x, i) { if (x.id === id) { idx = i; } });
+  rec.items.forEach(function (x, i) { if (x.id === id) { idx = i; } });
   if (idx < 0) { return; }
-  var removed = d.items[idx];
-  d.items.splice(idx, 1);
+  var removed = rec.items[idx];
+  var key = hxShopViewKey();
+  rec.items.splice(idx, 1);
   hxShopSave(d);
   hxShopRender();
   hxShowUndo('Removido: ' + removed.name, 20000, function () {
     var dd = hxShopLoad();
-    dd.items.splice(Math.min(idx, dd.items.length), 0, removed);
+    var rr = hxShopRec(dd, key, true);
+    rr.items.splice(Math.min(idx, rr.items.length), 0, removed);
     hxShopSave(dd);
     hxShopRender();
     hxToast('De volta: ' + removed.name + '.');
@@ -10386,14 +10613,17 @@ function hxShopDel(id) {
 
 function hxShopClearDone() {
   var d = hxShopLoad();
-  var done = d.items.filter(function (x) { return x.done; });
+  var key = hxShopViewKey();
+  var rec = hxShopRec(d, key, false);
+  var done = rec.items.filter(function (x) { return x.done; });
   if (!done.length) { hxToast('Ainda não há nada no carrinho.'); return; }
-  d.items = d.items.filter(function (x) { return !x.done; });
+  rec.items = rec.items.filter(function (x) { return !x.done; });
   hxShopSave(d);
   hxShopRender();
   hxShowUndo(done.length === 1 ? '1 comprado removido' : done.length + ' comprados removidos', 20000, function () {
     var dd = hxShopLoad();
-    dd.items = dd.items.concat(done);
+    var rr = hxShopRec(dd, key, true);
+    rr.items = rr.items.concat(done);
     hxShopSave(dd);
     hxShopRender();
     hxToast('Lista reposta.');
@@ -10423,27 +10653,98 @@ function hxShopItemHTML(x) {
   '</div>';
 }
 
+function hxShopSpendRender(rec) {
+  var box = document.getElementById('hxShopSpend');
+  if (!box) { return; }
+  var mes = HX_SHOP_MONTHS[HX_SHOP.m] || '';
+  var total = hxShopSum(rec.buys);
+  if (!rec.buys.length) {
+    box.innerHTML = '<div class="hx-shop-spend-empty">' +
+      'Sem compras registadas em ' + hxEsc(mes) + '. Quando acabares, carrega em <b>Registar compra</b> e põe o valor.' +
+    '</div>';
+    return;
+  }
+  var byStore = {};
+  rec.buys.forEach(function (b) { byStore[b.store] = (byStore[b.store] || 0) + b.amount; });
+  var lojas = HX_SHOP_STORES.filter(function (s) { return byStore[s.id]; }).map(function (s) {
+    return '<span class="hx-shop-storechip st-' + s.id + '">' + hxEsc(s.label) + ' · ' + hxShopEur(byStore[s.id]) + '</span>';
+  }).join('');
+
+  box.innerHTML =
+    '<div class="hx-shop-spend-main">' +
+      '<div class="hx-shop-spend-k">Gasto em ' + hxEsc(mes) + '</div>' +
+      '<div class="hx-shop-spend-v">' + hxShopEur(total) + '</div>' +
+      '<div class="hx-shop-spend-s">' + rec.buys.length + (rec.buys.length === 1 ? ' compra' : ' compras') + '</div>' +
+    '</div>' +
+    '<div class="hx-shop-spend-stores">' + lojas + '</div>';
+}
+
+function hxShopBuysRender(rec) {
+  var box = document.getElementById('hxShopBuys');
+  if (!box) { return; }
+  if (!rec.buys.length) { box.innerHTML = ''; return; }
+
+  var lista = rec.buys.slice().sort(function (a, b) {
+    return (a.date === b.date) ? (b.at - a.at) : (a.date < b.date ? 1 : -1);
+  });
+
+  box.innerHTML = '<section class="hx-shop-buys" aria-label="Compras do mês">' +
+    '<div class="hx-shop-gh">Compras do mês <span>' + rec.buys.length + '</span></div>' +
+    lista.map(function (b) {
+      return '<div class="hx-shop-buy">' +
+        '<span class="hx-shop-buy-date">' + hxEsc(hxShopDateShort(b.date)) + '</span>' +
+        '<div class="hx-shop-buy-main">' +
+          '<span class="hx-shop-buy-store st-' + b.store + '">' + hxEsc(hxShopStoreLabel(b.store)) + '</span>' +
+          (b.note ? '<span class="hx-shop-buy-note">' + hxEsc(b.note) + '</span>' : '') +
+        '</div>' +
+        '<span class="hx-shop-buy-amount">' + hxShopEur(b.amount) + '</span>' +
+        '<button type="button" class="hx-shop-buy-del" aria-label="Remover compra de ' + hxEsc(hxShopEur(b.amount)) + '"' +
+        ' onclick="hxShopBuyDel(\'' + b.id + '\')">×</button>' +
+      '</div>';
+    }).join('') +
+  '</section>';
+}
+
 function hxShopRender() {
   var box = document.getElementById('hxShopList');
   if (!box) { return; }
+  hxShopEnsureState();
   var d = hxShopLoad();
-  var pend = d.items.filter(function (x) { return !x.done; });
-  var done = d.items.filter(function (x) { return x.done; });
+  var key = hxShopViewKey();
+  var rec = hxShopRec(d, key, false);
+  var pend = rec.items.filter(function (x) { return !x.done; });
+  var done = rec.items.filter(function (x) { return x.done; });
+  var n = hxShopNow();
+  var atual = (HX_SHOP.y === n.y && HX_SHOP.m === n.m);
+
+  var rotulo = document.getElementById('hxShopMonth');
+  if (rotulo) { rotulo.textContent = hxShopMonthLabel(HX_SHOP.y, HX_SHOP.m); }
+  var thisBtn = document.getElementById('hxShopThisBtn');
+  if (thisBtn) { thisBtn.style.display = atual ? 'none' : ''; }
+  var nextBtn = document.getElementById('hxShopNext');
+  if (nextBtn) {
+    nextBtn.disabled = atual;
+    nextBtn.setAttribute('aria-disabled', atual ? 'true' : 'false');
+  }
 
   var count = document.getElementById('hxShopCount');
   if (count) {
-    count.textContent = !d.items.length
+    count.textContent = !rec.items.length
       ? 'A lista está vazia.'
       : (pend.length ? pend.length + ' por comprar' : 'Tudo comprado') +
         (done.length ? ' · ' + done.length + ' no carrinho' : '');
   }
 
+  /* o cartão de entrada mostra sempre o mês corrente */
   var entry = document.getElementById('hxShopEntryCount');
   if (entry) {
-    entry.textContent = pend.length
-      ? pend.length + (pend.length === 1 ? ' item por comprar' : ' itens por comprar') +
-        (done.length ? ' · ' + done.length + ' no carrinho' : '') + '.'
-      : (d.items.length ? 'Tudo comprado.' : 'O que falta comprar, num sítio só.');
+    var cur = d.months[hxShopMonthKey(n.y, n.m)] || { items: [], buys: [] };
+    var curPend = cur.items.filter(function (x) { return !x.done; }).length;
+    var curSpent = hxShopSum(cur.buys);
+    entry.textContent = curPend
+      ? curPend + (curPend === 1 ? ' item por comprar' : ' itens por comprar') +
+        (curSpent ? ' · ' + hxShopEur(curSpent) + ' este mês' : '') + '.'
+      : (curSpent ? 'Compras do mês: ' + hxShopEur(curSpent) + '.' : 'O que falta comprar, num sítio só.');
   }
 
   var html = '';
@@ -10457,9 +10758,22 @@ function hxShopRender() {
   });
 
   if (!pend.length) {
-    html += '<div class="hx-shop-empty">' + (d.items.length
+    var carry = '';
+    if (!rec.items.length) {
+      var pd = new Date(HX_SHOP.y, HX_SHOP.m - 1, 1);
+      var prev = d.months[hxShopMonthKey(pd.getFullYear(), pd.getMonth())];
+      var prevPend = prev ? prev.items.filter(function (x) { return !x.done; }).length : 0;
+      if (prevPend) {
+        carry = '<div class="hx-shop-carry"><button type="button" class="hx-mini" onclick="hxShopCarry()">Trazer ' +
+          prevPend + (prevPend === 1 ? ' item por comprar de ' : ' itens por comprar de ') +
+          hxEsc(HX_SHOP_MONTHS[pd.getMonth()]) + '</button></div>';
+      }
+    }
+    html += '<div class="hx-shop-empty">' + (rec.items.length
       ? 'Nada por comprar. A lista está em dia.'
-      : 'Ainda não tens nada na lista. Escreve acima e carrega em Adicionar.') + '</div>';
+      : (atual
+        ? 'Ainda não tens nada na lista deste mês. Escreve acima e carrega em Adicionar.'
+        : 'Não há itens neste mês. Podes voltar atrás ou passar para o mês seguinte.')) + carry + '</div>';
   }
 
   if (done.length) {
@@ -10470,6 +10784,8 @@ function hxShopRender() {
   }
 
   box.innerHTML = html;
+  hxShopSpendRender(rec);
+  hxShopBuysRender(rec);
   hxShopSugRender(d);
 }
 
@@ -10477,8 +10793,9 @@ function hxShopSugRender(d) {
   var box = document.getElementById('hxShopSug');
   if (!box) { return; }
   d = d || hxShopLoad();
+  var rec = hxShopRec(d, hxShopViewKey(), false);
   var pend = {};
-  d.items.forEach(function (x) { if (!x.done) { pend[hxNorm(x.name)] = 1; } });
+  rec.items.forEach(function (x) { if (!x.done) { pend[hxNorm(x.name)] = 1; } });
 
   var sug = Object.keys(d.seen)
     .map(function (k) { return d.seen[k]; })
@@ -10497,14 +10814,160 @@ function hxShopSugRender(d) {
     }).join('') + '</div>';
 }
 
+function hxShopBuyOpen() {
+  hxShopEnsureState();
+  var m = document.getElementById('hxShopBuyModal');
+  if (!m) { return; }
+  var n = hxShopNow();
+  var y = HX_SHOP.y, mo = HX_SHOP.m;
+  var atual = (y === n.y && mo === n.m);
+  var maxDia = atual ? n.day : hxShopLastDay(y, mo);
+  var mm = hxShopMonthKey(y, mo);
+
+  var dateEl = document.getElementById('hxShopBuyDate');
+  if (dateEl) {
+    dateEl.min = mm + '-01';
+    dateEl.max = mm + '-' + hxShopPad2(maxDia);
+    dateEl.value = mm + '-' + hxShopPad2(Math.min(atual ? n.day : maxDia, maxDia));
+  }
+  var sub = document.getElementById('hxShopBuySub');
+  if (sub) {
+    sub.textContent = 'Compra de ' + (HX_SHOP_MONTHS[mo] || '') + ' de ' + y + '.';
+  }
+  var rec = hxShopRec(hxShopLoad(), hxShopViewKey(), false);
+  var doneN = rec.items.filter(function (x) { return x.done; }).length;
+  var doneEl = document.getElementById('hxShopBuyDoneN');
+  if (doneEl) { doneEl.textContent = doneN; }
+  var rem = document.getElementById('hxShopBuyRemove');
+  if (rem) {
+    rem.checked = doneN > 0;
+    rem.disabled = doneN === 0;
+  }
+  var remWrap = document.getElementById('hxShopBuyRemoveWrap');
+  if (remWrap) {
+    remWrap.style.display = doneN ? '' : 'none';
+    remWrap.classList.toggle('off', doneN === 0);
+  }
+
+  var amt = document.getElementById('hxShopBuyAmount');
+  if (amt) { amt.value = ''; }
+  var note = document.getElementById('hxShopBuyNote');
+  if (note) { note.value = ''; }
+  var err = document.getElementById('hxShopBuyErr');
+  if (err) { err.style.display = 'none'; err.textContent = ''; }
+  hxShopStoreRender();
+
+  m.classList.add('open');
+  m.setAttribute('aria-hidden', 'false');
+  document.body.classList.add('hx-shop-lock');
+  setTimeout(function () {
+    if (amt) { try { amt.focus(); } catch (e) {} }
+  }, 80);
+}
+
+function hxShopBuyClose() {
+  var m = document.getElementById('hxShopBuyModal');
+  if (!m) { return; }
+  m.classList.remove('open');
+  m.setAttribute('aria-hidden', 'true');
+  document.body.classList.remove('hx-shop-lock');
+  var btn = document.querySelector('.hx-shop-buybtn');
+  if (btn) { try { btn.focus(); } catch (e) {} }
+}
+
+function hxShopBuyStore(id) {
+  if (!hxShopStoreOk(id)) { return; }
+  HX_SHOP_STORE = id;
+  hxShopStoreRender();
+}
+
+function hxShopBuySave() {
+  var err = document.getElementById('hxShopBuyErr');
+  if (err) { err.textContent = ''; err.style.display = 'none'; }
+  var showErr = function (msg, focusEl) {
+    if (err) { err.textContent = msg; err.style.display = 'block'; }
+    if (focusEl) { try { focusEl.focus(); } catch (e) {} }
+  };
+  var amtEl = document.getElementById('hxShopBuyAmount');
+  var cents = hxShopParseAmount(amtEl ? amtEl.value : '');
+  if (cents === null) {
+    showErr('Escreve o valor gasto, por exemplo 12,50.', amtEl);
+    return;
+  }
+
+  var dateEl = document.getElementById('hxShopBuyDate');
+  var date = dateEl ? String(dateEl.value || '') : '';
+  var mm = hxShopViewKey();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(date) || date.slice(0, 7) !== mm) {
+    showErr('A data tem de ser em ' + (HX_SHOP_MONTHS[HX_SHOP.m] || '') + ' de ' + HX_SHOP.y + '.', dateEl);
+    return;
+  }
+
+  var noteEl = document.getElementById('hxShopBuyNote');
+  var note = noteEl ? String(noteEl.value || '').replace(/\s+/g, ' ').trim().slice(0, 60) : '';
+
+  var d = hxShopLoad();
+  var rec = hxShopRec(d, mm, true);
+  var buy = {
+    id: hxShopBuyId(),
+    date: date,
+    amount: cents,
+    store: HX_SHOP_STORE,
+    note: note,
+    at: Date.now()
+  };
+  rec.buys.push(buy);
+
+  var removed = [];
+  var remEl = document.getElementById('hxShopBuyRemove');
+  if (remEl && remEl.checked) {
+    removed = rec.items.filter(function (x) { return x.done; });
+    rec.items = rec.items.filter(function (x) { return !x.done; });
+  }
+
+  hxShopSave(d);
+  try { localStorage.setItem(HX_SHOP_STORE_KEY, HX_SHOP_STORE); } catch (e) {}
+  hxShopBuyClose();
+  hxShopRender();
+  hxShowUndo('Compra registada: ' + hxShopEur(cents) + ' · ' + hxShopStoreLabel(HX_SHOP_STORE), 20000, function () {
+    var dd = hxShopLoad();
+    var rr = hxShopRec(dd, mm, false);
+    rr.buys = rr.buys.filter(function (b) { return b.id !== buy.id; });
+    if (removed.length) { rr.items = rr.items.concat(removed); }
+    hxShopSave(dd);
+    hxShopRender();
+    hxToast('Compra anulada.');
+  });
+}
+
+function hxShopBuyDel(id) {
+  var d = hxShopLoad();
+  var key = hxShopViewKey();
+  var rec = hxShopRec(d, key, false);
+  var idx = -1;
+  rec.buys.forEach(function (b, i) { if (b.id === id) { idx = i; } });
+  if (idx < 0) { return; }
+  var removed = rec.buys.splice(idx, 1)[0];
+  hxShopSave(d);
+  hxShopRender();
+  hxShowUndo('Compra removida: ' + hxShopEur(removed.amount), 20000, function () {
+    var dd = hxShopLoad();
+    var rr = hxShopRec(dd, key, true);
+    rr.buys.splice(Math.min(idx, rr.buys.length), 0, removed);
+    hxShopSave(dd);
+    hxShopRender();
+    hxToast('Compra reposta.');
+  });
+}
+
 function hxShopText() {
   var d = hxShopLoad();
-  var pend = d.items.filter(function (x) { return !x.done; });
-  if (!pend.length) { return ''; }
-  var agora = new Date();
-  var dia = (agora.getDate() < 10 ? '0' : '') + agora.getDate();
-  var mes = (agora.getMonth() + 1 < 10 ? '0' : '') + (agora.getMonth() + 1);
-  var linhas = ['Lista de compras — ' + dia + '/' + mes, ''];
+  var rec = hxShopRec(d, hxShopViewKey(), false);
+  var pend = rec.items.filter(function (x) { return !x.done; });
+  var total = hxShopSum(rec.buys);
+  if (!pend.length && !rec.buys.length) { return ''; }
+
+  var linhas = ['Lista de compras — ' + hxShopMonthLabel(HX_SHOP.y, HX_SHOP.m), ''];
   HX_SHOP_CATS.forEach(function (c) {
     var items = pend.filter(function (x) { return x.cat === c.id; });
     if (!items.length) { return; }
@@ -10514,6 +10977,11 @@ function hxShopText() {
     });
     linhas.push('');
   });
+  if (!pend.length) { linhas.push('Nada por comprar.', ''); }
+  if (rec.buys.length) {
+    linhas.push('Gasto registado: ' + hxShopEur(total) + ' (' + rec.buys.length +
+      (rec.buys.length === 1 ? ' compra' : ' compras') + ')');
+  }
   return linhas.join('\n').trim();
 }
 
@@ -10543,6 +11011,12 @@ function hxShopCopyFallback(txt, feito) {
     hxToast('Não consegui copiar. Seleciona o texto à mão.');
   }
 }
+
+document.addEventListener('keydown', function (e) {
+  if (e.key !== 'Escape') { return; }
+  var m = document.getElementById('hxShopBuyModal');
+  if (m && m.classList.contains('open')) { hxShopBuyClose(); }
+});
 
 /* ── relatório do mês ─────────────────────────────────────────── */
 
