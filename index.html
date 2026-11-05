@@ -24,7 +24,7 @@ window.addEventListener('unhandledrejection', function (ev) {
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Source+Serif+4:ital,wght@0,300;0,400;1,300&family=JetBrains+Mono:wght@300;400&family=Inter:wght@400;500;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js" integrity="sha384-TcHRA3zBbn+Lexh5n+Oil4guNPOS3rjNDpGRAN46u/s/mB2IZ50ceC6TYDU2yvgK" crossorigin="anonymous"></script>
-<link rel="stylesheet" href="styles.css?v=2026110501">
+<link rel="stylesheet" href="styles.css?v=2026110503">
 </head>
 <body>
 
@@ -123,6 +123,8 @@ window.addEventListener('unhandledrejection', function (ev) {
         " id="authEyeBtn">👁</button>
       </div>
     </div>
+
+    <button type="button" id="authForgotBtn" class="btn btn-ghost" onclick="requestPasswordReset()" style="margin:-4px 0 12px;font-size: calc(11px * var(--font-scale));">Esqueci-me da palavra-passe</button>
 
     <!-- Confirm Password (hidden in login tab) -->
     <div id="authConfirmBox" style="margin-bottom:16px;text-align:left;display:none;">
@@ -1712,6 +1714,16 @@ hf_... (2ª chave)" style="width:100%;background:var(--surface);border:1px solid
     <div id="remSettingsStatus" style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size: calc(10px * var(--font-scale));color:var(--moss-l);"></div>
   </div>
   <div class="card">
+    <div class="card-title">Palavra-passe</div>
+    <p style="font-size: calc(12px * var(--font-scale));color:var(--muted);margin-bottom:14px;">Altera a palavra-passe da tua conta.</p>
+    <button type="button" class="btn btn-secondary" onclick="openPasswordDialog(false)">Alterar palavra-passe</button>
+  </div>
+  <div class="card" id="installCard">
+    <div class="card-title">App no computador</div>
+    <p id="installStatus" style="font-size: calc(12px * var(--font-scale));color:var(--muted);margin-bottom:14px;"></p>
+    <button type="button" class="btn btn-primary" id="installBtn" onclick="installApp()" style="display:none;">⬇ Instalar aplicação</button>
+  </div>
+  <div class="card">
     <div class="card-title">Dados & Privacidade</div>
     <p style="font-size: calc(12px * var(--font-scale));color:var(--muted);margin-bottom:16px;">Com sessão iniciada, os teus dados ficam na tua conta na nuvem (Supabase), com uma cópia neste browser. Podes exportá-los aqui.</p>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
@@ -2000,7 +2012,21 @@ gsk_... (3ª chave)" style="width:100%;background:var(--surface);border:1px soli
 </div>
 <div class="hx-toast" id="hxToast" role="status" aria-live="polite"></div>
 
-<script src="app.js?v=2026110501"></script>
+<dialog id="passwordDialog" class="pwd-dialog" aria-labelledby="pwdDialogTitle">
+  <form onsubmit="event.preventDefault();savePasswordDialog()">
+    <h2 id="pwdDialogTitle">Alterar palavra-passe</h2>
+    <label for="pwdNew">Palavra-passe nova</label>
+    <input id="pwdNew" type="password" autocomplete="new-password" minlength="6" required>
+    <label for="pwdConfirm">Repetir palavra-passe</label>
+    <input id="pwdConfirm" type="password" autocomplete="new-password" minlength="6" required>
+    <p id="pwdDialogMsg" class="pwd-msg" role="alert"></p>
+    <div class="pwd-actions">
+      <button type="button" class="btn btn-ghost" onclick="closePasswordDialog()">Agora não</button>
+      <button type="submit" id="pwdSaveBtn" class="btn btn-primary">Guardar</button>
+    </div>
+  </form>
+</dialog>
+<script src="app.js?v=2026110503"></script>
 </div><!-- end appContent -->
 </body>
 </html>

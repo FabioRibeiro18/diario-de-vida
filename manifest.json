@@ -2,6 +2,8 @@
   "name": "Diário de Vida",
   "short_name": "Diário",
   "description": "O teu diário de saúde e bem-estar pessoal",
+  "id": "./",
+  "lang": "pt-PT",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

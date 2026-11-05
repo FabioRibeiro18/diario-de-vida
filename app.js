@@ -4909,9 +4909,14 @@ if (getGroqKey()) {
 const SUPABASE_URL = 'https://nocafjkyiaigxttwdkei.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_JemTyDpY6iPhrpSAemaQDg_ws94_aBm';
 let supabaseClient = null;
+// O cliente limpa o endereço ao arrancar: guardar antes se veio do email de recuperação.
+const _veioDeRecuperacao = /(^|[#&])type=recovery(&|$)/.test(window.location.hash);
 try {
   if (window.supabase && typeof window.supabase.createClient === 'function') {
     supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    supabaseClient.auth.onAuthStateChange(function (evento) {
+      if (evento === 'PASSWORD_RECOVERY') setTimeout(function () { openPasswordDialog(true); }, 0);
+    });
   }
 } catch(e) {
   console.error('Erro ao inicializar cliente Supabase:', e);
@@ -4923,6 +4928,8 @@ function setAuthTab(tab) {
   const loginBtn = document.getElementById('tabLoginBtn');
   const regBtn = document.getElementById('tabRegisterBtn');
   const confirmBox = document.getElementById('authConfirmBox');
+  const forgotBtn = document.getElementById('authForgotBtn');
+  if (forgotBtn) forgotBtn.style.display = tab === 'login' ? '' : 'none';
   const submitBtn = document.getElementById('authSubmitBtn');
   const errEl = document.getElementById('authError');
   if (errEl) errEl.textContent = '';
@@ -5221,7 +5228,7 @@ async function loadSheetsUrlFromCloud() {
 }
 
 // ── VERSÃO DA APP E ATUALIZAÇÃO FORÇADA (limpa a cache do service worker; não apaga registos) ──
-var APP_VERSION = '2026.11.05.1';
+var APP_VERSION = '2026.11.05.3';
 var APP_BUILT = '5 nov 2026';
 (function() {
   const el = document.getElementById('appVersionLabel');
@@ -7040,6 +7047,7 @@ async function initAuth() {
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (session && session.user) {
         onUserAuthenticated(session.user);
+        if (_veioDeRecuperacao) openPasswordDialog(true);
         return;
       }
     } catch(e) {
@@ -11431,3 +11439,102 @@ document.addEventListener('visibilitychange', function () {
     setTimeout(function () { hxRunDiagnostic(); }, 900);
   }
 })();
+
+// ── INSTALAR COMO APLICAÇÃO (Edge/Chrome no computador ou Android) ──
+var _installPrompt = null;
+function appIsInstalled() {
+  return window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+}
+function renderInstallCard() {
+  var st = document.getElementById('installStatus');
+  var btn = document.getElementById('installBtn');
+  if (!st || !btn) return;
+  btn.style.display = _installPrompt ? '' : 'none';
+  if (appIsInstalled()) {
+    st.textContent = '✓ Estás a usar a aplicação instalada.';
+  } else if (_installPrompt) {
+    st.textContent = 'Instala o Diário de Vida para o abrires em janela própria, com ícone na barra de tarefas.';
+  } else {
+    st.textContent = 'Para instalar, abre esta página no Edge ou no Chrome e escolhe «Instalar» no menu do browser. Se já a instalaste, procura «Diário de Vida» no menu Iniciar.';
+  }
+}
+async function installApp() {
+  if (!_installPrompt) return;
+  var prompt = _installPrompt;
+  _installPrompt = null;
+  prompt.prompt();
+  try { await prompt.userChoice; } catch (e) {}
+  renderInstallCard();
+}
+window.addEventListener('beforeinstallprompt', function (e) {
+  e.preventDefault();
+  _installPrompt = e;
+  renderInstallCard();
+});
+window.addEventListener('appinstalled', function () {
+  _installPrompt = null;
+  var st = document.getElementById('installStatus');
+  renderInstallCard();
+  if (st && !appIsInstalled()) st.textContent = '✓ Aplicação instalada. Procura «Diário de Vida» no menu Iniciar.';
+});
+renderInstallCard();
+
+// ── DEFINIR OU ALTERAR A PALAVRA-PASSE DA CONTA ──
+function openPasswordDialog(recuperacao) {
+  var d = document.getElementById('passwordDialog');
+  if (!d || d.open) return;
+  // pode estar dentro de um bloco escondido (por exemplo, no ecrã de login)
+  if (d.parentNode !== document.body) document.body.appendChild(d);
+  document.getElementById('pwdDialogTitle').textContent = recuperacao ? 'Define a tua nova palavra-passe' : 'Alterar palavra-passe';
+  document.getElementById('pwdNew').value = '';
+  document.getElementById('pwdConfirm').value = '';
+  var msg = document.getElementById('pwdDialogMsg');
+  msg.textContent = '';
+  msg.classList.remove('ok');
+  d.showModal();
+}
+function closePasswordDialog() {
+  var d = document.getElementById('passwordDialog');
+  if (d && d.open) d.close();
+}
+async function savePasswordDialog() {
+  var nova = document.getElementById('pwdNew').value;
+  var msg = document.getElementById('pwdDialogMsg');
+  var btn = document.getElementById('pwdSaveBtn');
+  msg.classList.remove('ok');
+  if (nova.length < 6) { msg.textContent = 'A palavra-passe deve ter pelo menos 6 caracteres.'; return; }
+  if (nova !== document.getElementById('pwdConfirm').value) { msg.textContent = 'As palavras-passe não coincidem.'; return; }
+  if (!supabaseClient) { msg.textContent = 'Sem ligação ao servidor. Tenta de novo.'; return; }
+  btn.disabled = true;
+  msg.textContent = '';
+  try {
+    var sessao = (await supabaseClient.auth.getSession()).data.session;
+    if (!sessao) { msg.textContent = 'Entra primeiro na tua conta para alterar a palavra-passe.'; return; }
+    var r = await supabaseClient.auth.updateUser({ password: nova });
+    if (r.error) throw r.error;
+    document.getElementById('pwdNew').value = '';
+    document.getElementById('pwdConfirm').value = '';
+    msg.textContent = '✓ Palavra-passe guardada.';
+    msg.classList.add('ok');
+    setTimeout(closePasswordDialog, 1500);
+  } catch (e) {
+    var texto = String((e && e.message) || e);
+    msg.textContent = /different from the old/i.test(texto) ? 'Escolhe uma palavra-passe diferente da atual.'
+      : /failed to fetch|networkerror|load failed/i.test(texto) ? 'Sem ligação. Verifica a internet e tenta de novo.'
+      : 'Não foi possível guardar. Tenta de novo.';
+  } finally {
+    btn.disabled = false;
+  }
+}
+async function requestPasswordReset() {
+  var email = (document.getElementById('authEmail').value || '').trim();
+  var el = document.getElementById('authError');
+  if (!email) { el.textContent = 'Escreve primeiro o teu email.'; return; }
+  if (!supabaseClient) { el.textContent = 'Sem ligação ao servidor. Tenta de novo.'; return; }
+  var r = await supabaseClient.auth.resetPasswordForEmail(email, { redirectTo: window.location.origin + window.location.pathname });
+  if (r.error) {
+    el.textContent = /rate limit/i.test(r.error.message) ? 'Foram pedidos demasiados emails. Tenta de novo daqui a cerca de uma hora.' : 'Não foi possível enviar o email. Tenta de novo.';
+    return;
+  }
+  el.textContent = 'Se a conta existir, vais receber um email com o link. Vê também o spam.';
+}

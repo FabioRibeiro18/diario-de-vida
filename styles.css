@@ -2608,3 +2608,13 @@ body.hx-shop-lock { overflow: hidden; }
 .hx-shop-share-opt.wide { grid-column: 1 / -1; }
 #hxShopShareNative { background: rgba(var(--accent-rgb), .12); border-color: var(--moss); color: var(--moss-l); }
 .hx-shop-share-opts .hx-shop-hint { margin: 0; }
+
+/* Definir ou alterar a palavra-passe */
+.pwd-dialog { margin: auto; width: min(92vw, 400px); padding: 24px; color: var(--text); background: var(--card); border: 1px solid var(--border); border-radius: 14px; }
+.pwd-dialog::backdrop { background: rgba(0,0,0,0.65); }
+.pwd-dialog h2 { margin: 0 0 16px; font-size: calc(18px * var(--font-scale)); }
+.pwd-dialog label { display: block; margin: 12px 0 5px; font-size: calc(12px * var(--font-scale)); color: var(--muted); }
+.pwd-dialog input { width: 100%; padding: 11px 12px; font: inherit; color: var(--text); background: var(--surface); border: 1px solid var(--border); border-radius: 8px; }
+.pwd-msg { min-height: 1.4em; margin: 12px 0; font-size: calc(12px * var(--font-scale)); color: var(--rose); }
+.pwd-msg.ok { color: var(--sage-l); }
+.pwd-actions { display: flex; justify-content: flex-end; gap: 8px; }
