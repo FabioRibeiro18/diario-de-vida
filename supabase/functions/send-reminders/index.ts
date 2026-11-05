@@ -1,12 +1,10 @@
 // ═══════════════════════════════════════════════════════════════════
 // send-reminders — envia os lembretes do dia, mesmo com a app fechada
 //
-// Chamadas possíveis (todas com o segredo):
-//   POST /send-reminders                      → envia o que estiver devido
-//   GET  /send-reminders?secret=...&ping=1    → só confirma que está viva
-//   GET  /send-reminders?secret=...&dry=1     → diz o que enviaria, sem enviar
-//
-// Segredo aceite no header x-cron-secret ou no parâmetro ?secret=
+// Chamadas possíveis (o segredo vai sempre no header x-cron-secret):
+//   POST /send-reminders          → envia o que estiver devido
+//   GET  /send-reminders?ping=1   → só confirma que está viva (não precisa de segredo)
+//   GET  /send-reminders?dry=1    → diz o que enviaria, sem enviar
 // ═══════════════════════════════════════════════════════════════════
 
 import { createClient } from 'npm:@supabase/supabase-js@2';
@@ -69,20 +67,11 @@ Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: CORS });
 
   const url = new URL(req.url);
-  const segredo = req.headers.get('x-cron-secret') || url.searchParams.get('secret') || '';
+  const segredo = req.headers.get('x-cron-secret') || '';
 
-  // ── saúde da função: responde sem tocar em nada
+  // ── saúde da função: não toca em nada nem revela a configuração
   if (url.searchParams.get('ping')) {
-    return json({
-      ok: true,
-      viva: true,
-      temSegredo: !!CRON_SECRET,
-      segredoConfere: !!CRON_SECRET && segredo === CRON_SECRET,
-      segredoRecebido: !!segredo,
-      temChavesVapid: !!(VAPID_PUBLIC && VAPID_PRIVATE),
-      temServiceKey: !!SERVICE_KEY,
-      hora: new Date().toISOString(),
-    });
+    return json({ ok: true, viva: true, hora: new Date().toISOString() });
   }
 
   if (!CRON_SECRET) {

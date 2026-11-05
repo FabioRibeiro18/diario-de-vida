@@ -23,8 +23,8 @@ window.addEventListener('unhandledrejection', function (ev) {
 });
 </script>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400;1,500&family=Source+Serif+4:ital,wght@0,300;0,400;1,300&family=JetBrains+Mono:wght@300;400&family=Inter:wght@400;500;600;700&family=Nunito:wght@400;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<link rel="stylesheet" href="styles.css?v=2026103007">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.118.0/dist/umd/supabase.js" integrity="sha384-TcHRA3zBbn+Lexh5n+Oil4guNPOS3rjNDpGRAN46u/s/mB2IZ50ceC6TYDU2yvgK" crossorigin="anonymous"></script>
+<link rel="stylesheet" href="styles.css?v=2026110501">
 </head>
 <body>
 
@@ -1712,31 +1712,8 @@ hf_... (2ª chave)" style="width:100%;background:var(--surface);border:1px solid
     <div id="remSettingsStatus" style="margin-top:8px;font-family:'JetBrains Mono',monospace;font-size: calc(10px * var(--font-scale));color:var(--moss-l);"></div>
   </div>
   <div class="card">
-    <div class="card-title">Segurança & Palavra-passe</div>
-    <p style="font-size: calc(12px * var(--font-scale));color:var(--muted);margin-bottom:14px;">Altera a tua palavra-passe de acesso. O hash é guardado com segurança no teu dispositivo.</p>
-    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-bottom:14px;">
-      <div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size: calc(10px * var(--font-scale));color:var(--muted);margin-bottom:6px;text-transform:uppercase;">Palavra-passe atual</div>
-        <input type="password" id="currentPwdSettings" placeholder="••••••••" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size: calc(12px * var(--font-scale));outline:none;">
-      </div>
-      <div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size: calc(10px * var(--font-scale));color:var(--muted);margin-bottom:6px;text-transform:uppercase;">Nova palavra-passe</div>
-        <input type="password" id="newPwdSettings" placeholder="mínimo 4 caracteres" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size: calc(12px * var(--font-scale));outline:none;">
-      </div>
-      <div>
-        <div style="font-family:'JetBrains Mono',monospace;font-size: calc(10px * var(--font-scale));color:var(--muted);margin-bottom:6px;text-transform:uppercase;">Confirmar nova</div>
-        <input type="password" id="confirmPwdSettings" placeholder="repetir nova palavra-passe" style="width:100%;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:9px 12px;color:var(--text);font-family:'JetBrains Mono',monospace;font-size: calc(12px * var(--font-scale));outline:none;">
-      </div>
-    </div>
-    <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center;">
-      <button class="btn btn-primary" onclick="changePassword()" style="font-size: calc(11px * var(--font-scale));">💾 Alterar palavra-passe</button>
-      <button onclick="resetPassword()" style="background:transparent;border:1px solid var(--border);border-radius:6px;padding:6px 14px;font-family:'JetBrains Mono',monospace;font-size: calc(11px * var(--font-scale));color:var(--muted);cursor:pointer;">↺ Repor pré-definida</button>
-    </div>
-    <div id="pwdSettingsStatus" style="margin-top:10px;font-family:'JetBrains Mono',monospace;font-size: calc(11px * var(--font-scale));"></div>
-  </div>
-  <div class="card">
     <div class="card-title">Dados & Privacidade</div>
-    <p style="font-size: calc(12px * var(--font-scale));color:var(--muted);margin-bottom:16px;">Todos os dados ficam guardados localmente no teu browser.</p>
+    <p style="font-size: calc(12px * var(--font-scale));color:var(--muted);margin-bottom:16px;">Com sessão iniciada, os teus dados ficam na tua conta na nuvem (Supabase), com uma cópia neste browser. Podes exportá-los aqui.</p>
     <div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px;">
       <button class="btn btn-secondary" onclick="exportData()" style="font-size: calc(11px * var(--font-scale));">⬇ Exportar JSON</button>
       <button class="btn btn-secondary" onclick="document.getElementById('importFileInput').click()" style="font-size: calc(11px * var(--font-scale));">⬆ Importar JSON</button>
@@ -2023,7 +2000,7 @@ gsk_... (3ª chave)" style="width:100%;background:var(--surface);border:1px soli
 </div>
 <div class="hx-toast" id="hxToast" role="status" aria-live="polite"></div>
 
-<script src="app.js?v=2026103007"></script>
+<script src="app.js?v=2026110501"></script>
 </div><!-- end appContent -->
 </body>
 </html>

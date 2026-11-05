@@ -1,3 +1,8 @@
+// Escape de HTML: usar sempre que texto dinâmico entra em innerHTML.
+function escHtml(v) {
+  return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
 // ── Funcionalidades removidas (90 Dias, Hábitos, Hobbys, Casa de Banho, Tempo de Ecrã) ──
 // O código antigo ainda consulta estes elementos; devolve um elemento vazio (fora da página)
 // para não dar erro. Os dados antigos continuam guardados nos registos, mas já não aparecem.
@@ -26,7 +31,7 @@ var SyncManager = (function() {
   var listeners = [];
   var pushAfterLoad = [];
 
-  try { localStorage.removeItem('diarioVida'); } catch (e) {}   // cópia antiga e sem uso
+  try { localStorage.removeItem('diarioVida'); localStorage.removeItem('dvAuthHash'); } catch (e) {}   // cópia antiga e sem uso
 
   function load(k, d) {
     try { var v = JSON.parse(localStorage.getItem(k)); return v == null ? d : v; } catch (e) { return d; }
@@ -1644,8 +1649,8 @@ function showFoodSuggestions(results, query) {
   }
   box.innerHTML = results.map((f,i) => `
     <div onclick="selectFood(${i})" style="padding:10px 16px;cursor:pointer;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;transition:background 0.1s;" onmouseover="this.style.background='var(--bg2)'" onmouseout="this.style.background=''">
-      <span style="font-size: calc(13px * var(--font-scale));color:var(--text)">${f.nome}</span>
-      <span style="font-family:JetBrains Mono,monospace;font-size: calc(11px * var(--font-scale));color:var(--moss-l);font-weight:500">${f.calorias} kcal</span>
+      <span style="font-size: calc(13px * var(--font-scale));color:var(--text)">${escHtml(f.nome)}</span>
+      <span style="font-family:JetBrains Mono,monospace;font-size: calc(11px * var(--font-scale));color:var(--moss-l);font-weight:500">${escHtml(f.calorias)} kcal</span>
     </div>
   `).join('');
   foodResults = results;
@@ -1669,9 +1674,9 @@ function showFoodNutrition(food) {
   const resp = document.getElementById('calResponse');
   resp.className = 'ai-response visible';
   resp.innerHTML = `
-    <strong>${food.nome}</strong><br><br>
-    <strong style="color:var(--moss-l)">${food.calorias} kcal</strong><br>
-    <small style="color:var(--muted)">Proteína: ${food.proteina}g · Hidratos: ${food.carbo}g · Gordura: ${food.gordura}g</small>
+    <strong>${escHtml(food.nome)}</strong><br><br>
+    <strong style="color:var(--moss-l)">${escHtml(food.calorias)} kcal</strong><br>
+    <small style="color:var(--muted)">Proteína: ${escHtml(food.proteina)}g · Hidratos: ${escHtml(food.carbo)}g · Gordura: ${escHtml(food.gordura)}g</small>
   `;
   const addBtn = document.createElement('button');
   addBtn.className = 'btn btn-secondary';
@@ -1799,8 +1804,8 @@ function renderMeals() {
     } else {
       list.innerHTML = items.map((m,i) => `
         <div class="meal-row">
-          <span class="meal-name">${m.name}</span>
-          <span class="meal-kcal">${m.cal} kcal</span>
+          <span class="meal-name">${escHtml(m.name)}</span>
+          <span class="meal-kcal">${escHtml(m.cal)} kcal</span>
           <button class="meal-del" onclick="removeMealFromSlot('${slot}',${i})" title="Remover">×</button>
         </div>
       `).join('');
@@ -1888,10 +1893,10 @@ function renderExercises() {
   if(!exercises.length) { list.innerHTML='<div class="empty-state">Nenhum exercício registado.</div>'; document.getElementById('ov-ex').textContent='—'; return; }
   list.innerHTML = exercises.map((e,i)=>`
     <div class="exercise-row">
-      <span class="ex-icon">${e.icon}</span>
+      <span class="ex-icon">${escHtml(e.icon)}</span>
       <div class="ex-info">
-        <div class="ex-name">${e.name}</div>
-        <div class="ex-meta">${e.duration?e.duration+' min':'—'} · ${e.intensity||'—'}</div>
+        <div class="ex-name">${escHtml(e.name)}</div>
+        <div class="ex-meta">${e.duration?escHtml(e.duration)+' min':'—'} · ${escHtml(e.intensity||'—')}</div>
       </div>
       <button class="meal-del" onclick="removeExercise(${i})">×</button>
     </div>`).join('');
@@ -2321,7 +2326,7 @@ function renderHobbies() {
   document.getElementById('hobbyGrid').innerHTML = hobbies.map((h,i) => `
     <div class="hobby-tile ${h.tracking?'tracking':''}" id="hobby-${i}">
       <div class="hobby-tile-icon">${h.icon}</div>
-      <div class="hobby-tile-name">${h.name}</div>
+      <div class="hobby-tile-name">${escHtml(h.name)}</div>
       <div class="hobby-tile-time" id="hobby-time-${i}">${formatSecs(h.seconds)}</div>
       <button class="hobby-tile-btn" onclick="toggleHobby(${i})">${h.tracking?'⏸ parar':'▶ iniciar'}</button>
     </div>`).join('');
@@ -4166,7 +4171,7 @@ function toggleFlowDetail(stepId) {
   document.getElementById('flowDetailTitle').textContent = step.icon + ' ' + step.label;
   const items = step.detail();
   document.getElementById('flowDetailItems').innerHTML = items
-    .map(item => item === '─' ? '<hr style="border:none;border-top:1px solid var(--border);margin:4px 0">' : '<div>' + item + '</div>')
+    .map(item => item === '─' ? '<hr style="border:none;border-top:1px solid var(--border);margin:4px 0">' : '<div>' + escHtml(item) + '</div>')
     .join('');
 
   detail.classList.add('visible');
@@ -5216,8 +5221,8 @@ async function loadSheetsUrlFromCloud() {
 }
 
 // ── VERSÃO DA APP E ATUALIZAÇÃO FORÇADA (limpa a cache do service worker; não apaga registos) ──
-var APP_VERSION = '2026.10.30.7';
-var APP_BUILT = '30 out 2026';
+var APP_VERSION = '2026.11.05.1';
+var APP_BUILT = '5 nov 2026';
 (function() {
   const el = document.getElementById('appVersionLabel');
   if (el) el.textContent = APP_VERSION + ' · ' + APP_BUILT;
@@ -7029,50 +7034,6 @@ async function saveCompUser(uid, btn) {
   if (btn) { const old = btn.textContent; btn.textContent = '✓ Guardado'; setTimeout(() => { btn.textContent = old; }, 1800); }
 }
 
-// ── RECURSOS DE PALAVRA-PASSE / HASH (RETROCOMPATIBILIDADE) ──
-const AUTH_KEY = 'dvAuthHash';
-const FIXED_HASH = 'df5d9527c178963afb034ac6250903cae0d066858191287761a9e10438005225';
-function getActiveAuthHash() { return localStorage.getItem(AUTH_KEY) || FIXED_HASH; }
-async function sha256(text) {
-  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(text));
-  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
-}
-async function changePassword() {
-  const cur = (document.getElementById('currentPwdSettings')?.value || '').trim();
-  const next = (document.getElementById('newPwdSettings')?.value || '').trim();
-  const conf = (document.getElementById('confirmPwdSettings')?.value || '').trim();
-  const st = document.getElementById('pwdSettingsStatus');
-  if (!st) return;
-  if (!cur || !next || !conf) {
-    st.innerHTML = '<span style="color:var(--rose);">Preenche todos os campos.</span>';
-    return;
-  }
-  const curHash = await sha256(cur);
-  if (curHash !== getActiveAuthHash()) {
-    st.innerHTML = '<span style="color:var(--rose);">Palavra-passe atual incorreta.</span>';
-    return;
-  }
-  if (next.length < 4) {
-    st.innerHTML = '<span style="color:var(--rose);">A nova palavra-passe deve ter pelo menos 4 caracteres.</span>';
-    return;
-  }
-  if (next !== conf) {
-    st.innerHTML = '<span style="color:var(--rose);">As novas palavras-passe não coincidem.</span>';
-    return;
-  }
-  localStorage.setItem(AUTH_KEY, await sha256(next));
-  if (document.getElementById('currentPwdSettings')) document.getElementById('currentPwdSettings').value = '';
-  if (document.getElementById('newPwdSettings')) document.getElementById('newPwdSettings').value = '';
-  if (document.getElementById('confirmPwdSettings')) document.getElementById('confirmPwdSettings').value = '';
-  st.innerHTML = '<span style="color:var(--sage-l);">✓ Palavra-passe local alterada com sucesso!</span>';
-}
-function resetPassword() {
-  const st = document.getElementById('pwdSettingsStatus');
-  if (!confirm('Desejas repor a palavra-passe original pré-definida?')) return;
-  localStorage.removeItem(AUTH_KEY);
-  if (st) st.innerHTML = '<span style="color:var(--sage-l);">✓ Palavra-passe reposta para a predefinição original.</span>';
-}
-
 async function initAuth() {
   if (supabaseClient) {
     try {
@@ -7388,7 +7349,7 @@ async function generateWeeklySummary(force) {
       'Dados da semana:\n'+stats.join('\n')+'\n\nFaz um resumo motivador com pontos positivos, areas a melhorar e 3 sugestoes concretas para a proxima semana. Max 250 palavras.',
       900
     );
-    el.innerHTML = txt.replace(/\n/g,'<br>');
+    el.innerHTML = escHtml(txt).replace(/\n/g,'<br>');
     if (tools) tools.hidden = false;
     localStorage.setItem(lastKey, now.toISOString());
   } catch(err) {
@@ -7610,7 +7571,7 @@ function renderN90() {
 
 function n90WeekHtml(text) {
   // Converte markdown simples em HTML
-  const lines = text.split('\n').filter(l => l.trim());
+  const lines = escHtml(text).split('\n').filter(l => l.trim());
   let html = '';
   lines.forEach(line => {
     const trimmed = line.trim();
@@ -7626,7 +7587,7 @@ function n90WeekHtml(text) {
       html += `<p style="font-size: calc(12px * var(--font-scale));color:var(--text2);line-height:1.6;margin:6px 0;">${trimmed}</p>`;
     }
   });
-  return html || text;
+  return html || escHtml(text);
 }
 
 function n90RenderDailyChecks(state) {

@@ -146,38 +146,27 @@ disser "sem sessão iniciada", é porque estás em modo convidado.
 
 ### 6.2 Teste 1 — está viva?
 
-Abre no browser (troca o segredo):
+Abre no browser (não precisa de segredo):
 
 ```
-https://nocafjkyiaigxttwdkei.supabase.co/functions/v1/send-reminders?secret=O-TEU-CRON-SECRET&ping=1
+https://nocafjkyiaigxttwdkei.supabase.co/functions/v1/send-reminders?ping=1
 ```
 
 Resposta boa:
 
 ```json
-{
-  "ok": true,
-  "viva": true,
-  "temSegredo": true,
-  "segredoConfere": true,
-  "segredoRecebido": true,
-  "temChavesVapid": true,
-  "temServiceKey": true,
-  "hora": "2026-10-27T15:04:05.000Z"
-}
+{ "ok": true, "viva": true, "hora": "2026-10-27T15:04:05.000Z" }
 ```
 
-- `segredoConfere: false` → o `secret` do URL não é igual ao `CRON_SECRET`.
-- `temChavesVapid: false` → faltam os segredos VAPID (passo 4).
 - Erro `Missing authorization header` → **Verify JWT** ainda está ligado (passo 3).
 
-> O `?secret=` fica registado nos logs da Supabase. Serve só para testar. O cron usa o
-> header `x-cron-secret`, que não fica no URL.
+> O segredo só é aceite no header `x-cron-secret`, para não ficar registado nos logs.
+
 
 ### 6.3 Teste 2 — o que enviaria agora?
 
-```
-.../send-reminders?secret=O-TEU-CRON-SECRET&dry=1
+```bash
+curl -H "x-cron-secret: O-TEU-CRON-SECRET" "https://nocafjkyiaigxttwdkei.supabase.co/functions/v1/send-reminders?dry=1"
 ```
 
 Resposta com algo como:
@@ -212,8 +201,8 @@ where sent_on = (now() at time zone 'Europe/Lisbon')::date;
 
 Espera até 5 minutos (o cron) **ou** chama a função sem `ping`/`dry`:
 
-```
-https://nocafjkyiaigxttwdkei.supabase.co/functions/v1/send-reminders?secret=O-TEU-CRON-SECRET
+```bash
+curl -X POST -H "x-cron-secret: O-TEU-CRON-SECRET" "https://nocafjkyiaigxttwdkei.supabase.co/functions/v1/send-reminders"
 ```
 
 Fecha a app antes, para provares que chega fechada. Depois confirma em `reminder_log`:
